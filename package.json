@@ -1,0 +1,31 @@
+{
+	"name": "fluxify",
+	"version": "0.2.4",
+	"license": "GPL-3.0-only",
+	"description": "neat little library for building apis",
+	"scripts": {
+		"fmt": "prettier --write {lib,src}",
+		"lint": "bun run eslint --fix {lib,src}",
+		"check": "tsc --noEmit",
+		"test:dev": "bun --watch test",
+		"test:prod": "bun test",
+		"start:dev": "bun run --hot ./src/main.ts",
+		"start:prod": "bun run ./src/main.ts",
+		"schema:init": "bun ./lib/database/scripts/init.ts",
+		"schema:drop": "bun ./lib/database/scripts/drop.ts",
+		"schema:sync": "bun ./lib/database/scripts/sync.ts",
+		"schema:seed": "bun ./lib/database/scripts/seed.ts"
+	},
+	"devDependencies": {
+		"@typescript-eslint/eslint-plugin": "5.60.0",
+		"@typescript-eslint/parser": "5.60.0",
+		"bun-types": "0.6.13",
+		"eslint": "8.43.0",
+		"eslint-config-prettier": "8.8.0",
+		"eslint-plugin-more": "1.0.5",
+		"eslint-plugin-prettier": "4.2.1",
+		"eslint-plugin-unused-imports": "2.0.0",
+		"prettier": "2.8.8",
+		"typescript": "5.1.3"
+	}
+}

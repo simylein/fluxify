@@ -1,0 +1,18 @@
+{
+	"compilerOptions": {
+		"lib": ["esnext"],
+		"module": "esnext",
+		"target": "esnext",
+		"types": ["bun-types"],
+		"moduleResolution": "bundler",
+		"strict": true,
+		"skipLibCheck": true,
+		"esModuleInterop": true,
+		"strictNullChecks": true,
+		"resolveJsonModule": true,
+		"forceConsistentCasingInFileNames": true,
+		"paths": {
+			"lib/*": ["./lib/*/index"]
+		}
+	}
+}

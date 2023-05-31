@@ -1,0 +1,14 @@
+{
+	"recommendations": [
+		"streetsidesoftware.code-spell-checker",
+		"mikestead.dotenv",
+		"EditorConfig.EditorConfig",
+		"dbaeumer.vscode-eslint",
+		"VisualStudioExptTeam.vscodeintellicode",
+		"christian-kohler.npm-intellisense",
+		"christian-kohler.path-intellisense",
+		"esbenp.prettier-vscode",
+		"qwtel.sqlite-viewer",
+		"Gruntfuggly.todo-tree"
+	]
+}

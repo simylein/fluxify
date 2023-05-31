@@ -1,0 +1,14 @@
+# debendencies
+node_modules
+
+# operating system
+.DS_Store
+
+# database
+*.sqlite
+
+# credentials
+.env
+
+# logs
+*.log
