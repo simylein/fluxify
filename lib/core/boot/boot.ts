@@ -35,6 +35,11 @@ export const bootstrap = (): FluxifyServer => {
 			const endpointMatches = !!routes.find((route) => compareEndpoint(route, endpoint));
 			const methodMatches = !!routes.find((route) => compareMethod(route, method));
 			const targetRoute = routes.find((route) => compareEndpoint(route, endpoint) && compareMethod(route, method));
+			const useCache =
+				method === 'get' &&
+				config.cacheTtl > 0 &&
+				config.cacheLimit > 0 &&
+				request.headers.get('cache-control') !== 'no-cache';
 
 			if (method === 'options') {
 				const targetRoutes = routes.filter((route) => compareEndpoint(route, endpoint));
@@ -79,11 +84,38 @@ export const bootstrap = (): FluxifyServer => {
 						if (targetRoute.schema.body) body = targetRoute.schema.body.parse(body);
 					}
 
+					if (useCache) {
+						if (global.server.cache.length > config.cacheLimit) {
+							global.server.cache.pop();
+						}
+						global.server.cache = global.server.cache.filter((entry) => entry.exp > Date.now());
+						const hit = global.server.cache.find(
+							(entry) => entry.url === request.url && entry.jwt === (jwt as { id?: string })?.id,
+						);
+						if (hit) {
+							debug(`cache hit on route ${url.pathname}`);
+							return createResponse(hit.data, hit.status, time, {
+								expires: new Date(hit.exp).toUTCString(),
+							});
+						}
+					}
+
 					const data = await targetRoute.handler({ param, query, body, jwt, req: request });
 					if (data instanceof Response) {
 						return data;
 					}
-					return createResponse(data, targetRoute.method === 'post' ? 201 : data ? 200 : 204, time);
+
+					const status = targetRoute.method === 'post' ? 201 : data ? 200 : 204;
+					if (useCache) {
+						global.server.cache.push({
+							exp: config.cacheTtl * 1000 + Date.now(),
+							url: request.url,
+							jwt: (jwt as { id?: string })?.id,
+							data,
+							status,
+						});
+					}
+					return createResponse(data, status, time);
 				} catch (err) {
 					if (err instanceof ValidationError) {
 						const status = 400;
@@ -120,11 +152,15 @@ export const bootstrap = (): FluxifyServer => {
 	debug(`global prefix is ${config.globalPrefix}`);
 	if (!global.server) {
 		const bunServer: Partial<FluxifyServer> = serve(options);
+		bunServer.routes = routes;
+		bunServer.cache = [];
 		bunServer.logger = logger;
 		bunServer.header = header;
 		global.server = bunServer as FluxifyServer;
 	} else {
 		global.server.reload(options);
+		global.server.routes = routes;
+		global.server.cache = [];
 		global.server.logger = logger;
 		global.server.header = header;
 	}

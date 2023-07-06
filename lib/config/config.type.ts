@@ -6,6 +6,8 @@ export type Config = {
 	globalPrefix: string;
 	jwtSecret: string;
 	jwtExpiry: number;
+	cacheTtl: number;
+	cacheLimit: number;
 	databasePath: string | ':memory;';
 	databaseMode: 'readwrite' | 'readonly';
 	logLevel: 'trace' | 'debug' | 'info' | 'warn' | 'error';
