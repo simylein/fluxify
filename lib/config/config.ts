@@ -13,16 +13,16 @@ export const validateConfig = (env: Env): Config => {
 		const schema = object({
 			stage: union(['test', 'stage', 'dev', 'prod']).optional(),
 			port: number().optional().transform().min(0).max(65535).default(4000),
-			appName: string().optional().default('fluxify'),
+			appName: string().optional().max(12).default('fluxify'),
 
 			allowOrigin: string().optional().default('*'),
-			globalPrefix: string().optional().default(''),
+			globalPrefix: string().optional().max(12).default(''),
 
 			jwtSecret: string().optional().default(randomBytes(32).toString('hex')),
-			jwtExpiry: number().optional().transform().default(1600),
+			jwtExpiry: number().optional().transform().min(0).default(1600),
 
-			cacheTtl: number().transform().optional().default(0),
-			cacheLimit: number().transform().optional().default(0),
+			cacheTtl: number().optional().transform().min(0).default(0),
+			cacheLimit: number().optional().transform().min(0).default(0),
 
 			databasePath: string().optional().default(':memory:'),
 			databaseMode: union(['readwrite', 'readonly']).optional().default('readwrite'),
