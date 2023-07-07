@@ -92,6 +92,8 @@ describe(bootstrap.name, () => {
 		expect(server.development).toEqual(false);
 		expect(server.pendingRequests).toEqual(0);
 		expect(server.pendingWebSockets).toEqual(0);
+		expect(server.routes).toBeArray();
+		expect(server.cache).toBeArrayOfSize(0);
 		expect(server.fetch).toBeInstanceOf(Function);
 		expect(server.upgrade).toBeInstanceOf(Function);
 		expect(server.publish).toBeInstanceOf(Function);
