@@ -39,7 +39,7 @@ export const bootstrap = (): FluxifyServer => {
 				method === 'get' &&
 				config.cacheTtl > 0 &&
 				config.cacheLimit > 0 &&
-				request.headers.get('cache-control') !== 'no-cache';
+				request.headers.get('cache-control')?.toLowerCase() !== 'no-cache';
 
 			if (method === 'options') {
 				const targetRoutes = routes.filter((route) => compareEndpoint(route, endpoint));
@@ -86,11 +86,14 @@ export const bootstrap = (): FluxifyServer => {
 
 					if (useCache) {
 						if (global.server.cache.length > config.cacheLimit) {
-							global.server.cache.pop();
+							global.server.cache.shift();
 						}
 						global.server.cache = global.server.cache.filter((entry) => entry.exp > Date.now());
 						const hit = global.server.cache.find(
-							(entry) => entry.url === request.url && entry.jwt === (jwt as { id?: string })?.id,
+							(entry) =>
+								entry.url === request.url &&
+								entry.jwt === (jwt as { id?: string })?.id &&
+								entry.lang === request.headers.get('accept-language')?.toLowerCase(),
 						);
 						if (hit) {
 							debug(`cache hit on route ${url.pathname}`);
@@ -111,6 +114,7 @@ export const bootstrap = (): FluxifyServer => {
 							exp: config.cacheTtl * 1000 + Date.now(),
 							url: request.url,
 							jwt: (jwt as { id?: string })?.id,
+							lang: request.headers.get('accept-language')?.toLowerCase(),
 							data,
 							status,
 						});
