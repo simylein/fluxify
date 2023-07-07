@@ -11,8 +11,11 @@ import { bootstrap } from './boot';
 import { FluxifyServer } from './boot.type';
 
 let server: FluxifyServer;
+let value: number | undefined;
 
 beforeAll(() => {
+	config.cacheTtl = 4;
+	config.cacheLimit = 8;
 	config.databaseMode = 'readwrite';
 	console.log = mock(() => void 0);
 	console.debug = mock(() => void 0);
@@ -77,6 +80,9 @@ beforeAll(() => {
 	});
 	app.post('/body', null, ({ body }) => {
 		return body;
+	});
+	app.get('/cache', null, () => {
+		return { value: Math.random() };
 	});
 	server = bootstrap();
 });
@@ -281,5 +287,37 @@ describe(bootstrap.name, () => {
 
 		expect(response.status).toEqual(201);
 		expect(data).toEqual(body);
+	});
+
+	test('should return a live value', async () => {
+		const response = await server.fetch(`http://${server.hostname}:${server.port}${config.globalPrefix}/cache`);
+		const data = await response.json();
+
+		expect(response.status).toEqual(200);
+		expect(response.headers.get('expires')).toEqual(null);
+		expect(data).toEqual({ value: expect.any(Number) });
+		value = (data as { value?: number }).value;
+	});
+
+	test('should return a cached value', async () => {
+		const response = await server.fetch(`http://${server.hostname}:${server.port}${config.globalPrefix}/cache`);
+		const data = await response.json();
+
+		expect(response.status).toEqual(200);
+		expect(response.headers.get('expires')).toEqual(new Date(Date.now() + config.cacheTtl * 1000).toUTCString());
+		expect(data).toEqual({ value });
+	});
+
+	test('should return a forced non cached value', async () => {
+		const response = await server.fetch(
+			new Request(`http://${server.hostname}:${server.port}${config.globalPrefix}/cache`, {
+				headers: { 'cache-control': 'no-cache' },
+			}),
+		);
+		const data = await response.json();
+
+		expect(response.status).toEqual(200);
+		expect(response.headers.get('expires')).toEqual(null);
+		expect(data).not.toEqual({ value });
 	});
 });
