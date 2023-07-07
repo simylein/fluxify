@@ -2,9 +2,9 @@ import { generateDocs } from 'lib/docs';
 import { info } from 'lib/logger';
 import { router } from 'lib/router';
 
-const app = router();
+const docs = router('/docs');
 
-app.get('/docs', null, () => {
+docs.get('', null, () => {
 	info('generating documentation');
 	return generateDocs();
 });
