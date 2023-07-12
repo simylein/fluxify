@@ -10,24 +10,18 @@ const database = new Database(config.stage === 'test' ? ':memory:' : config.data
 database.run('pragma foreign_keys = on;');
 
 export const runQuery = (query: string, params: SQLQueryBindings[] = []): void => {
-	// eslint-disable-next-line
-	// @ts-expect-error
 	const statement = database.prepare(`${query};`, params);
 	debug(statement.toString());
 	return statement.run();
 };
 
 export const selectOne = <T extends IdEntity>(query: string, params: SQLQueryBindings[] = []): T | null => {
-	// eslint-disable-next-line
-	// @ts-expect-error
 	const statement = database.prepare(`${query};`, params);
 	debug(statement.toString());
 	return statement.get() as T | null;
 };
 
 export const selectMany = <T extends IdEntity>(query: string, params: SQLQueryBindings[] = []): T[] => {
-	// eslint-disable-next-line
-	// @ts-expect-error
 	const statement = database.prepare(`${query};`, params);
 	debug(statement.toString());
 	return statement.all() as T[];
