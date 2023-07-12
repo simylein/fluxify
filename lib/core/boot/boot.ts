@@ -32,9 +32,8 @@ export const bootstrap = (): FluxifyServer => {
 
 			req(method, endpoint);
 
-			const endpointMatches = !!routes.find((route) => compareEndpoint(route, endpoint));
-			const methodMatches = !!routes.find((route) => compareMethod(route, method));
-			const targetRoute = routes.find((route) => compareEndpoint(route, endpoint) && compareMethod(route, method));
+			const matchingRoutes = routes.filter((route) => compareEndpoint(route, endpoint));
+			const targetRoute = matchingRoutes.find((route) => compareMethod(route, method));
 			const useCache =
 				method === 'get' &&
 				config.cacheTtl > 0 &&
@@ -42,12 +41,9 @@ export const bootstrap = (): FluxifyServer => {
 				request.headers.get('cache-control')?.toLowerCase() !== 'no-cache';
 
 			if (method === 'options') {
-				const targetRoutes = routes.filter((route) => compareEndpoint(route, endpoint));
-				if (targetRoutes.some((route) => route.schema?.jwt)) {
-					const methods = routes
-						.filter((route) => compareEndpoint(route, endpoint))
-						.filter((route) => route.schema?.jwt)
-						.map((route) => route.method);
+				const authRoutes = matchingRoutes.filter((route) => route.schema?.jwt);
+				if (authRoutes.length > 0) {
+					const methods = authRoutes.filter((route) => compareEndpoint(route, endpoint)).map((route) => route.method);
 					return createResponse(null, 200, time, {
 						'access-control-allow-origin': config.allowOrigin,
 						'access-control-allow-headers': 'authorization',
@@ -55,12 +51,12 @@ export const bootstrap = (): FluxifyServer => {
 						'access-control-allow-credentials': 'true',
 					});
 				} else {
-					const methods = routes.filter((route) => compareEndpoint(route, endpoint)).map((route) => route.method);
+					const methods = matchingRoutes.map((route) => route.method);
 					return createResponse(null, 200, time, { allow: methods.join(', ').toUpperCase() });
 				}
 			}
 
-			if (endpointMatches && methodMatches && targetRoute) {
+			if (targetRoute) {
 				try {
 					if (config.databaseMode === 'readonly' && method !== 'get') {
 						throw Locked();
@@ -131,7 +127,7 @@ export const bootstrap = (): FluxifyServer => {
 					}
 					throw err;
 				}
-			} else if (endpointMatches) {
+			} else if (matchingRoutes.length > 0) {
 				const status = 405;
 				return createResponse({ status, message: 'method not allowed' }, status, time);
 			} else {
