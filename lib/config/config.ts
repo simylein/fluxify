@@ -29,8 +29,8 @@ export const validateConfig = (env: Env): Config => {
 
 			logLevel: union(['trace', 'debug', 'info', 'warn', 'error']).optional().default('info'),
 
-			logRequests: boolean().optional().transform().default(true),
-			logResponses: boolean().optional().transform().default(true),
+			logRequests: boolean().optional().transform().default(false),
+			logResponses: boolean().optional().transform().default(false),
 		});
 		const config = schema.parse({
 			stage: determineStage(env.npm_lifecycle_event, env.NODE_ENV),

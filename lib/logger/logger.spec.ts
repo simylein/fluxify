@@ -18,6 +18,8 @@ import {
 
 beforeAll(() => {
 	config.logLevel = 'trace';
+	config.logRequests = true;
+	config.logResponses = true;
 	console.log = mock(() => void 0);
 	console.trace = mock(() => void 0);
 	console.debug = mock(() => void 0);

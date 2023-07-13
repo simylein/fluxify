@@ -30,8 +30,8 @@ describe(validateConfig.name, () => {
 			databasePath: ':memory:',
 			databaseMode: 'readwrite',
 			logLevel: 'info',
-			logRequests: true,
-			logResponses: true,
+			logRequests: false,
+			logResponses: false,
 		});
 	});
 
@@ -50,8 +50,8 @@ describe(validateConfig.name, () => {
 			DATABASE_PATH: './database.sqlite',
 			DATABASE_MODE: 'readonly',
 			LOG_LEVEL: 'debug',
-			LOG_REQUESTS: 'false',
-			LOG_RESPONSES: 'false',
+			LOG_REQUESTS: 'true',
+			LOG_RESPONSES: 'true',
 			npm_lifecycle_event: 'test',
 		};
 		expect(validateConfig(env)).toEqual({
@@ -67,8 +67,8 @@ describe(validateConfig.name, () => {
 			databasePath: './database.sqlite',
 			databaseMode: 'readonly',
 			logLevel: 'debug',
-			logRequests: false,
-			logResponses: false,
+			logRequests: true,
+			logResponses: true,
 		});
 	});
 });
