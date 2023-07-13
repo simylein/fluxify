@@ -4,7 +4,7 @@ import { verifyJwt } from '../../auth/jwt';
 import { config } from '../../config/config';
 import { HttpException, Locked, Unauthorized } from '../../exception/exception';
 import { bold, coloredMethod, reset } from '../../logger/color';
-import { debug, error, info, logger, req, warn } from '../../logger/logger';
+import { debug, error, info, logger, req, res, warn } from '../../logger/logger';
 import { routes } from '../../router/router';
 import { Param, Query } from '../../router/router.type';
 import { ValidationError } from '../../validation/error';
@@ -101,6 +101,7 @@ export const bootstrap = (): FluxifyServer => {
 
 					const data = await targetRoute.handler({ param, query, body, jwt, req: request });
 					if (data instanceof Response) {
+						res(data.status, performance.now() - time);
 						return data;
 					}
 
