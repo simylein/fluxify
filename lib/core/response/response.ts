@@ -16,10 +16,8 @@ export const header = (custom: HeadersInit): void => {
 };
 
 export const createResponse = (body: unknown | null, status: number, time: number, headers?: HeadersInit): Response => {
+	const data = body ? JSON.stringify(body) : null;
 	const diff = performance.now() - time;
 	res(status, diff);
-	return new Response(body ? JSON.stringify(body) : null, {
-		status,
-		headers: { ...defaultHeaders, ...customHeaders, ...headers },
-	});
+	return new Response(data, { status, headers: { ...defaultHeaders, ...customHeaders, ...headers } });
 };
