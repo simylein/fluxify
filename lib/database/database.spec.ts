@@ -1,5 +1,7 @@
 import { afterAll, describe, expect, test } from 'bun:test';
 import { randomUUID } from 'crypto';
+import { IdEntity } from '../repository/repository.type';
+import { expectType } from '../test/expect-type';
 import { runQuery, selectMany, selectOne } from './database';
 
 const user = {
@@ -34,6 +36,8 @@ describe(runQuery.name, () => {
 			]),
 		).not.toThrow();
 	});
+
+	expectType<void>(runQuery('pragma testing_purpose'));
 });
 
 describe(selectOne.name, () => {
@@ -44,6 +48,8 @@ describe(selectOne.name, () => {
 	test('should select nothing given an invalid id', () => {
 		expect(selectOne('select * from database_user where id = ?', ['non-existing-id'])).toEqual(null);
 	});
+
+	expectType<IdEntity | null>(selectOne('pragma testing_purpose'));
 });
 
 describe(selectMany.name, () => {
@@ -66,4 +72,6 @@ describe(selectMany.name, () => {
 	test('should select all users with a password string', () => {
 		expect(selectMany(`select * from database_user where password like ?`, ['%password'])).toEqual(users);
 	});
+
+	expectType<IdEntity[]>(selectMany('pragma testing_purpose'));
 });

@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, mock, test } from 'bun:test';
 import { EventEmitter } from 'events';
+import { expectType } from '../test/expect-type';
 import { emit, emitter, subscribe } from './event';
 
 beforeAll(() => {
@@ -23,6 +24,7 @@ describe(subscribe.name, () => {
 			.text()
 			.catch(() => void 0);
 		expect(emitter.on).toHaveBeenCalledTimes(1);
+		expectType<Response>(subscribe(new Request('http://example.com'), '/test'));
 	});
 });
 
@@ -30,5 +32,6 @@ describe(emit.name, () => {
 	test('should call the emit method from the emitter', () => {
 		emit('/test');
 		expect(emitter.emit).toHaveBeenCalledTimes(1);
+		expectType<void>(emit('/test'));
 	});
 });

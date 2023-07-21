@@ -6,6 +6,7 @@ import { entity } from '../database/entity/entity';
 import { Infer } from '../database/entity/entity.type';
 import { primary } from '../database/primary/primary';
 import { updated } from '../database/updated/updated';
+import { expectType } from '../test/expect-type';
 import { repository } from './repository';
 import { ExcludedInsertKeys } from './repository.type';
 
@@ -46,6 +47,7 @@ describe(userRepository.findMany.name, () => {
 	test('should return an empty array when no entities exist', async () => {
 		const result = await userRepository.findMany();
 		expect(result).toEqual([]);
+		expectType<User[]>(result);
 	});
 
 	test('should return all entities when no options are provided', async () => {
@@ -57,6 +59,7 @@ describe(userRepository.findMany.name, () => {
 			{ id: id1, ...user1 },
 			{ id: id2, ...user2 },
 		]);
+		expectType<User[]>(result);
 	});
 
 	test('should return entities that match the where clause', async () => {
@@ -65,6 +68,7 @@ describe(userRepository.findMany.name, () => {
 
 		const result = await userRepository.findMany({ where: { age: 42 } });
 		expect(result).toEqual([{ id, ...user1 }]);
+		expectType<User[]>(result);
 	});
 
 	test('should return entities with selected fields only', async () => {
@@ -73,6 +77,7 @@ describe(userRepository.findMany.name, () => {
 
 		const result = await userRepository.findMany({ select: { name: true } });
 		expect(result).toEqual([{ name: user1.name }, { name: user2.name }]);
+		expectType<Pick<User, 'name'>[]>(result);
 	});
 
 	test('should return entities ordered by given criteria', async () => {
@@ -84,6 +89,7 @@ describe(userRepository.findMany.name, () => {
 			{ id: id2, ...user2 },
 			{ id: id1, ...user1 },
 		]);
+		expectType<User[]>(result);
 	});
 
 	test('should return entities while skipping the given value', async () => {
@@ -92,6 +98,7 @@ describe(userRepository.findMany.name, () => {
 
 		const result = await userRepository.findMany({ skip: 1 });
 		expect(result).toEqual([{ id, ...user2 }]);
+		expectType<User[]>(result);
 	});
 
 	test('should return entities up to the given value', async () => {
@@ -100,6 +107,7 @@ describe(userRepository.findMany.name, () => {
 
 		const result = await userRepository.findMany({ take: 1 });
 		expect(result).toEqual([{ id, ...user1 }]);
+		expectType<User[]>(result);
 	});
 
 	test('should disregard undefined values as keys in the where clause', async () => {
@@ -111,6 +119,7 @@ describe(userRepository.findMany.name, () => {
 			{ id: id1, ...user1 },
 			{ id: id2, ...user2 },
 		]);
+		expectType<User[]>(result);
 	});
 
 	test('should respect null values as keys in the where clause', async () => {
@@ -120,6 +129,7 @@ describe(userRepository.findMany.name, () => {
 
 		const result = await todoRepository.findMany({ select: { name: true, done: true }, where: { updatedAt: null } });
 		expect(result).toEqual([todo2]);
+		expectType<Pick<Todo, 'name' | 'done'>[]>(result);
 	});
 
 	test('should only return entities which are not soft deleted', async () => {
@@ -129,6 +139,7 @@ describe(userRepository.findMany.name, () => {
 
 		const result = await todoRepository.findMany({ select: { name: true, done: true } });
 		expect(result).toEqual([todo2]);
+		expectType<Pick<Todo, 'name' | 'done'>[]>(result);
 	});
 });
 
@@ -136,6 +147,7 @@ describe(userRepository.findOne.name, () => {
 	test('should return null when no entity with the id exists', async () => {
 		const result = await userRepository.findOne({ where: { id: 'non-existing-id' } });
 		expect(result).toEqual(null);
+		expectType<User | null>(result);
 	});
 
 	test('should return the entity with the id', async () => {
@@ -144,6 +156,7 @@ describe(userRepository.findOne.name, () => {
 
 		const result = await userRepository.findOne({ where: { id } });
 		expect(result).toEqual({ id, ...user1 });
+		expectType<User | null>(result);
 	});
 
 	test('should return null when no entity matches the where clause', async () => {
@@ -152,6 +165,7 @@ describe(userRepository.findOne.name, () => {
 
 		const result = await userRepository.findOne({ where: { id: 'non-existing-id', age: 69 } });
 		expect(result).toEqual(null);
+		expectType<User | null>(result);
 	});
 
 	test('should return the entity with selected fields only', async () => {
@@ -160,6 +174,7 @@ describe(userRepository.findOne.name, () => {
 
 		const result = await userRepository.findOne({ select: { age: true, name: true }, where: { id } });
 		expect(result).toEqual({ age: user1.age, name: user1.name });
+		expectType<Pick<User, 'age' | 'name'> | null>(result);
 	});
 
 	test('should disregard undefined values as keys in the where clause', async () => {
@@ -168,6 +183,7 @@ describe(userRepository.findOne.name, () => {
 
 		const result = await userRepository.findOne({ where: { name: undefined } });
 		expect(result).toEqual({ id, ...user1 });
+		expectType<User | null>(result);
 	});
 });
 

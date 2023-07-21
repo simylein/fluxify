@@ -80,6 +80,6 @@ export const entity = <T, S extends Record<string, Parser<T>>>(
 		columns: generatedColumns,
 		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 		// @ts-expect-error
-		parser: columnOptions,
+		parser: { ...columnOptions, parse: (argument): argument is null => null },
 	};
 };

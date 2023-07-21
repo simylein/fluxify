@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test';
+import { expectType } from '../../test/expect-type';
 import { column } from '../column/column';
 import { created } from '../created/created';
 import { deleted } from '../deleted/deleted';
@@ -16,6 +17,16 @@ const userEntity = entity('user', {
 	deletedAt: deleted(),
 });
 
+type User = {
+	id: string;
+	username: string;
+	password: string;
+	age: number | null;
+	createdAt: Date;
+	updatedAt: Date | null;
+	deletedAt: Date | null;
+};
+
 describe(entity.name, () => {
 	test('should create a user entity with the correct name and schema', () => {
 		const columns: string[] = [
@@ -28,6 +39,9 @@ describe(entity.name, () => {
 			'deletedAt datetime null default null',
 		];
 		expect(userEntity.name).toEqual('user');
+		expectType<string>(userEntity.name);
 		expect(userEntity.schema).toEqual(`create table if not exists user (${columns.join(',')})`);
+		expectType<string>(userEntity.schema);
+		expectType<User>(userEntity.parser.parse(null));
 	});
 });

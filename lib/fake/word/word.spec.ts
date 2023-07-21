@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test';
+import { expectType } from '../../test/expect-type';
 import { word } from './word';
 
 describe(word.name, () => {
@@ -19,4 +20,6 @@ describe(word.name, () => {
 		expect(word(10)).toBeTypeOf('string');
 		expect(word(12)).toBeTypeOf('string');
 	});
+
+	expectType<string>(word(12));
 });

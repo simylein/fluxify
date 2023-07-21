@@ -4,6 +4,7 @@ import { jwtDto } from '../../auth/jwt.dto';
 import { config } from '../../config/config';
 import { Conflict, Forbidden, Gone, InternalServerError } from '../../exception/exception';
 import { router } from '../../router/router';
+import { expectType } from '../../test/expect-type';
 import { number } from '../../validation/number/number';
 import { object } from '../../validation/object/object';
 import { defaultHeaders } from '../response/response';
@@ -107,6 +108,7 @@ describe(bootstrap.name, () => {
 		expect(server.stop).toBeInstanceOf(Function);
 		expect(server.logger).toBeInstanceOf(Function);
 		expect(server.header).toBeInstanceOf(Function);
+		expectType<FluxifyServer>(server);
 	});
 
 	test('should return no body and no allow header', async () => {

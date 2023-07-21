@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, mock, test } from 'bun:test';
 import { config } from '../config/config';
+import { expectType } from '../test/expect-type';
 import { blue, bold, cyan, green, red, reset, yellow } from './color';
 import {
 	customLogger,
@@ -78,25 +79,29 @@ describe(mask.name, () => {
 	test('should mask a uuid', () => {
 		expect(mask('22026508-7a4d-9429-4911-9bb087570f3e')).toEqual('22..3e');
 		expect(mask('f68397d9-e46a-df41-70ad-65240ca80276')).toEqual('f6..76');
+		expectType<string>(mask('f68397d9-e46a-df41-70ad-65240ca80276'));
 	});
 });
 
 describe(req.name, () => {
 	test('should call the custom logger request function', () => {
-		req('get', '/test');
+		const result = req('get', '/test');
+		expectType<void>(result);
 		expect(customLogger.req).toHaveBeenCalledTimes(1);
 	});
 });
 
 describe(res.name, () => {
 	test('should call the custom logger response function', () => {
-		res(200, 16);
+		const result = res(200, 16);
+		expectType<void>(result);
 		expect(customLogger.res).toHaveBeenCalledTimes(1);
 	});
 });
 
 describe(trace.name, () => {
-	trace('trace message');
+	const result = trace('trace message');
+	expectType<void>(result);
 
 	test('should call the trace function on console', () => {
 		expect(console.trace).toHaveBeenCalledTimes(1);
@@ -108,7 +113,8 @@ describe(trace.name, () => {
 });
 
 describe(debug.name, () => {
-	debug('debug message');
+	const result = debug('debug message');
+	expectType<void>(result);
 
 	test('should call the debug function on console', () => {
 		expect(console.debug).toHaveBeenCalledTimes(1);
@@ -120,7 +126,8 @@ describe(debug.name, () => {
 });
 
 describe(info.name, () => {
-	info('info message');
+	const result = info('info message');
+	expectType<void>(result);
 
 	test('should call the info function on console', () => {
 		expect(console.info).toHaveBeenCalledTimes(1);
@@ -132,7 +139,8 @@ describe(info.name, () => {
 });
 
 describe(warn.name, () => {
-	warn('warn message');
+	const result = warn('warn message');
+	expectType<void>(result);
 
 	test('should call the warn function on console', () => {
 		expect(console.warn).toHaveBeenCalledTimes(1);
@@ -144,7 +152,8 @@ describe(warn.name, () => {
 });
 
 describe(error.name, () => {
-	error('error message');
+	const result = error('error message');
+	expectType<void>(result);
 
 	test('should call the error function on console', () => {
 		expect(console.error).toHaveBeenCalledTimes(1);

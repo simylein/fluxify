@@ -1,4 +1,6 @@
 import { describe, expect, test } from 'bun:test';
+import { expectType } from '../../test/expect-type';
+import { Type } from '../parser.type';
 import { string } from './string';
 
 describe(string.name, () => {
@@ -7,6 +9,7 @@ describe(string.name, () => {
 		expect(string().optional().type).toEqual(['string', 'undefined']);
 		expect(string().nullable().optional().type).toEqual(['string', 'null', 'undefined']);
 		expect(string().optional().nullable().type).toEqual(['string', 'undefined', 'null']);
+		expectType<Type[]>(string().type);
 	});
 
 	test('should return a string if passed a string and else throw', () => {
@@ -18,18 +21,21 @@ describe(string.name, () => {
 		expect(() => string().parse([])).toThrow();
 		expect(() => string().parse(undefined)).toThrow();
 		expect(() => string().parse(null)).toThrow();
+		expectType<string>(string().parse('hello-world'));
 	});
 
 	test('should respect the minimum value and else throw', () => {
 		expect(() => string().min(4).parse('hello')).not.toThrow();
 		expect(() => string().min(5).parse('hello')).not.toThrow();
 		expect(() => string().min(6).parse('hello')).toThrow();
+		expectType<string>(string().min(4).parse('hello'));
 	});
 
 	test('should respect the maximum value and else throw', () => {
 		expect(() => string().max(10).parse('hello-world')).toThrow();
 		expect(() => string().max(11).parse('hello-world')).not.toThrow();
 		expect(() => string().max(12).parse('hello-world')).not.toThrow();
+		expectType<string>(string().max(12).parse('hello-world'));
 	});
 
 	test('should return a string or undefined if passed a string or undefined and else throw', () => {
@@ -42,6 +48,7 @@ describe(string.name, () => {
 		expect(() => string().optional().parse(undefined)).not.toThrow();
 		expect(string().optional().parse(undefined)).toEqual(undefined);
 		expect(() => string().optional().parse(null)).toThrow();
+		expectType<string | undefined>(string().optional().parse('hello-world'));
 	});
 
 	test('should return a string or the default value if passed a string or undefined', () => {
@@ -54,6 +61,7 @@ describe(string.name, () => {
 		expect(() => string().optional().default('hello').parse(undefined)).not.toThrow();
 		expect(string().optional().default('hello').parse(undefined)).toEqual('hello');
 		expect(() => string().optional().default('hello').parse(null)).toThrow();
+		expectType<string>(string().optional().default('hello').parse('hello-world'));
 	});
 
 	test('should return a string undefined or null if passed a string undefined or null and else throw', () => {
@@ -67,6 +75,7 @@ describe(string.name, () => {
 		expect(string().optional().nullable().parse(undefined)).toEqual(undefined);
 		expect(() => string().optional().nullable().parse(null)).not.toThrow();
 		expect(string().optional().nullable().parse(null)).toEqual(null);
+		expectType<string | undefined | null>(string().optional().nullable().parse('hello-world'));
 	});
 
 	test('should return a string null or undefined if passed a string null or undefined and else throw', () => {
@@ -80,5 +89,6 @@ describe(string.name, () => {
 		expect(string().nullable().optional().parse(undefined)).toEqual(undefined);
 		expect(() => string().nullable().optional().parse(null)).not.toThrow();
 		expect(string().nullable().optional().parse(null)).toEqual(null);
+		expectType<string | undefined | null>(string().nullable().optional().parse('hello-world'));
 	});
 });

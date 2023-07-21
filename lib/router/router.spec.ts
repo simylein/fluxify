@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { config } from '../config/config';
 import { compareEndpoint, compareMethod } from '../core/compare/compare';
+import { expectType } from '../test/expect-type';
 import { fuseEndpoint, router, routes } from './router';
 import { Route } from './router.type';
 
@@ -9,10 +10,12 @@ const app = router();
 describe(fuseEndpoint.name, () => {
 	test('should combine endpoint prefix and base', () => {
 		expect(fuseEndpoint('/me', '/api', '/auth')).toEqual('/api/auth/me');
+		expectType<string>(fuseEndpoint('/me', '/api', '/auth'));
 	});
 
 	test('should combine endpoint prefix and base and ignore undefined values', () => {
 		expect(fuseEndpoint('/me', undefined, undefined)).toEqual('/me');
+		expectType<string>(fuseEndpoint('/me', undefined, undefined));
 	});
 
 	test('should remove trailing slashes from endpoint prefix and base', () => {

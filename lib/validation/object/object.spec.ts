@@ -1,7 +1,9 @@
 import { describe, expect, test } from 'bun:test';
+import { expectType } from '../../test/expect-type';
 import { boolean } from '../boolean/boolean';
 import { ValidationError } from '../error';
 import { number } from '../number/number';
+import { Type } from '../parser.type';
 import { string } from '../string/string';
 import { keyIsMissing, keyIsNot, keyNotWanted, object } from './object';
 
@@ -51,6 +53,7 @@ describe(object.name, () => {
 		expect(object({}).type).toEqual(['object']);
 		expect(object({}).optional().type).toEqual(['object', 'undefined']);
 		expect(object({}).optional().nullable().type).toEqual(['object', 'undefined', 'null']);
+		expectType<Type[]>(object({}).type);
 	});
 
 	test('should validate a simple user object', () => {
@@ -68,6 +71,14 @@ describe(object.name, () => {
 				active: false,
 			}),
 		).not.toThrow();
+		expectType<{ id: number; name: string; age: number; active: boolean }>(
+			object(schema).parse({
+				id: 1,
+				name: 'simylein',
+				age: 42,
+				active: false,
+			}),
+		);
 	});
 
 	test('should throw for all incorrect types', () => {
@@ -123,5 +134,8 @@ describe(object.name, () => {
 				name: 'simylein',
 			}),
 		).not.toThrow();
+		expectType<{ id: number; name: string; age?: number; active?: boolean }>(
+			object(schema).parse({ id: 1, name: 'simylein' }),
+		);
 	});
 });

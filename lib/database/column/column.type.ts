@@ -24,9 +24,22 @@ export type Type =
 
 export type Action = 'no action' | 'restrict' | 'set null' | 'set default' | 'cascade' | 'abort';
 
-export type Return<T> = T extends 'character' | 'varchar' | 'text'
+export type Return<T> = T extends 'character' | 'varchar' | 'text' | 'blob'
 	? string
-	: T extends 'int' | 'integer' | 'tinyint' | 'smallint' | 'mediumint' | 'bigint' | 'int2' | 'int8'
+	: T extends
+			| 'int'
+			| 'integer'
+			| 'tinyint'
+			| 'smallint'
+			| 'mediumint'
+			| 'bigint'
+			| 'int2'
+			| 'int8'
+			| 'real'
+			| 'double'
+			| 'float'
+			| 'numeric'
+			| 'decimal'
 	? number
 	: T extends 'boolean'
 	? boolean

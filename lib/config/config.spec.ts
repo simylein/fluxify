@@ -1,6 +1,8 @@
 import { Env } from 'bun';
 import { describe, expect, test } from 'bun:test';
+import { expectType } from '../test/expect-type';
 import { validateConfig } from './config';
+import { Config } from './config.type';
 
 describe(validateConfig.name, () => {
 	test('should throw given empty environment', () => {
@@ -8,6 +10,7 @@ describe(validateConfig.name, () => {
 			NODE_ENV: '',
 		};
 		expect(() => validateConfig(env)).toThrow('config: lifecycle and node env is not defined');
+		expect(() => expectType<Config>(validateConfig(env))).toThrow();
 	});
 
 	test('should validate and return the default config', () => {

@@ -1,4 +1,6 @@
 import { describe, expect, test } from 'bun:test';
+import { expectType } from '../../test/expect-type';
+import { Type } from '../parser.type';
 import { date } from './date';
 
 describe(date.name, () => {
@@ -7,6 +9,7 @@ describe(date.name, () => {
 		expect(date().optional().type).toEqual(['date', 'undefined']);
 		expect(date().nullable().optional().type).toEqual(['date', 'null', 'undefined']);
 		expect(date().optional().nullable().type).toEqual(['date', 'undefined', 'null']);
+		expectType<Type[]>(date().type);
 	});
 
 	test('should throw for invalid dates', () => {
@@ -22,5 +25,6 @@ describe(date.name, () => {
 		expect(date().parse(new Date().getTime())).toBeInstanceOf(Date);
 		expect(() => date().parse(new Date().toISOString())).not.toThrow();
 		expect(date().parse(new Date().toISOString())).toBeInstanceOf(Date);
+		expectType<Date>(date().parse('1970-01-01T00:00:00.000Z'));
 	});
 });
