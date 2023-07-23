@@ -1,10 +1,9 @@
 import { createHmac } from 'crypto';
 import { config } from '../config/config';
 import { Unauthorized } from '../exception/exception';
-import { IdEntity } from '../repository/repository.type';
 import { HeadDto, JwtDto, headDto, jwtDto } from './jwt.dto';
 
-export const signJwt = (data: IdEntity): string => {
+export const signJwt = (data: { id: string }): string => {
 	const header: HeadDto = { alg: 'HS256', typ: 'JWT' };
 	const payload: JwtDto = {
 		...data,

@@ -7,7 +7,7 @@ import { primary } from '../../database/primary/primary';
 import { transformData, transformEntity } from './transform';
 
 const userEntity = entity('user', {
-	id: primary(),
+	id: primary('uuid'),
 	username: column('varchar').length(16),
 	password: column('varchar').length(64),
 	active: column('boolean'),

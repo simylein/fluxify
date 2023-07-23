@@ -5,7 +5,7 @@ import { RelationOptions } from '../relation/relation.type';
 export type Entity<T> = {
 	name: string;
 	schema: string;
-	columns: Record<string, ColumnOptions | RelationOptions>;
+	columns: { id: ColumnOptions } & Record<string, ColumnOptions | RelationOptions>;
 	parser: EntityParser<T>;
 };
 

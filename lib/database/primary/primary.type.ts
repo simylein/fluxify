@@ -1,12 +1,12 @@
 import { ParseFunction } from '../../validation/parser.type';
 import { Constraints, RecursiveParser } from '../column/column.type';
 
-export type PrimaryParser = RecursiveParser<
+export type PrimaryParser<T extends 'increment' | 'uuid'> = RecursiveParser<
 	{
-		type: 'varchar';
+		type: 'varchar' | 'integer';
 		constraints: Constraints;
-		parse: ParseFunction<string>;
+		parse: ParseFunction<T extends 'increment' ? number : string>;
 	},
-	string,
-	string
+	T extends 'increment' ? number : string,
+	T extends 'increment' ? number : string
 >;

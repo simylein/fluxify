@@ -2,7 +2,7 @@ import { Infer, column, created, deleted, entity, primary, relation, updated } f
 import { userEntity } from '../user/user.entity';
 
 export const todoEntity = entity('todo', {
-	id: primary(),
+	id: primary('uuid'),
 	title: column('varchar').length(32),
 	description: column('varchar').length(256).nullable(),
 	done: column('boolean').nullable(),

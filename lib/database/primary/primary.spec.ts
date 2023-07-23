@@ -3,10 +3,12 @@ import { primary } from './primary';
 
 describe(primary.name, () => {
 	test('should have a correct type array', () => {
-		expect(primary().type).toEqual('varchar');
+		expect(primary('uuid').type).toEqual('character');
+		expect(primary('increment').type).toEqual('integer');
 	});
 
 	test('should have the correct constraints', () => {
-		expect(primary().constraints).toEqual({ length: 36, primary: true, unique: true });
+		expect(primary('uuid').constraints).toEqual({ length: 36, primary: true, nullable: false, unique: true });
+		expect(primary('increment').constraints).toEqual({ primary: true, nullable: false, unique: true });
 	});
 });

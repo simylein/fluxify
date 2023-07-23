@@ -5,7 +5,7 @@ export type NullablePartial<
 > = { [K in keyof NP]: NP[K] };
 
 export type IdEntity = {
-	id: string;
+	id: string | number;
 	[key: string]: unknown;
 };
 

@@ -11,7 +11,7 @@ import { repository } from './repository';
 import { ExcludedInsertKeys } from './repository.type';
 
 const userEntity = entity('repository_user', {
-	id: primary(),
+	id: primary('uuid'),
 	age: column('int'),
 	name: column('varchar').length(8),
 	active: column('boolean').nullable(),
@@ -20,7 +20,7 @@ const userEntity = entity('repository_user', {
 type User = Infer<typeof userEntity>;
 
 const todoEntity = entity('repository_todo', {
-	id: primary(),
+	id: primary('uuid'),
 	name: column('varchar').length(64),
 	done: column('boolean'),
 	createdAt: created(),

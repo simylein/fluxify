@@ -1,32 +1,33 @@
-import { ColumnOptions, Parser } from '../column/column.type';
+import { ColumnOptions, Constraints, Parser, Type } from '../column/column.type';
 import { RelationOptions } from '../relation/relation.type';
 import { Entity } from './entity.type';
+
+const buildConstraints = (name: string, type: Type, constraints: Constraints): string => {
+	const builder: string[] = [];
+	builder.push(constraints.name ?? name);
+	builder.push(`${type}${constraints.length ? `(${constraints.length})` : ''}`);
+	builder.push(constraints.nullable ? 'null' : 'not null');
+	constraints.unique && builder.push('unique');
+	constraints.default !== undefined && builder.push(`default ${constraints.default}`);
+	constraints.primary && builder.push('primary key');
+	if (constraints.references) {
+		builder.push(`references ${constraints.references.entity}(${constraints.references.column})`);
+		constraints.hooks?.onDelete && builder.push(`on delete ${constraints.hooks.onDelete}`);
+	}
+	return builder.join(' ');
+};
 
 export const generateSchema = <T, S extends Record<string, Parser<T>>>(name: string, columnOptions: S): string => {
 	const schemaColumns: string[] = [];
 	Object.keys(columnOptions).forEach((key) => {
-		const targetColumn = columnOptions[key];
-		const options: (string | undefined)[] = [];
-		if ('references' in targetColumn.constraints) {
-			const column = targetColumn;
-			options.push(column.constraints.name ?? key);
-			options.push(`character(36) ${column.constraints.nullable ? 'null' : 'not null'}`);
-			options.push(`references ${column.constraints.references?.entity}(${column.constraints.references?.column})`);
-			column.constraints.hooks?.onDelete && options.push(`on delete ${column.constraints.hooks.onDelete}`);
-			schemaColumns.push(options.join(' '));
+		const column = columnOptions[key];
+		if ('references' in column.constraints) {
+			schemaColumns.push(buildConstraints(key, column.type, column.constraints));
 		} else {
-			const column = targetColumn;
 			if (column.constraints.primary) {
-				schemaColumns.push('id character(36) not null unique primary key');
+				schemaColumns.push(buildConstraints('id', column.type, column.constraints));
 			} else {
-				options.push(column.constraints.name ?? key);
-				column.constraints.length
-					? options.push(`${column.type}(${column.constraints.length})`)
-					: options.push(column.type);
-				options.push(column.constraints.nullable ? 'null' : 'not null');
-				column.constraints.unique && options.push('unique');
-				column.constraints.default !== undefined && options.push(`default ${column.constraints.default}`);
-				schemaColumns.push(options.join(' '));
+				schemaColumns.push(buildConstraints(key, column.type, column.constraints));
 			}
 		}
 	});
@@ -35,8 +36,10 @@ export const generateSchema = <T, S extends Record<string, Parser<T>>>(name: str
 
 export const generateColumns = <T, S extends Record<string, Parser<T>>>(
 	columnOptions: S,
-): Record<string, ColumnOptions | RelationOptions> => {
-	const generatedColumns: Record<string, ColumnOptions | RelationOptions> = {};
+): { id: ColumnOptions } & Record<string, ColumnOptions | RelationOptions> => {
+	const generatedColumns: { id: ColumnOptions } & Record<string, ColumnOptions | RelationOptions> = {
+		id: columnOptions.id,
+	};
 	Object.keys(columnOptions).forEach((key) => {
 		if ('references' in columnOptions[key].constraints) {
 			const columns: RelationOptions = {

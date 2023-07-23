@@ -5,9 +5,10 @@ import { RelationParser } from './relation.type';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const relation = (entity: Entity<any>): RelationParser => {
 	const options = {
-		type: 'varchar' as Type,
+		type: (entity.columns.id.type === 'integer' ? 'integer' : 'character') as Type,
 		constraints: {
 			name: undefined,
+			length: entity.columns.id.length,
 			nullable: false,
 			references: { entity: entity.name, column: 'id' },
 		} as Constraints,
