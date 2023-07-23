@@ -10,12 +10,12 @@ import { transformData, transformEntity } from './transform/transform';
 type Repository<T extends IdEntity> = {
 	init: () => Promise<void>;
 	findMany: <S extends keyof T>(options?: FindManyOptions<T, S>) => Promise<Pick<T, S>[]>;
-	findOne: <S extends keyof T>(options: FindOneOptions<T, S>) => Promise<Pick<T, S> | null>;
-	insert: (data: NullablePartial<Omit<T, ExcludedInsertKeys>>) => Promise<{ id: IdEntity['id'] }>;
-	update: (id: T['id'], data: NullablePartial<Partial<Omit<T, 'id'>>>) => Promise<void>;
-	delete: (id: T['id']) => Promise<void>;
-	softDelete: (id: T['id']) => Promise<void>;
-	restore: (id: T['id']) => Promise<void>;
+	findOne: <S extends keyof T>(options: T['id'] | FindOneOptions<T, S>) => Promise<Pick<T, S> | null>;
+	insert: (data: NullablePartial<Omit<T, ExcludedInsertKeys>>) => Promise<{ id: T['id'] }>;
+	update: (criteria: T['id'] | Partial<T>, data: NullablePartial<Partial<Omit<T, 'id'>>>) => Promise<void>;
+	delete: (criteria: T['id'] | Partial<T>) => Promise<void>;
+	softDelete: (criteria: T['id'] | Partial<T>) => Promise<void>;
+	restore: (criteria: T['id'] | Partial<T>) => Promise<void>;
 	wipe: () => Promise<void>;
 	drop: () => Promise<void>;
 };
@@ -40,13 +40,13 @@ export const repository = <T extends IdEntity>(table: Entity<T>): Repository<T> 
 		return `select ${keys.join(',')} from`;
 	};
 
-	const whereKeys = (where?: Partial<T>): string | undefined => {
+	const whereKeys = (where?: Partial<T>, deleted = false): string | undefined => {
 		const columns = Object.keys(table.columns).filter((key) => !('references' in table.columns[key]));
 		const deletedColumn = columns.find(
 			(column) => (table.columns as Record<string, ColumnOptions>)[column].onDelete === `(datetime('now'))`,
 		);
 		let deletedKey: string | undefined;
-		if (deletedColumn) {
+		if (deletedColumn && !deleted) {
 			deletedKey = (table.columns[deletedColumn] as ColumnOptions).name ?? deletedColumn;
 		}
 
@@ -54,7 +54,7 @@ export const repository = <T extends IdEntity>(table: Entity<T>): Repository<T> 
 			const filtered = Object.keys(where).filter((key) => where[key] !== undefined);
 			if (filtered.length) {
 				const keys = filtered.map((key) => `${table.columns[key].name ?? key} ${determineOperator<T>(where, key)} ?`);
-				if (deletedKey) keys.push(`${deletedKey} is null`);
+				if (deletedKey && !deleted) keys.push(`${deletedKey} is null`);
 				return `where ${keys.join(' and ')}`;
 			}
 		}
@@ -66,7 +66,7 @@ export const repository = <T extends IdEntity>(table: Entity<T>): Repository<T> 
 		init(): Promise<void> {
 			return new Promise((resolve) => {
 				runQuery(table.schema);
-				resolve(void 0);
+				return resolve(void 0);
 			});
 		},
 
@@ -85,35 +85,31 @@ export const repository = <T extends IdEntity>(table: Entity<T>): Repository<T> 
 					orderBy<T, S>(order),
 					whereKeys(where),
 					paginate<T, S>(take, skip),
-				];
-				const entities = selectMany<T>(
-					`${constraints.filter((constraint) => !!constraint).join(' ')}`,
-					whereMany<T, S>(where),
-				);
+				].filter((constraint) => !!constraint);
+				const entities = selectMany<T>(`${constraints.join(' ')}`, whereMany<T, S>(where));
 				const transformed = entities.map((entity) => transformEntity(table, entity));
-				resolve(transformed);
+				return resolve(transformed);
 			});
 		},
 
-		findOne<S extends keyof T>(options: FindOneOptions<T, S>): Promise<Pick<T, S> | null> {
+		findOne<S extends keyof T>(options: T['id'] | FindOneOptions<T, S>): Promise<Pick<T, S> | null> {
 			return new Promise((resolve) => {
-				const [where, select] = [options.where, options?.select];
+				let where: FindOneOptions<T, S>['where'] = {};
+				let select: FindManyOptions<T, S>['select'] = undefined;
+				typeof options !== 'object' ? (where.id = options) : ([where, select] = [options.where, options?.select]);
 
 				if (!Object.keys(where).length) {
 					throw Error(`find one needs at least one where key`);
 				}
 
-				const constraints = [selectKeys(select), table.name, whereKeys(where)];
-				const entity = selectOne<T>(
-					`${constraints.filter((constraint) => !!constraint).join(' ')}`,
-					whereOne<T, S>(where),
-				);
+				const constraints = [selectKeys(select), table.name, whereKeys(where)].filter((constraint) => !!constraint);
+				const entity = selectOne<T>(`${constraints.join(' ')}`, whereOne<T, S>(where));
 				const transformed = entity === null ? null : transformEntity<T>(table, entity);
-				resolve(transformed);
+				return resolve(transformed);
 			});
 		},
 
-		insert(data: NullablePartial<Omit<T, ExcludedInsertKeys>>): Promise<{ id: IdEntity['id'] }> {
+		insert(data: NullablePartial<Omit<T, ExcludedInsertKeys>>): Promise<{ id: T['id'] }> {
 			return new Promise((resolve) => {
 				const id = randomUUID();
 				const keys = Object.keys(data)
@@ -148,11 +144,11 @@ export const repository = <T extends IdEntity>(table: Entity<T>): Repository<T> 
 					id,
 					...values,
 				]);
-				resolve({ id });
+				return resolve({ id });
 			});
 		},
 
-		update(id: T['id'], data: NullablePartial<Partial<Omit<T, 'id'>>>): Promise<void> {
+		update(criteria: T['id'] | Partial<T>, data: NullablePartial<Partial<Omit<T, 'id'>>>): Promise<void> {
 			return new Promise((resolve) => {
 				const keys = Object.keys(data)
 					.filter((key) => data[key as keyof NullablePartial<Partial<Omit<T, 'id'>>>] !== undefined)
@@ -169,19 +165,28 @@ export const repository = <T extends IdEntity>(table: Entity<T>): Repository<T> 
 					keys.push(`${(table.columns[updatedColumn] as ColumnOptions).name ?? updatedColumn} = (datetime('now'))`);
 				}
 
-				runQuery(`update ${table.name} set ${keys} where id = ?`, [...values, id]);
-				resolve(void 0);
+				let where: Partial<T> = {};
+				typeof criteria !== 'object' ? (where.id = criteria) : (where = criteria);
+
+				runQuery(`update ${table.name} set ${keys} ${whereKeys(where)}`, [
+					...values,
+					...(whereOne<T, keyof T>(where) ?? []),
+				]);
+				return resolve(void 0);
 			});
 		},
 
-		delete(id: T['id']): Promise<void> {
+		delete(criteria: T['id'] | Partial<T>): Promise<void> {
 			return new Promise((resolve) => {
-				runQuery(`delete from ${table.name} where id = ?`, [id]);
-				resolve(void 0);
+				let where: Partial<T> = {};
+				typeof criteria !== 'object' ? (where.id = criteria) : (where = criteria);
+
+				runQuery(`delete from ${table.name} ${whereKeys(where)}`, whereOne<T, keyof T>(where));
+				return resolve(void 0);
 			});
 		},
 
-		softDelete(id: T['id']): Promise<void> {
+		softDelete(criteria: T['id'] | Partial<T>): Promise<void> {
 			return new Promise((resolve) => {
 				const columns = Object.keys(table.columns).filter((key) => !('references' in table.columns[key]));
 				const deletedColumn = columns.find(
@@ -189,16 +194,22 @@ export const repository = <T extends IdEntity>(table: Entity<T>): Repository<T> 
 				);
 
 				if (deletedColumn) {
+					let where: Partial<T> = {};
+					typeof criteria !== 'object' ? (where.id = criteria) : (where = criteria);
+
 					const key = (table.columns[deletedColumn] as ColumnOptions).name ?? deletedColumn;
-					runQuery(`update ${table.name} set ${key} = (datetime('now')) where id = ?`, [id]);
-					resolve(void 0);
+					runQuery(
+						`update ${table.name} set ${key} = (datetime('now')) ${whereKeys(where)}`,
+						whereOne<T, keyof T>(where),
+					);
+					return resolve(void 0);
 				} else {
 					throw Error(`entity '${table.name}' has no deleted column`);
 				}
 			});
 		},
 
-		restore(id: T['id']): Promise<void> {
+		restore(criteria: T['id'] | Partial<T>): Promise<void> {
 			return new Promise((resolve) => {
 				const columns = Object.keys(table.columns).filter((key) => !('references' in table.columns[key]));
 				const deletedColumn = columns.find(
@@ -206,9 +217,12 @@ export const repository = <T extends IdEntity>(table: Entity<T>): Repository<T> 
 				);
 
 				if (deletedColumn) {
+					let where: Partial<T> = {};
+					typeof criteria !== 'object' ? (where.id = criteria) : (where = criteria);
+
 					const key = (table.columns[deletedColumn] as ColumnOptions).name ?? deletedColumn;
-					runQuery(`update ${table.name} set ${key} = null where id = ?`, [id]);
-					resolve(void 0);
+					runQuery(`update ${table.name} set ${key} = null ${whereKeys(where, true)}`, whereOne<T, keyof T>(where));
+					return resolve(void 0);
 				} else {
 					throw Error(`entity '${table.name}' has no deleted column`);
 				}
@@ -218,14 +232,14 @@ export const repository = <T extends IdEntity>(table: Entity<T>): Repository<T> 
 		wipe(): Promise<void> {
 			return new Promise((resolve) => {
 				runQuery(`delete from ${table.name}`);
-				resolve(void 0);
+				return resolve(void 0);
 			});
 		},
 
 		drop(): Promise<void> {
 			return new Promise((resolve) => {
 				runQuery(`drop table ${table.name}`);
-				resolve(void 0);
+				return resolve(void 0);
 			});
 		},
 	};

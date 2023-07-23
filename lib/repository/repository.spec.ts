@@ -150,11 +150,20 @@ describe(userRepository.findOne.name, () => {
 		expectType<User | null>(result);
 	});
 
-	test('should return the entity with the id', async () => {
+	test('should return the entity with the id using where', async () => {
 		const { id } = await userRepository.insert(user1);
 		await userRepository.insert(user2);
 
 		const result = await userRepository.findOne({ where: { id } });
+		expect(result).toEqual({ id, ...user1 });
+		expectType<User | null>(result);
+	});
+
+	test('should return the entity with the id using short form', async () => {
+		const { id } = await userRepository.insert(user1);
+		await userRepository.insert(user2);
+
+		const result = await userRepository.findOne(id);
 		expect(result).toEqual({ id, ...user1 });
 		expectType<User | null>(result);
 	});
@@ -211,13 +220,22 @@ describe(userRepository.insert.name, () => {
 });
 
 describe(userRepository.update.name, () => {
-	test('should update the entity with the id', async () => {
+	test('should update the entity with the id using short form', async () => {
 		const { id } = await userRepository.insert(user1);
 		await userRepository.insert(user2);
 		await userRepository.update(id, { age: 69 });
 
 		const result = await userRepository.findOne({ where: { id } });
 		expect(result).toEqual({ ...user1, id, age: 69 });
+	});
+
+	test('should update the entity with the id using long form', async () => {
+		await userRepository.insert(user1);
+		const { id } = await userRepository.insert(user2);
+		await userRepository.update({ name: user2.name }, { age: 69 });
+
+		const result = await userRepository.findOne({ where: { id } });
+		expect(result).toEqual({ ...user2, id, age: 69 });
 	});
 
 	test('should update the entity and ignore values which are undefined', async () => {
@@ -239,9 +257,17 @@ describe(userRepository.update.name, () => {
 });
 
 describe(userRepository.delete.name, () => {
-	test('should delete the entity with the id', async () => {
+	test('should delete the entity with the id using short form', async () => {
 		const { id } = await userRepository.insert(user1);
 		await userRepository.delete(id);
+
+		const result = await userRepository.findOne({ where: { id } });
+		expect(result).toEqual(null);
+	});
+
+	test('should delete the entity with the id using long form', async () => {
+		const { id } = await userRepository.insert(user2);
+		await userRepository.delete({ name: user2.name });
 
 		const result = await userRepository.findOne({ where: { id } });
 		expect(result).toEqual(null);
@@ -249,9 +275,17 @@ describe(userRepository.delete.name, () => {
 });
 
 describe(todoRepository.softDelete.name, () => {
-	test('should soft delete the entity with the id', async () => {
+	test('should soft delete the entity with the id using short form', async () => {
 		const { id } = await todoRepository.insert(todo1);
 		await todoRepository.softDelete(id);
+
+		const result = await todoRepository.findOne({ where: { id } });
+		expect(result).toEqual(null);
+	});
+
+	test('should soft delete the entity with the id using long form', async () => {
+		const { id } = await todoRepository.insert(todo2);
+		await todoRepository.softDelete({ name: todo2.name });
 
 		const result = await todoRepository.findOne({ where: { id } });
 		expect(result).toEqual(null);
@@ -259,12 +293,21 @@ describe(todoRepository.softDelete.name, () => {
 });
 
 describe(todoRepository.softDelete.name, () => {
-	test('should restore the entity with the id', async () => {
+	test('should restore the entity with the id using short form', async () => {
 		const { id } = await todoRepository.insert(todo1);
 		await todoRepository.softDelete(id);
 		await todoRepository.restore(id);
 
 		const result = await todoRepository.findOne({ where: { id } });
 		expect(result).toEqual({ id, ...todo1, createdAt: expect.any(Date), updatedAt: null, deletedAt: null });
+	});
+
+	test('should restore the entity with the id using long form', async () => {
+		const { id } = await todoRepository.insert(todo2);
+		await todoRepository.softDelete(id);
+		await todoRepository.restore({ name: todo2.name });
+
+		const result = await todoRepository.findOne({ where: { id } });
+		expect(result).toEqual({ id, ...todo2, createdAt: expect.any(Date), updatedAt: null, deletedAt: null });
 	});
 });
