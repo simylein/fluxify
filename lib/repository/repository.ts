@@ -1,7 +1,7 @@
 import { randomUUID } from 'crypto';
 import { config } from '../config/config';
 import { ColumnOptions } from '../database/column/column.type';
-import { runQuery, selectMany, selectOne } from '../database/database';
+import { insertOne, runQuery, selectMany, selectOne } from '../database/database';
 import { Entity } from '../database/entity/entity.type';
 import { determineOperator, orderBy, paginate, whereMany, whereOne } from './helpers/helpers';
 import { ExcludedInsertKeys, FindManyOptions, FindOneOptions, IdEntity, NullablePartial } from './repository.type';
@@ -111,7 +111,7 @@ export const repository = <T extends IdEntity>(table: Entity<T>): Repository<T> 
 
 		insert(data: NullablePartial<Omit<T, ExcludedInsertKeys>>): Promise<{ id: T['id'] }> {
 			return new Promise((resolve) => {
-				const id = randomUUID();
+				const uuid = table.columns.id.type === 'integer' ? undefined : randomUUID();
 				const keys = Object.keys(data)
 					.filter((key) => data[key as keyof NullablePartial<Omit<T, ExcludedInsertKeys>>] !== undefined)
 					.map((key) => table.columns[key].name ?? key);
@@ -140,10 +140,16 @@ export const repository = <T extends IdEntity>(table: Entity<T>): Repository<T> 
 					placeholders.push(`${columns[deletedColumn].default}`);
 				}
 
-				runQuery(`insert into ${table.name} (id,${keys.join(',')}) values (?,${placeholders.join(',')})`, [
-					id,
-					...values,
-				]);
+				if (uuid) {
+					keys.unshift('id');
+					values.unshift(uuid);
+					placeholders.unshift('?');
+				}
+
+				const { id } = insertOne(
+					`insert into ${table.name} (${keys.join(',')}) values (${placeholders.join(',')})`,
+					values,
+				);
 				return resolve({ id });
 			});
 		},

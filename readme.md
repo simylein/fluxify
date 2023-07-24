@@ -106,7 +106,7 @@ every entity has to have an `id: primary()` column
 import { Infer, column, entity, primary } from 'lib/database';
 
 export const userEntity = entity('user', {
-	id: primary(),
+	id: primary('uuid'),
 	username: column('varchar').length(16),
 	password: column('varchar').length(64),
 });
@@ -317,7 +317,7 @@ app.get('/docs', null, () => {
 
 `deleted()` creates a column which holds the date on which the entity was soft deleted
 
-`runQuery()` `selectMany()` `selectOne()` raw methods in which you may write your sql directly. only use them if you cannot fulfill you needs using the `repository`
+`runQuery()` `selectMany()` `selectOne()` `insertOne()` raw methods in which you may write your sql directly. only use them if you cannot fulfill you needs using the `repository`
 
 `Entity` the return type of the `entity` function
 

@@ -26,3 +26,9 @@ export const selectMany = <T extends IdEntity>(query: string, params: SQLQueryBi
 	debug(statement.toString());
 	return statement.all() as T[];
 };
+
+export const insertOne = (query: string, params: SQLQueryBindings[] = []): IdEntity => {
+	const statement = database.prepare(`${query} returning id;`, params);
+	debug(statement.toString());
+	return statement.get() as IdEntity;
+};

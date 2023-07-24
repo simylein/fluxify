@@ -20,7 +20,7 @@ const userEntity = entity('repository_user', {
 type User = Infer<typeof userEntity>;
 
 const todoEntity = entity('repository_todo', {
-	id: primary('uuid'),
+	id: primary('increment'),
 	name: column('varchar').length(64),
 	done: column('boolean'),
 	createdAt: created(),
@@ -50,16 +50,36 @@ describe(userRepository.findMany.name, () => {
 		expectType<User[]>(result);
 	});
 
-	test('should return all entities when no options are provided', async () => {
+	test('should return all entities when no options are provided for users', async () => {
 		const { id: id1 } = await userRepository.insert(user1);
 		const { id: id2 } = await userRepository.insert(user2);
 
 		const result = await userRepository.findMany();
 		expect(result).toEqual([
+			{ id: expect.any(String), ...user1 },
+			{ id: expect.any(String), ...user2 },
+		]);
+		expect(result).toEqual([
 			{ id: id1, ...user1 },
 			{ id: id2, ...user2 },
 		]);
 		expectType<User[]>(result);
+	});
+
+	test('should return all entities when no options are provided for todos', async () => {
+		const { id: id1 } = await todoRepository.insert(todo1);
+		const { id: id2 } = await todoRepository.insert(todo2);
+
+		const result = await todoRepository.findMany({ select: { id: true, name: true, done: true } });
+		expect(result).toEqual([
+			{ id: expect.any(Number), ...todo1 },
+			{ id: expect.any(Number), ...todo2 },
+		]);
+		expect(result).toEqual([
+			{ id: id1, ...todo1 },
+			{ id: id2, ...todo2 },
+		]);
+		expectType<Pick<Todo, 'id' | 'name' | 'done'>[]>(result);
 	});
 
 	test('should return entities that match the where clause', async () => {

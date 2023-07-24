@@ -3,7 +3,7 @@ import { Entity } from '../entity/entity.type';
 import { RelationParser } from './relation.type';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const relation = (entity: Entity<any>): RelationParser => {
+export const relation = <T extends string | number = string>(entity: Entity<any>): RelationParser<T> => {
 	const options = {
 		type: (entity.columns.id.type === 'integer' ? 'integer' : 'character') as Type,
 		constraints: {
@@ -26,7 +26,7 @@ export const relation = (entity: Entity<any>): RelationParser => {
 			return options;
 		},
 		parse: (argument: unknown) => {
-			return argument as string;
+			return argument as T;
 		},
 	};
 	return options;
