@@ -95,7 +95,7 @@ afterAll(() => {
 describe(bootstrap.name, () => {
 	test('should create a http server', () => {
 		expect(server.port).toBeGreaterThan(0);
-		expect(server.hostname).toEqual('0.0.0.0');
+		expect(server.hostname).toEqual('localhost');
 		expect(server.development).toEqual(false);
 		expect(server.pendingRequests).toEqual(0);
 		expect(server.pendingWebSockets).toEqual(0);
