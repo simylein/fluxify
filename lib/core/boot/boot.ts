@@ -144,7 +144,6 @@ export const bootstrap = (): FluxifyServer => {
 		},
 	};
 
-	config.stage === 'dev' && console.clear();
 	info(`starting http server...`);
 	info(`bun v${version} ${pack.name} v${pack.version}`);
 	info(`log level is set to ${config.logLevel}`);
