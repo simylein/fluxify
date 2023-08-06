@@ -1,11 +1,29 @@
 import { describe, expect, test } from 'bun:test';
 import { expectType } from '../../test/expect-type';
 import { boolean } from '../boolean/boolean';
+import { ValidationError } from '../error';
 import { number } from '../number/number';
 import { object } from '../object/object';
 import { Type } from '../parser.type';
 import { string } from '../string/string';
-import { array } from './array';
+import { array, indexIsMissing, indexIsNot } from './array';
+
+describe(indexIsNot.name, () => {
+	test('should be an instance of validation error', () => {
+		expect(indexIsNot(2, ['string'], 42)).toBeInstanceOf(ValidationError);
+	});
+});
+
+describe(indexIsMissing.name, () => {
+	test('should throw an error indicating that the key at index has the wrong type', () => {
+		expect(() => indexIsMissing(2, 'string')).toThrow(Error('index 2 is missing and should be of type string'));
+		expect(() => indexIsMissing(2, 'number')).toThrow(Error('index 2 is missing and should be of type number'));
+		expect(() => indexIsMissing(2, 'boolean')).toThrow(Error('index 2 is missing and should be of type boolean'));
+		expect(() => indexIsMissing(2, 'object')).toThrow(Error('index 2 is missing and should be of type object'));
+		expect(() => indexIsMissing(2, 'array')).toThrow(Error('index 2 is missing and should be of type array'));
+		expect(() => indexIsMissing(2, 'date')).toThrow(Error('index 2 is missing and should be of type date'));
+	});
+});
 
 describe(array.name, () => {
 	test('should have a correct type array', () => {

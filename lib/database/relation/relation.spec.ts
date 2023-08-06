@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test';
+import { expectType } from '../../test/expect-type';
 import { Entity } from '../entity/entity.type';
 import { relation } from './relation';
 
@@ -9,6 +10,8 @@ describe(relation.name, () => {
 	test('should have a correct type array', () => {
 		expect(relation(userEntity).type).toEqual('character');
 		expect(relation(todoEntity).type).toEqual('integer');
+		expectType<string>(relation(userEntity).parse(null));
+		expectType<number>(relation<number>(todoEntity).parse(null));
 	});
 
 	test('should have the correct constraints', () => {
@@ -18,5 +21,6 @@ describe(relation.name, () => {
 			references: { column: 'id', entity: 'user' },
 		});
 		expect(relation(todoEntity).constraints).toEqual({ nullable: false, references: { column: 'id', entity: 'todo' } });
+		expect(relation(todoEntity).name('custom').constraints.name).toEqual('custom');
 	});
 });

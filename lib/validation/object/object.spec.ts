@@ -14,11 +14,11 @@ describe(keyIsNot.name, () => {
 
 	test('should throw an error indicating that the key has the wrong type', () => {
 		expect(() => keyIsNot('key', ['string'], 42)).toThrow(Error('key is not of type string (number given)'));
-		expect(() => keyIsNot('key', ['string'], true)).toThrow(Error('key is not of type string (boolean given)'));
-		expect(() => keyIsNot('key', ['string'], {})).toThrow(Error('key is not of type string (object given)'));
-		expect(() => keyIsNot('key', ['string'], [])).toThrow(Error('key is not of type string (array given)'));
-		expect(() => keyIsNot('key', ['string'], undefined)).toThrow(Error('key is not of type string (undefined given)'));
-		expect(() => keyIsNot('key', ['string'], null)).toThrow(Error('key is not of type string (null given)'));
+		expect(() => keyIsNot('key', ['number'], true)).toThrow(Error('key is not of type number (boolean given)'));
+		expect(() => keyIsNot('key', ['boolean'], {})).toThrow(Error('key is not of type boolean (object given)'));
+		expect(() => keyIsNot('key', ['object'], [])).toThrow(Error('key is not of type object (array given)'));
+		expect(() => keyIsNot('key', ['array'], undefined)).toThrow(Error('key is not of type array (undefined given)'));
+		expect(() => keyIsNot('key', ['date'], null)).toThrow(Error('key is not of type date (null given)'));
 	});
 });
 
