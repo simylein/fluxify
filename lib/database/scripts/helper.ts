@@ -11,7 +11,7 @@ export const searchFiles = (dir: string, pattern: RegExp): string[] => {
 		} else if (pattern.test(filePath)) {
 			return acc.concat(filePath);
 		}
-		return acc;
+		return acc.sort((alpha, bravo) => alpha.localeCompare(bravo));
 	}, []);
 };
 
