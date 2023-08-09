@@ -1,17 +1,21 @@
 import { readdirSync, statSync } from 'fs';
 import { join } from 'path';
 
+export const sortFiles = (files: string[]): string[] => {
+	return files.sort((alpha, bravo) => alpha.localeCompare(bravo));
+};
+
 export const searchFiles = (dir: string, pattern: RegExp): string[] => {
 	const files = readdirSync(dir);
 	return files.reduce((acc: string[], file: string) => {
 		const filePath = join(dir, file);
 		if (statSync(filePath).isDirectory()) {
 			const subDirFiles = searchFiles(filePath, pattern);
-			return acc.concat(subDirFiles);
+			return sortFiles(acc.concat(subDirFiles));
 		} else if (pattern.test(filePath)) {
-			return acc.concat(filePath);
+			return sortFiles(acc.concat(filePath));
 		}
-		return acc.sort((alpha, bravo) => alpha.localeCompare(bravo));
+		return sortFiles(acc);
 	}, []);
 };
 
