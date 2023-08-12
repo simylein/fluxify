@@ -5,7 +5,7 @@ on:
     branches: [main, develop, feature/*, refactor/*, bugfix/*, hotfix/*]
 
 jobs:
-  start:
+  start-linux:
     runs-on: ubuntu-latest
 
     steps:
@@ -25,3 +25,24 @@ jobs:
           if ! screen -list | grep -q fluxify; then cat screen.log; exit 1; fi
           if ! tail -1 screen.log | grep -q "listening for requests on localhost:4000"; then cat screen.log; exit 1; fi
           cat screen.log
+
+  start-macos:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: install
+        run: bun install
+
+      - name: start
+        run: |
+          screen -dmSL fluxify bun start:prod
+          screen -r fluxify -X colon "logfile flush 1^M"
+          sleep 12
+          if ! screen -list | grep -q fluxify; then cat screenlog.0; exit 1; fi
+          if ! tail -1 screenlog.0 | grep -q "listening for requests on localhost:4000"; then cat screenlog.0; exit 1; fi
+          cat screenlog.0
