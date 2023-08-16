@@ -1,4 +1,4 @@
-import { serve, Serve, version } from 'bun';
+import { serve, Serve, Server, version } from 'bun';
 import pack from '../../../package.json';
 import { verifyJwt } from '../../auth/jwt';
 import { config } from '../../config/config';
@@ -23,22 +23,27 @@ export const bootstrap = (): FluxifyServer => {
 	const options: Serve = {
 		port: config.stage === 'test' ? 0 : config.port,
 		development: config.stage === 'dev',
-		async fetch(request: Request): Promise<Response> {
+		async fetch(request: Request, server: Server): Promise<Response> {
 			const time = performance.now();
 
+			// TODO: use real implementation once available
+			const mock = { requestIp: (__: Request) => '127.0.0.1' };
+			const ip = mock.requestIp(request);
 			const url = new URL(request.url);
 			const method = extractMethod(request.method);
 			const endpoint = url.pathname;
 
 			req(method, endpoint);
 
-			const matchingRoutes = routes.filter((route) => compareEndpoint(route, endpoint));
+			const matchingRoutes = global.server.routes.filter((route) => compareEndpoint(route, endpoint));
 			const targetRoute = matchingRoutes.find((route) => compareMethod(route, method));
+
 			const useCache =
 				method === 'get' &&
 				config.cacheTtl > 0 &&
 				config.cacheLimit > 0 &&
 				request.headers.get('cache-control')?.toLowerCase() !== 'no-cache';
+			const useThrottle = config.throttleTtl > 0 && config.throttleLimit > 0;
 
 			if (method === 'options') {
 				const authRoutes = matchingRoutes.filter((route) => route.schema?.jwt);
@@ -58,11 +63,38 @@ export const bootstrap = (): FluxifyServer => {
 
 			if (targetRoute) {
 				try {
+					if (useThrottle) {
+						const entry = global.server.throttle[ip]?.[endpoint];
+						if (entry) {
+							if (entry.exp < Date.now()) {
+								entry.exp = Date.now() + config.throttleTtl * 1000;
+								entry.hits = 0;
+							}
+							entry.hits += 1;
+							if (entry.hits > config.throttleLimit) {
+								debug(`throttle limit on route ${endpoint}`);
+								const status = 429;
+								return createResponse({ status, message: 'too many requests' }, status, time, {
+									'retry-after': `${Math.ceil((entry.exp - Date.now()) / 1000)}`,
+								});
+							}
+						} else {
+							if (!global.server.throttle[ip]) {
+								global.server.throttle[ip] = {};
+							}
+							global.server.throttle[ip][endpoint] = {
+								exp: Date.now() + config.throttleTtl * 1000,
+								hits: 1,
+								path: endpoint,
+							};
+						}
+					}
+
 					if (config.databaseMode === 'readonly' && method !== 'get') {
 						throw Locked();
 					}
 
-					let param: Param | unknown = extractParam(targetRoute, url.pathname);
+					let param: Param | unknown = extractParam(targetRoute, endpoint);
 					let query: Query | unknown = Object.fromEntries(url.searchParams);
 					let body = await parseBody(request);
 					let jwt: unknown | null = null;
@@ -92,14 +124,14 @@ export const bootstrap = (): FluxifyServer => {
 								entry.lang === request.headers.get('accept-language')?.toLowerCase(),
 						);
 						if (hit) {
-							debug(`cache hit on route ${url.pathname}`);
+							debug(`cache hit on route ${endpoint}`);
 							return createResponse(hit.data, hit.status, time, {
 								expires: new Date(hit.exp).toUTCString(),
 							});
 						}
 					}
 
-					const data = await targetRoute.handler({ param, query, body, jwt, req: request });
+					const data = await targetRoute.handler({ param, query, body, jwt, req: request, ip });
 					if (data instanceof Response) {
 						res(data.status, performance.now() - time);
 						return data;
@@ -154,6 +186,7 @@ export const bootstrap = (): FluxifyServer => {
 		const bunServer: Partial<FluxifyServer> = serve(options);
 		bunServer.routes = routes;
 		bunServer.cache = [];
+		bunServer.throttle = {};
 		bunServer.logger = logger;
 		bunServer.header = header;
 		global.server = bunServer as FluxifyServer;
@@ -161,6 +194,7 @@ export const bootstrap = (): FluxifyServer => {
 		global.server.reload(options);
 		global.server.routes = routes;
 		global.server.cache = [];
+		global.server.throttle = {};
 		global.server.logger = logger;
 		global.server.header = header;
 	}

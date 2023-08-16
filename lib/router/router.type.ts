@@ -11,7 +11,7 @@ export type Route = {
 	schema: Schema<unknown, unknown, unknown, unknown> | null;
 	endpoint: string;
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	handler: ({ param, query, body, jwt, req }: HandlerSchema<any, any, any, any>) => RouteReturn;
+	handler: ({ param, query, body, jwt, req, ip }: HandlerSchema<any, any, any, any>) => RouteReturn;
 };
 
 export type Schema<P, Q, B, J> = {
@@ -27,6 +27,7 @@ export type HandlerSchema<P, Q, B, J> = {
 	body: TypedBody<B>;
 	jwt: TypedJwt<J>;
 	req: Request;
+	ip: string;
 };
 
 export type RouteReturn = Promise<unknown> | unknown;

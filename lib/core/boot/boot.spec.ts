@@ -17,6 +17,8 @@ let value: number | undefined;
 beforeAll(() => {
 	config.cacheTtl = 4;
 	config.cacheLimit = 8;
+	config.throttleTtl = 8;
+	config.throttleLimit = 4;
 	config.databaseMode = 'readwrite';
 	console.log = mock(() => void 0);
 	console.debug = mock(() => void 0);
@@ -84,6 +86,9 @@ beforeAll(() => {
 	});
 	app.get('/cache', null, () => {
 		return { value: Math.random() };
+	});
+	app.get('/throttle', null, () => {
+		return void 0;
 	});
 	server = bootstrap();
 });
@@ -321,5 +326,20 @@ describe(bootstrap.name, () => {
 		expect(response.status).toEqual(200);
 		expect(response.headers.get('expires')).toEqual(null);
 		expect(data).not.toEqual({ value });
+	});
+
+	test('should throttle after configured amount of requests', async () => {
+		const responses = await Promise.all(
+			new Array(config.throttleLimit + 1)
+				.fill(null)
+				.map(() => server.fetch(`http://${server.hostname}:${server.port}${config.globalPrefix}/throttle`)),
+		);
+
+		responses.map((response, index) => {
+			expect(response.status).toEqual(index === config.throttleLimit ? 429 : 204);
+			expect(response.headers.get('retry-after')).toEqual(
+				index === config.throttleLimit ? `${config.throttleTtl}` : null,
+			);
+		});
 	});
 });

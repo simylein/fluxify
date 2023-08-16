@@ -24,6 +24,9 @@ export const validateConfig = (env: Env): Config => {
 			cacheTtl: number().optional().transform().min(0).default(0),
 			cacheLimit: number().optional().transform().min(0).default(0),
 
+			throttleTtl: number().optional().transform().min(0).default(0),
+			throttleLimit: number().optional().transform().min(0).default(0),
+
 			databasePath: string().optional().default(':memory:'),
 			databaseMode: union(['readwrite', 'readonly']).optional().default('readwrite'),
 
@@ -42,6 +45,8 @@ export const validateConfig = (env: Env): Config => {
 			jwtExpiry: env.JWT_EXPIRY,
 			cacheTtl: env.CACHE_TTL,
 			cacheLimit: env.CACHE_LIMIT,
+			throttleTtl: env.THROTTLE_TTL,
+			throttleLimit: env.THROTTLE_LIMIT,
 			databasePath: env.DATABASE_PATH,
 			databaseMode: env.DATABASE_MODE,
 			logLevel: env.LOG_LEVEL,
