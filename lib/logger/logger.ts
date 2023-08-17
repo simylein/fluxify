@@ -1,7 +1,7 @@
 import { config } from '../config/config';
 import { Config } from '../config/config.type';
 import { Method } from '../router/router.type';
-import { blue, bold, coloredStatus, coloredTime, cyan, green, red, reset, yellow } from './color';
+import { blue, bold, coloredStatus, coloredTime, cyan, green, purple, red, reset, yellow } from './color';
 import { Logger } from './logger.type';
 
 const uuidRegex = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi;
@@ -42,7 +42,7 @@ export const makeLevel = (logLevel: Config['logLevel'] | 'req' | 'res'): string 
 		case logLevel === 'res':
 			return `${bold}res${reset}:`;
 		case logLevel === 'trace':
-			return `${bold}trace${reset}:`;
+			return `${bold}${purple}trace${reset}:`;
 		case logLevel === 'debug':
 			return `${bold}${cyan}debug${reset}:`;
 		case logLevel === 'info':
