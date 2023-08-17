@@ -33,7 +33,7 @@ export const bootstrap = (): FluxifyServer => {
 			const method = extractMethod(request.method);
 			const endpoint = url.pathname;
 
-			req(method, endpoint);
+			req(ip, method, endpoint);
 
 			const matchingRoutes = global.server.routes.filter((route) => compareEndpoint(route, endpoint));
 			const targetRoute = matchingRoutes.find((route) => compareMethod(route, method));

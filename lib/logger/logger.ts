@@ -76,12 +76,13 @@ export const mask = (uuid: string): string => {
 	return `${head}..${tail}`;
 };
 
-export const req = (method: Method, endpoint: string): void => {
+export const req = (ip: string, method: Method, endpoint: string): void => {
 	if (config.logRequests) {
 		const timestamp = Date.now();
-		console.log(`${makeBase(timestamp, 'req')} ${method} ${endpoint.replace(uuidRegex, (uuid) => mask(uuid))}`);
+		const masked = endpoint.replace(uuidRegex, (uuid) => mask(uuid));
+		console.log(`${makeBase(timestamp, 'req')} ${method} ${masked} from ${ip}`);
 		if (customLogger.req) {
-			void customLogger.req({ timestamp, method, endpoint });
+			void customLogger.req({ timestamp, ip, method, endpoint });
 		}
 	}
 };

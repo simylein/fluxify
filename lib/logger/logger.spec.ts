@@ -85,7 +85,7 @@ describe(mask.name, () => {
 
 describe(req.name, () => {
 	test('should call the custom logger request function', () => {
-		const result = req('get', '/test');
+		const result = req('127.0.0.1', 'get', '/test');
 		expectType<void>(result);
 		expect(customLogger.req).toHaveBeenCalledTimes(1);
 	});
