@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, mock, test } from 'bun:test';
 import { config } from '../config/config';
 import { expectType } from '../test/expect-type';
-import { blue, bold, cyan, green, red, reset, yellow } from './color';
+import { blue, bold, cyan, green, purple, red, reset, yellow } from './color';
 import {
 	customLogger,
 	debug,
@@ -58,7 +58,7 @@ describe(makeBase.name, () => {
 			`${bold}${blue}[${config.appName}]${reset} ${bold}(${config.stage})${reset} ${time} ${bold}res${reset}:`,
 		);
 		expect(makeBase(timestamp, 'trace')).toEqual(
-			`${bold}${blue}[${config.appName}]${reset} ${bold}(${config.stage})${reset} ${time} ${bold}trace${reset}:`,
+			`${bold}${blue}[${config.appName}]${reset} ${bold}(${config.stage})${reset} ${time} ${bold}${purple}trace${reset}:`,
 		);
 		expect(makeBase(timestamp, 'debug')).toEqual(
 			`${bold}${blue}[${config.appName}]${reset} ${bold}(${config.stage})${reset} ${time} ${bold}${cyan}debug${reset}:`,
