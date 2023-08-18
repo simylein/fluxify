@@ -62,7 +62,7 @@ export const bootstrap = (): FluxifyServer => {
 						throw Locked();
 					}
 
-					let param: Param | unknown = extractParam(targetRoute, url.pathname);
+					let param: Param | unknown = extractParam(targetRoute, endpoint);
 					let query: Query | unknown = Object.fromEntries(url.searchParams);
 					let body = await parseBody(request);
 					let jwt: unknown | null = null;
@@ -92,7 +92,7 @@ export const bootstrap = (): FluxifyServer => {
 								entry.lang === request.headers.get('accept-language')?.toLowerCase(),
 						);
 						if (hit) {
-							debug(`cache hit on route ${url.pathname}`);
+							debug(`cache hit on route ${endpoint}`);
 							return createResponse(hit.data, hit.status, time, {
 								expires: new Date(hit.exp).toUTCString(),
 							});
