@@ -3,6 +3,7 @@ import { config } from '../config/config';
 import { ColumnOptions } from '../database/column/column.type';
 import { insertOne, runQuery, selectMany, selectOne } from '../database/database';
 import { Entity } from '../database/entity/entity.type';
+import { debug } from '../logger/logger';
 import { determineOperator, orderBy, paginate, whereMany, whereOne } from './helpers/helpers';
 import { ExcludedInsertKeys, FindManyOptions, FindOneOptions, IdEntity, NullablePartial } from './repository.type';
 import { transformData, transformEntity } from './transform/transform';
@@ -22,6 +23,7 @@ type Repository<T extends IdEntity> = {
 
 export const repository = <T extends IdEntity>(table: Entity<T>): Repository<T> => {
 	if (config.databasePath === ':memory:' || config.stage === 'test') {
+		debug(`creating schema for table '${table.name}'`);
 		runQuery(table.schema);
 	}
 
