@@ -1,6 +1,6 @@
 import { Config } from './config.type';
 
-export const determineStage = (lifecycleEvent: string | undefined, nodeEnv: string): Config['stage'] => {
+export const determineStage = (lifecycleEvent: string | undefined, nodeEnv: string | undefined): Config['stage'] => {
 	if (!lifecycleEvent && !nodeEnv) {
 		throw Error(`lifecycle and node env is not defined`);
 	}
