@@ -8,7 +8,7 @@
 		"lint": "bun run eslint --fix {lib,src}",
 		"check": "tsc --noEmit",
 		"test:dev": "bun --watch test",
-		"test:prod": "bun test",
+		"test:prod": "bun test --coverage",
 		"start:dev": "bun run --hot ./src/main.ts",
 		"start:prod": "bun run ./src/main.ts",
 		"schema:init": "bun ./lib/database/scripts/init.ts",
