@@ -32,7 +32,7 @@ export const object = <T, S extends Record<string, Parser<T>>>(
 					(argument as Record<string, unknown>)[key] = schema[key].parse(argument[key as keyof typeof argument]);
 				} catch (err) {
 					throw new ValidationError(
-						(err as ValidationError).message.replace(`${argument[key as keyof typeof argument]}`, key),
+						(err as ValidationError).message.replace(`"${argument[key as keyof typeof argument]}"`, key),
 					);
 				}
 			} else {
