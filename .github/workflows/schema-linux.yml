@@ -1,11 +1,11 @@
-name: schema fluxify app
+name: schema fluxify app on linux
 
 on:
   push:
     branches: [main, develop, feature/*, refactor/*, bugfix/*, hotfix/*]
 
 jobs:
-  schema:
+  schema-linux:
     runs-on: ubuntu-latest
 
     steps:

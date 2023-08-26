@@ -1,11 +1,11 @@
-name: check fluxify app
+name: check fluxify app on macos
 
 on:
   push:
     branches: [main, develop, feature/*, refactor/*, bugfix/*, hotfix/*]
 
 jobs:
-  check:
+  check-macos:
     runs-on: macos-latest
 
     steps:

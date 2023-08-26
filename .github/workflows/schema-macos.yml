@@ -1,11 +1,11 @@
-name: schema fluxify app
+name: schema fluxify app on macos
 
 on:
   push:
     branches: [main, develop, feature/*, refactor/*, bugfix/*, hotfix/*]
 
 jobs:
-  schema:
+  schema-macos:
     runs-on: macos-latest
 
     steps:

@@ -1,11 +1,11 @@
-name: lint fluxify app
+name: lint fluxify app on macos
 
 on:
   push:
     branches: [main, develop, feature/*, refactor/*, bugfix/*, hotfix/*]
 
 jobs:
-  lint:
+  lint-macos:
     runs-on: macos-latest
 
     steps:

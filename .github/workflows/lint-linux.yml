@@ -1,11 +1,11 @@
-name: lint fluxify app
+name: lint fluxify app on linux
 
 on:
   push:
     branches: [main, develop, feature/*, refactor/*, bugfix/*, hotfix/*]
 
 jobs:
-  lint:
+  lint-linux:
     runs-on: ubuntu-latest
 
     steps:

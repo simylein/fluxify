@@ -1,11 +1,11 @@
-name: test fluxify app
+name: test fluxify app on linux
 
 on:
   push:
     branches: [main, develop, feature/*, refactor/*, bugfix/*, hotfix/*]
 
 jobs:
-  test:
+  test-linux:
     runs-on: ubuntu-latest
 
     steps:

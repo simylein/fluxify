@@ -1,11 +1,11 @@
-name: start fluxify app
+name: start fluxify app on macos
 
 on:
   push:
     branches: [main, develop, feature/*, refactor/*, bugfix/*, hotfix/*]
 
 jobs:
-  start:
+  start-macos:
     runs-on: macos-latest
 
     steps:

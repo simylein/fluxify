@@ -1,11 +1,11 @@
-name: start fluxify app
+name: start fluxify app on linux
 
 on:
   push:
     branches: [main, develop, feature/*, refactor/*, bugfix/*, hotfix/*]
 
 jobs:
-  start:
+  start-linux:
     runs-on: ubuntu-latest
 
     steps:
