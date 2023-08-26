@@ -1,0 +1,27 @@
+name: start fluxify app
+
+on:
+  push:
+    branches: [main, develop, feature/*, refactor/*, bugfix/*, hotfix/*]
+
+jobs:
+  start:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: install
+        run: bun install
+
+      - name: start
+        run: |
+          screen -dmSL fluxify -Logfile screen.log bun start:prod
+          screen -r fluxify -X colon "logfile flush 1^M"
+          sleep 12s
+          if ! screen -list | grep -q fluxify; then cat screen.log; exit 1; fi
+          if ! tail -1 screen.log | grep -q "listening for requests on localhost:4000"; then cat screen.log; exit 1; fi
+          cat screen.log
