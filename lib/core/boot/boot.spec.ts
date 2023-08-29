@@ -145,7 +145,7 @@ describe(bootstrap.name, () => {
 
 		expect(Object.fromEntries(response.headers.entries())).toEqual({
 			...defaultHeaders,
-			'access-control-allow-headers': 'authorization',
+			'access-control-allow-headers': 'authorization,content-type',
 			'access-control-allow-methods': 'post, patch'.toUpperCase(),
 			'access-control-allow-credentials': 'true',
 		});

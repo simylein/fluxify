@@ -46,7 +46,7 @@ export const bootstrap = (): FluxifyServer => {
 					const methods = authRoutes.filter((route) => compareEndpoint(route, endpoint)).map((route) => route.method);
 					return createResponse(null, 200, time, {
 						'access-control-allow-origin': config.allowOrigin,
-						'access-control-allow-headers': 'authorization',
+						'access-control-allow-headers': 'authorization,content-type',
 						'access-control-allow-methods': methods.join(', ').toUpperCase(),
 						'access-control-allow-credentials': 'true',
 					});
