@@ -7,6 +7,9 @@ node_modules
 # database
 *.sqlite
 
+# build
+main.js
+
 # credentials
 .env
 

@@ -44,6 +44,7 @@ Please take a look at the little todo app example in the src directory for some 
 - `bun fmt` formats your code using prettier
 - `bun lint` lints your code using eslint
 - `bun check` type checks your code using tsc
+- `bun bundle` bundles your code for portability
 - `bun test:dev` runs your tests with hot reload
 - `bun test:prod` runs your tests for production
 - `bun start:dev` starts your http server with hot reload
