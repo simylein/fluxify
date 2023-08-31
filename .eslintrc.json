@@ -16,6 +16,7 @@
 	"rules": {
 		"@typescript-eslint/no-shadow": "warn",
 		"@typescript-eslint/no-unsafe-call": "warn",
+		"@typescript-eslint/no-unused-vars": "warn",
 		"@typescript-eslint/await-thenable": "warn",
 		"@typescript-eslint/no-explicit-any": "warn",
 		"@typescript-eslint/no-implied-eval": "error",
