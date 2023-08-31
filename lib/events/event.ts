@@ -26,7 +26,7 @@ export const subscribe = (req: Request, channel: string): Response => {
 		}),
 		{
 			status: 200,
-			headers: { 'content-type': 'text/event-stream' },
+			headers: { 'content-type': 'text/event-stream;charset=utf-8' },
 		},
 	);
 };
