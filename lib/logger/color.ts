@@ -1,13 +1,27 @@
+import { Env } from 'bun';
 import { Method } from '../router/router.type';
 
-export const purple = '\x1b[35m';
-export const blue = '\x1b[34m';
-export const cyan = '\x1b[36m';
-export const green = '\x1b[32m';
-export const yellow = '\x1b[33m';
-export const red = '\x1b[31m';
-export const bold = '\x1b[1m';
-export const reset = '\x1b[0m';
+export const coloredTerminal = (env: Env): boolean => {
+	if (env.FORCE_COLOR) {
+		return true;
+	}
+	if (env.NO_COLOR) {
+		return false;
+	}
+	if (env.TERM && env.TERM.includes('color')) {
+		return true;
+	}
+	return false;
+};
+
+export const purple = coloredTerminal(process.env) ? '\x1b[35m' : '';
+export const blue = coloredTerminal(process.env) ? '\x1b[34m' : '';
+export const cyan = coloredTerminal(process.env) ? '\x1b[36m' : '';
+export const green = coloredTerminal(process.env) ? '\x1b[32m' : '';
+export const yellow = coloredTerminal(process.env) ? '\x1b[33m' : '';
+export const red = coloredTerminal(process.env) ? '\x1b[31m' : '';
+export const bold = coloredTerminal(process.env) ? '\x1b[1m' : '';
+export const reset = coloredTerminal(process.env) ? '\x1b[0m' : '';
 
 export const coloredMethod = (method: Method): string => {
 	switch (true) {

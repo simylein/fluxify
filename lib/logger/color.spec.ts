@@ -1,5 +1,28 @@
 import { describe, expect, test } from 'bun:test';
-import { blue, bold, coloredMethod, coloredStatus, coloredTime, cyan, green, red, reset, yellow } from './color';
+import {
+	blue,
+	bold,
+	coloredMethod,
+	coloredStatus,
+	coloredTerminal,
+	coloredTime,
+	cyan,
+	green,
+	red,
+	reset,
+	yellow,
+} from './color';
+
+describe(coloredTerminal.name, () => {
+	test('should return if the terminal supports color given env vars', () => {
+		expect(coloredTerminal({ NODE_ENV: 'test' })).toEqual(false);
+		expect(coloredTerminal({ NODE_ENV: 'test', TERM: 'color' })).toEqual(true);
+		expect(coloredTerminal({ NODE_ENV: 'test', TERM: 'color', NO_COLOR: 'true' })).toEqual(false);
+		expect(coloredTerminal({ NODE_ENV: 'test', TERM: 'color', NO_COLOR: 'true', FORCE_COLOR: 'true' })).toEqual(true);
+		expect(coloredTerminal({ NODE_ENV: 'test', NO_COLOR: 'true' })).toEqual(false);
+		expect(coloredTerminal({ NODE_ENV: 'test', FORCE_COLOR: 'true' })).toEqual(true);
+	});
+});
 
 describe(coloredMethod.name, () => {
 	test('should return the method with the corresponding color', () => {
