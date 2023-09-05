@@ -1,4 +1,5 @@
 import { afterAll, afterEach, describe, expect, test } from 'bun:test';
+import { randomUUID } from 'crypto';
 import { column } from '../database/column/column';
 import { created } from '../database/created/created';
 import { deleted } from '../database/deleted/deleted';
@@ -8,7 +9,7 @@ import { primary } from '../database/primary/primary';
 import { updated } from '../database/updated/updated';
 import { expectType } from '../test/expect-type';
 import { repository } from './repository';
-import { ExcludedInsertKeys } from './repository.type';
+import { OptionalKeys } from './repository.type';
 
 const userEntity = entity('repository_user', {
 	id: primary('uuid'),
@@ -36,16 +37,16 @@ const user2: Omit<User, 'id'> = { age: 73, name: 'bob', active: false, isAdmin: 
 
 const todoRepository = repository(todoEntity);
 
-const todo1: Omit<Todo, ExcludedInsertKeys> = { name: 'land', done: false };
-const todo2: Omit<Todo, ExcludedInsertKeys> = { name: 'launch', done: true };
+const todo1: Omit<Todo, OptionalKeys> = { name: 'land', done: false };
+const todo2: Omit<Todo, OptionalKeys> = { name: 'launch', done: true };
 
 afterEach(() => Promise.all([userRepository.wipe(), todoRepository.wipe()]));
 
 afterAll(() => Promise.all([userRepository.drop(), todoRepository.drop()]));
 
-describe(userRepository.findMany.name, () => {
+describe(userRepository.find.name, () => {
 	test('should return an empty array when no entities exist', async () => {
-		const result = await userRepository.findMany();
+		const result = await userRepository.find();
 		expect(result).toEqual([]);
 		expectType<User[]>(result);
 	});
@@ -54,7 +55,7 @@ describe(userRepository.findMany.name, () => {
 		const { id: id1 } = await userRepository.insert(user1);
 		const { id: id2 } = await userRepository.insert(user2);
 
-		const result = await userRepository.findMany();
+		const result = await userRepository.find();
 		expect(result).toEqual([
 			{ id: expect.any(String), ...user1 },
 			{ id: expect.any(String), ...user2 },
@@ -70,7 +71,7 @@ describe(userRepository.findMany.name, () => {
 		const { id: id1 } = await todoRepository.insert(todo1);
 		const { id: id2 } = await todoRepository.insert(todo2);
 
-		const result = await todoRepository.findMany({ select: { id: true, name: true, done: true } });
+		const result = await todoRepository.find({ select: { id: true, name: true, done: true } });
 		expect(result).toEqual([
 			{ id: expect.any(Number), ...todo1 },
 			{ id: expect.any(Number), ...todo2 },
@@ -86,7 +87,7 @@ describe(userRepository.findMany.name, () => {
 		const { id } = await userRepository.insert(user1);
 		await userRepository.insert(user2);
 
-		const result = await userRepository.findMany({ where: { age: 42 } });
+		const result = await userRepository.find({ where: { age: 42 } });
 		expect(result).toEqual([{ id, ...user1 }]);
 		expectType<User[]>(result);
 	});
@@ -95,7 +96,7 @@ describe(userRepository.findMany.name, () => {
 		await userRepository.insert(user1);
 		await userRepository.insert(user2);
 
-		const result = await userRepository.findMany({ select: { name: true } });
+		const result = await userRepository.find({ select: { name: true } });
 		expect(result).toEqual([{ name: user1.name }, { name: user2.name }]);
 		expectType<Pick<User, 'name'>[]>(result);
 	});
@@ -104,7 +105,7 @@ describe(userRepository.findMany.name, () => {
 		const { id: id1 } = await userRepository.insert(user1);
 		const { id: id2 } = await userRepository.insert(user2);
 
-		const result = await userRepository.findMany({ order: { name: 'desc' } });
+		const result = await userRepository.find({ order: { name: 'desc' } });
 		expect(result).toEqual([
 			{ id: id2, ...user2 },
 			{ id: id1, ...user1 },
@@ -116,7 +117,7 @@ describe(userRepository.findMany.name, () => {
 		await userRepository.insert(user1);
 		const { id } = await userRepository.insert(user2);
 
-		const result = await userRepository.findMany({ skip: 1 });
+		const result = await userRepository.find({ skip: 1 });
 		expect(result).toEqual([{ id, ...user2 }]);
 		expectType<User[]>(result);
 	});
@@ -125,7 +126,7 @@ describe(userRepository.findMany.name, () => {
 		const { id } = await userRepository.insert(user1);
 		await userRepository.insert(user2);
 
-		const result = await userRepository.findMany({ take: 1 });
+		const result = await userRepository.find({ take: 1 });
 		expect(result).toEqual([{ id, ...user1 }]);
 		expectType<User[]>(result);
 	});
@@ -134,7 +135,7 @@ describe(userRepository.findMany.name, () => {
 		const { id: id1 } = await userRepository.insert(user1);
 		const { id: id2 } = await userRepository.insert(user2);
 
-		const result = await userRepository.findMany({ where: { age: undefined } });
+		const result = await userRepository.find({ where: { age: undefined } });
 		expect(result).toEqual([
 			{ id: id1, ...user1 },
 			{ id: id2, ...user2 },
@@ -147,7 +148,7 @@ describe(userRepository.findMany.name, () => {
 		await todoRepository.insert(todo2);
 		await todoRepository.update(inserted.id, { done: true });
 
-		const result = await todoRepository.findMany({ select: { name: true, done: true }, where: { updatedAt: null } });
+		const result = await todoRepository.find({ select: { name: true, done: true }, where: { updatedAt: null } });
 		expect(result).toEqual([todo2]);
 		expectType<Pick<Todo, 'name' | 'done'>[]>(result);
 	});
@@ -157,7 +158,7 @@ describe(userRepository.findMany.name, () => {
 		await todoRepository.insert(todo2);
 		await todoRepository.softDelete(id);
 
-		const result = await todoRepository.findMany({ select: { name: true, done: true } });
+		const result = await todoRepository.find({ select: { name: true, done: true } });
 		expect(result).toEqual([todo2]);
 		expectType<Pick<Todo, 'name' | 'done'>[]>(result);
 	});
@@ -231,11 +232,20 @@ describe(userRepository.insert.name, () => {
 		expect(result).toEqual({ id, ...user1, active: null });
 	});
 
-	test('should insert insert the entity and provide a created at date', async () => {
+	test('should insert the entity and provide a created at date', async () => {
 		const { id } = await todoRepository.insert(todo1);
 
 		const result = await todoRepository.findOne({ where: { id } });
 		expect(result).toEqual({ id, ...todo1, createdAt: expect.any(Date), updatedAt: null, deletedAt: null });
+	});
+
+	test('should insert the entity and respect the primary key', async () => {
+		const uuid = randomUUID();
+		const id = 42;
+		const { id: userId } = await userRepository.insert({ id: uuid, ...user1 });
+		const { id: todoId } = await todoRepository.insert({ id, ...todo1 });
+		expect(userId).toEqual(uuid);
+		expect(todoId).toEqual(id);
 	});
 });
 

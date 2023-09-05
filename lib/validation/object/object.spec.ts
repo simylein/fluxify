@@ -57,14 +57,14 @@ describe(object.name, () => {
 	});
 
 	test('should validate a simple user object', () => {
-		const schema = {
+		const schema = object({
 			id: number(),
 			name: string(),
 			age: number(),
 			active: boolean(),
-		};
+		});
 		expect(() =>
-			object(schema).parse({
+			schema.parse({
 				id: 1,
 				name: 'simylein',
 				age: 42,
@@ -72,24 +72,19 @@ describe(object.name, () => {
 			}),
 		).not.toThrow();
 		expectType<{ id: number; name: string; age: number; active: boolean }>(
-			object(schema).parse({
-				id: 1,
-				name: 'simylein',
-				age: 42,
-				active: false,
-			}),
+			schema.parse({ id: 1, name: 'simylein', age: 42, active: false }),
 		);
 	});
 
 	test('should throw for all incorrect types', () => {
-		const schema = {
+		const schema = object({
 			id: number(),
 			name: string(),
 			age: number(),
 			active: boolean(),
-		};
+		});
 		expect(() =>
-			object(schema).parse({
+			schema.parse({
 				id: 'deadbeef',
 				name: 'simylein',
 				age: 42,
@@ -97,7 +92,7 @@ describe(object.name, () => {
 			}),
 		).toThrow(Error('id is not of type number'));
 		expect(() =>
-			object(schema).parse({
+			schema.parse({
 				name: 'simylein',
 				age: 42,
 				active: false,
@@ -106,14 +101,14 @@ describe(object.name, () => {
 	});
 
 	test('should validate and ignore optional keys if they are undefined', () => {
-		const schema = {
+		const schema = object({
 			id: number(),
 			name: string(),
 			age: number().optional(),
 			active: boolean().optional(),
-		};
+		});
 		expect(() =>
-			object(schema).parse({
+			schema.parse({
 				id: 1,
 				name: 'simylein',
 				age: 42,
@@ -121,7 +116,7 @@ describe(object.name, () => {
 			}),
 		).not.toThrow();
 		expect(() =>
-			object(schema).parse({
+			schema.parse({
 				id: 1,
 				name: 'simylein',
 				age: undefined,
@@ -129,13 +124,43 @@ describe(object.name, () => {
 			}),
 		).not.toThrow();
 		expect(() =>
-			object(schema).parse({
+			schema.parse({
 				id: 1,
 				name: 'simylein',
 			}),
 		).not.toThrow();
-		expectType<{ id: number; name: string; age?: number; active?: boolean }>(
-			object(schema).parse({ id: 1, name: 'simylein' }),
-		);
+		expectType<{
+			id: number;
+			name: string;
+			age?: number;
+			active?: boolean;
+		}>(schema.parse({ id: 1, name: 'simylein' }));
+	});
+
+	test('should validate and ignore optional keys but set defaults accordingly', () => {
+		const schema = object({
+			id: number(),
+			name: string(),
+			age: number().optional(),
+			active: boolean().optional().default(false),
+		});
+		expect(() =>
+			schema.parse({
+				id: 1,
+				name: 'simylein',
+			}),
+		).not.toThrow();
+		expect(
+			schema.parse({
+				id: 1,
+				name: 'simylein',
+			}),
+		).toEqual({ id: 1, name: 'simylein', active: false });
+		expectType<{
+			id: number;
+			name: string;
+			age?: number;
+			active: boolean;
+		}>(schema.parse({ id: 1, name: 'simylein' }));
 	});
 });

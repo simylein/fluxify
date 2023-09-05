@@ -1,0 +1,30 @@
+name: schema fluxify app on linux
+
+on:
+  push:
+    branches: [main, develop, feature/*, refactor/*, bugfix/*, hotfix/*]
+
+jobs:
+  schema-linux:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: install
+        run: bun install
+
+      - name: init
+        run: bun schema:init
+
+      - name: drop
+        run: bun schema:drop
+
+      - name: sync
+        run: bun schema:sync
+
+      - name: seed
+        run: bun schema:seed

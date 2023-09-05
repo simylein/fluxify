@@ -1,25 +1,10 @@
-name: lint fluxify app
+name: lint fluxify app on macos
 
 on:
   push:
     branches: [main, develop, feature/*, refactor/*, bugfix/*, hotfix/*]
 
 jobs:
-  lint-linux:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v3
-      - uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
-
-      - name: install
-        run: bun install
-
-      - name: lint
-        run: bun lint
-
   lint-macos:
     runs-on: macos-latest
 

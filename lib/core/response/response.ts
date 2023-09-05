@@ -15,9 +15,14 @@ export const header = (custom: HeadersInit): void => {
 	customHeaders = custom;
 };
 
-export const createResponse = (body: unknown | null, status: number, time: number, headers?: HeadersInit): Response => {
+export const createResponse = (
+	body: unknown | null,
+	status: number,
+	request: Request & { id: string; time: number },
+	headers?: HeadersInit,
+): Response => {
 	const data = body ? JSON.stringify(body) : null;
-	const diff = performance.now() - time;
-	res(status, diff);
+	const diff = performance.now() - request.time;
+	res(request.id, status, diff);
 	return new Response(data, { status, headers: { ...defaultHeaders, ...customHeaders, ...headers } });
 };

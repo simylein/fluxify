@@ -67,7 +67,7 @@ beforeAll(() => {
 		throw InternalServerError();
 	});
 	app.get('/throw', null, () => {
-		throw 'up';
+		throw Error('up');
 	});
 	app.get('/custom', null, () => {
 		return new Response('custom response body', { status: 240 });
@@ -150,7 +150,7 @@ describe(bootstrap.name, () => {
 
 		expect(Object.fromEntries(response.headers.entries())).toEqual({
 			...defaultHeaders,
-			'access-control-allow-headers': 'authorization',
+			'access-control-allow-headers': 'authorization,content-type',
 			'access-control-allow-methods': 'post, patch'.toUpperCase(),
 			'access-control-allow-credentials': 'true',
 		});

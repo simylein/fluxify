@@ -1,4 +1,5 @@
-import { beforeAll, describe, expect, mock, test } from 'bun:test';
+import { Mock, beforeAll, describe, expect, mock, test } from 'bun:test';
+import { randomUUID } from 'crypto';
 import { config } from '../config/config';
 import { expectType } from '../test/expect-type';
 import { blue, bold, cyan, green, purple, red, reset, yellow } from './color';
@@ -85,81 +86,115 @@ describe(mask.name, () => {
 
 describe(req.name, () => {
 	test('should call the custom logger request function', () => {
-		const result = req('127.0.0.1', 'get', '/test');
+		const id = randomUUID();
+		const ip = '127.0.0.1';
+		const result = req(id, ip, 'get', '/test');
 		expectType<void>(result);
 		expect(customLogger.req).toHaveBeenCalledTimes(1);
+		expect((customLogger.req as Mock<() => void>).mock.calls[0]).toEqual([
+			{ id, ip, timestamp: expect.any(Number), method: 'get', endpoint: '/test' },
+		]);
 	});
 });
 
 describe(res.name, () => {
 	test('should call the custom logger response function', () => {
-		const result = res(200, 16);
+		const id = randomUUID();
+		const result = res(id, 200, 16);
 		expectType<void>(result);
 		expect(customLogger.res).toHaveBeenCalledTimes(1);
+		expect((customLogger.res as Mock<() => void>).mock.calls[0]).toEqual([
+			{ id, timestamp: expect.any(Number), status: 200, time: 16 },
+		]);
 	});
 });
 
 describe(trace.name, () => {
-	const result = trace('trace message');
+	const log = 'trace message';
+	const result = trace(log);
 	expectType<void>(result);
 
 	test('should call the trace function on console', () => {
 		expect(console.trace).toHaveBeenCalledTimes(1);
+		expect((console.trace as Mock<() => void>).mock.calls[0]).toSatisfy((args) => (args as string[])[0].includes(log));
 	});
 
 	test('should call the custom logger trace function', () => {
 		expect(customLogger.trace).toHaveBeenCalledTimes(1);
+		expect((customLogger.trace as Mock<() => void>).mock.calls[0]).toEqual([
+			{ timestamp: expect.any(Number), message: log, stack: undefined, context: import.meta.file },
+		]);
 	});
 });
 
 describe(debug.name, () => {
-	const result = debug('debug message');
+	const log = 'debug message';
+	const result = debug(log);
 	expectType<void>(result);
 
 	test('should call the debug function on console', () => {
 		expect(console.debug).toHaveBeenCalledTimes(1);
+		expect((console.debug as Mock<() => void>).mock.calls[0]).toSatisfy((args) => (args as string[])[0].includes(log));
 	});
 
 	test('should call the custom logger debug function', () => {
 		expect(customLogger.debug).toHaveBeenCalledTimes(1);
+		expect((customLogger.debug as Mock<() => void>).mock.calls[0]).toEqual([
+			{ timestamp: expect.any(Number), message: log, stack: undefined, context: import.meta.file },
+		]);
 	});
 });
 
 describe(info.name, () => {
-	const result = info('info message');
+	const log = 'info message';
+	const result = info(log);
 	expectType<void>(result);
 
 	test('should call the info function on console', () => {
 		expect(console.info).toHaveBeenCalledTimes(1);
+		expect((console.info as Mock<() => void>).mock.calls[0]).toSatisfy((args) => (args as string[])[0].includes(log));
 	});
 
 	test('should call the custom logger info function', () => {
 		expect(customLogger.info).toHaveBeenCalledTimes(1);
+		expect((customLogger.info as Mock<() => void>).mock.calls[0]).toEqual([
+			{ timestamp: expect.any(Number), message: log, stack: undefined, context: import.meta.file },
+		]);
 	});
 });
 
 describe(warn.name, () => {
-	const result = warn('warn message');
+	const log = 'warn message';
+	const result = warn(log);
 	expectType<void>(result);
 
 	test('should call the warn function on console', () => {
 		expect(console.warn).toHaveBeenCalledTimes(1);
+		expect((console.warn as Mock<() => void>).mock.calls[0]).toSatisfy((args) => (args as string[])[0].includes(log));
 	});
 
 	test('should call the custom logger warn function', () => {
 		expect(customLogger.warn).toHaveBeenCalledTimes(1);
+		expect((customLogger.warn as Mock<() => void>).mock.calls[0]).toEqual([
+			{ timestamp: expect.any(Number), message: log, stack: undefined, context: import.meta.file },
+		]);
 	});
 });
 
 describe(error.name, () => {
-	const result = error('error message');
+	const log = 'error message';
+	const result = error(log);
 	expectType<void>(result);
 
 	test('should call the error function on console', () => {
 		expect(console.error).toHaveBeenCalledTimes(1);
+		expect((console.error as Mock<() => void>).mock.calls[0]).toSatisfy((args) => (args as string[])[0].includes(log));
 	});
 
 	test('should call the custom logger error function', () => {
 		expect(customLogger.error).toHaveBeenCalledTimes(1);
+		expect((customLogger.error as Mock<() => void>).mock.calls[0]).toEqual([
+			{ timestamp: expect.any(Number), message: log, stack: undefined, context: import.meta.file },
+		]);
 	});
 });

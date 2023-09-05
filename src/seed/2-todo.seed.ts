@@ -8,7 +8,7 @@ const userRepository = repository(userEntity);
 const todoRepository = repository(todoEntity);
 
 export const todos = async (): Promise<void> => {
-	const users = await userRepository.findMany({ select: { id: true } });
+	const users = await userRepository.find({ select: { id: true } });
 	await Promise.all(
 		Array(32)
 			.fill(null)

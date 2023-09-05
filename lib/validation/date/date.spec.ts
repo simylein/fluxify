@@ -15,7 +15,7 @@ describe(date.name, () => {
 	test('should throw for invalid dates', () => {
 		expect(() => date().parse(null)).toThrow(Error('null is not of type string'));
 		expect(() => date().parse(undefined)).toThrow(Error('undefined is not of type string'));
-		expect(() => date().parse('hello-world')).toThrow(Error('hello-world is not of type date'));
+		expect(() => date().parse('hello-world')).toThrow(Error('"hello-world" is not of type date'));
 	});
 
 	test('should not throw for valid dates', () => {

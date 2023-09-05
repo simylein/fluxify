@@ -1,4 +1,4 @@
-name: test fluxify app
+name: test fluxify app on linux
 
 on:
   push:
@@ -7,21 +7,6 @@ on:
 jobs:
   test-linux:
     runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v3
-      - uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
-
-      - name: install
-        run: bun install
-
-      - name: test
-        run: bun test:prod
-
-  test-macos:
-    runs-on: macos-latest
 
     steps:
       - uses: actions/checkout@v3

@@ -9,7 +9,7 @@ export type IdEntity = {
 	[key: string]: unknown;
 };
 
-export type FindManyOptions<T, S extends keyof T> = {
+export type FindOptions<T, S extends keyof T> = {
 	select?: Partial<Record<S, boolean>>;
 	where?: Partial<T>;
 	order?: Partial<Record<keyof T, 'asc' | 'desc'>>;
@@ -22,4 +22,4 @@ export type FindOneOptions<T, S extends keyof T> = {
 	where: Partial<T>;
 };
 
-export type ExcludedInsertKeys = 'id' | 'createdAt' | 'updatedAt' | 'deletedAt';
+export type OptionalKeys = 'id' | 'createdAt' | 'updatedAt' | 'deletedAt';

@@ -20,13 +20,13 @@ describe(isNot.name, () => {
 	});
 
 	test('should throw a describing error for given key', () => {
-		expect(() => isNot('key', 'string')).toThrow(Error('key is not of type string'));
-		expect(() => isNot('value', 'number')).toThrow(Error('value is not of type number'));
-		expect(() => isNot('hello', 'boolean')).toThrow(Error('hello is not of type boolean'));
-		expect(() => isNot('world', 'object')).toThrow(Error('world is not of type object'));
-		expect(() => isNot('title', 'array')).toThrow(Error('title is not of type array'));
-		expect(() => isNot('summary', 'undefined')).toThrow(Error('summary is not of type undefined'));
-		expect(() => isNot('description', 'null')).toThrow(Error('description is not of type null'));
+		expect(() => isNot(null, 'string')).toThrow(Error('null is not of type string'));
+		expect(() => isNot('hello', 'number')).toThrow(Error('"hello" is not of type number'));
+		expect(() => isNot(42, 'boolean')).toThrow(Error('42 is not of type boolean'));
+		expect(() => isNot(true, 'object')).toThrow(Error('true is not of type object'));
+		expect(() => isNot({}, 'array')).toThrow(Error('{} is not of type array'));
+		expect(() => isNot([], 'undefined')).toThrow(Error('[] is not of type undefined'));
+		expect(() => isNot(undefined, 'null')).toThrow(Error('undefined is not of type null'));
 	});
 });
 
@@ -90,7 +90,7 @@ describe(isNumber.name, () => {
 	});
 
 	test('should throw given anything but a number', () => {
-		expect(() => isNumber('hello-world', {})).toThrow(Error('hello-world is not of type number'));
+		expect(() => isNumber('hello-world', {})).toThrow(Error('"hello-world" is not of type number'));
 		expect(() => isNumber(true, {})).toThrow(Error('true is not of type number'));
 		expect(() => isNumber({}, {})).toThrow(Error('{} is not of type number'));
 		expect(() => isNumber([], {})).toThrow(Error('[] is not of type number'));
@@ -105,7 +105,7 @@ describe(isBoolean.name, () => {
 	});
 
 	test('should throw given anything but a boolean', () => {
-		expect(() => isBoolean('hello-world')).toThrow(Error('hello-world is not of type boolean'));
+		expect(() => isBoolean('hello-world')).toThrow(Error('"hello-world" is not of type boolean'));
 		expect(() => isBoolean(42)).toThrow(Error('42 is not of type boolean'));
 		expect(() => isBoolean({})).toThrow(Error('{} is not of type boolean'));
 		expect(() => isBoolean([])).toThrow(Error('[] is not of type boolean'));
@@ -120,7 +120,7 @@ describe(isObject.name, () => {
 	});
 
 	test('should throw given anything but a object', () => {
-		expect(() => isObject('hello-world')).toThrow(Error('hello-world is not of type object'));
+		expect(() => isObject('hello-world')).toThrow(Error('"hello-world" is not of type object'));
 		expect(() => isObject(42)).toThrow(Error('42 is not of type object'));
 		expect(() => isObject(true)).toThrow(Error('true is not of type object'));
 		expect(() => isObject([])).toThrow(Error('[] is not of type object'));

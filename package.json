@@ -1,14 +1,15 @@
 {
 	"name": "fluxify",
-	"version": "0.2.4",
+	"version": "0.2.5",
 	"license": "GPL-3.0-only",
 	"description": "neat little library for building apis",
 	"scripts": {
-		"fmt": "prettier --write {lib,src}",
+		"fmt": "bun run prettier --write {lib,src}",
 		"lint": "bun run eslint --fix {lib,src}",
 		"check": "tsc --noEmit",
+		"bundle": "bun build ./src/main.ts --target bun --minify --outdir .",
 		"test:dev": "bun --watch test",
-		"test:prod": "bun test",
+		"test:prod": "bun test --coverage",
 		"start:dev": "bun run --hot ./src/main.ts",
 		"start:prod": "bun run ./src/main.ts",
 		"schema:init": "bun ./lib/database/scripts/init.ts",
@@ -17,15 +18,15 @@
 		"schema:seed": "bun ./lib/database/scripts/seed.ts"
 	},
 	"devDependencies": {
-		"@typescript-eslint/eslint-plugin": "6.1.0",
-		"@typescript-eslint/parser": "6.1.0",
-		"bun-types": "0.7.2",
-		"eslint": "8.45.0",
-		"eslint-config-prettier": "8.8.0",
+		"@typescript-eslint/eslint-plugin": "6.4.1",
+		"@typescript-eslint/parser": "6.4.1",
+		"bun-types": "0.8.0",
+		"eslint": "8.47.0",
+		"eslint-config-prettier": "9.0.0",
 		"eslint-plugin-more": "1.0.5",
 		"eslint-plugin-prettier": "4.2.1",
 		"eslint-plugin-unused-imports": "3.0.0",
 		"prettier": "2.8.8",
-		"typescript": "5.1.6"
+		"typescript": "5.2.2"
 	}
 }

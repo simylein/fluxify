@@ -5,14 +5,14 @@ import { insertOne, runQuery, selectMany, selectOne } from '../database/database
 import { Entity } from '../database/entity/entity.type';
 import { debug } from '../logger/logger';
 import { determineOperator, orderBy, paginate, whereMany, whereOne } from './helpers/helpers';
-import { ExcludedInsertKeys, FindManyOptions, FindOneOptions, IdEntity, NullablePartial } from './repository.type';
+import { FindOneOptions, FindOptions, IdEntity, NullablePartial, OptionalKeys } from './repository.type';
 import { transformData, transformEntity } from './transform/transform';
 
 type Repository<T extends IdEntity> = {
 	init: () => Promise<void>;
-	findMany: <S extends keyof T>(options?: FindManyOptions<T, S>) => Promise<Pick<T, S>[]>;
+	find: <S extends keyof T>(options?: FindOptions<T, S>) => Promise<Pick<T, S>[]>;
 	findOne: <S extends keyof T>(options: T['id'] | FindOneOptions<T, S>) => Promise<Pick<T, S> | null>;
-	insert: (data: NullablePartial<Omit<T, ExcludedInsertKeys>>) => Promise<{ id: T['id'] }>;
+	insert: (data: NullablePartial<Omit<T, OptionalKeys>> & { [K in OptionalKeys]?: T[K] }) => Promise<{ id: T['id'] }>;
 	update: (criteria: T['id'] | Partial<T>, data: NullablePartial<Partial<Omit<T, 'id'>>>) => Promise<void>;
 	delete: (criteria: T['id'] | Partial<T>) => Promise<void>;
 	softDelete: (criteria: T['id'] | Partial<T>) => Promise<void>;
@@ -72,7 +72,7 @@ export const repository = <T extends IdEntity>(table: Entity<T>): Repository<T> 
 			});
 		},
 
-		findMany<S extends keyof T>(options?: FindManyOptions<T, S>): Promise<Pick<T, S>[]> {
+		find<S extends keyof T>(options?: FindOptions<T, S>): Promise<Pick<T, S>[]> {
 			return new Promise((resolve) => {
 				const [where, select, order, skip, take] = [
 					options?.where,
@@ -97,7 +97,7 @@ export const repository = <T extends IdEntity>(table: Entity<T>): Repository<T> 
 		findOne<S extends keyof T>(options: T['id'] | FindOneOptions<T, S>): Promise<Pick<T, S> | null> {
 			return new Promise((resolve) => {
 				let where: FindOneOptions<T, S>['where'] = {};
-				let select: FindManyOptions<T, S>['select'] = undefined;
+				let select: FindOptions<T, S>['select'] = undefined;
 				typeof options !== 'object' ? (where.id = options) : ([where, select] = [options.where, options?.select]);
 
 				if (!Object.keys(where).length) {
@@ -111,14 +111,14 @@ export const repository = <T extends IdEntity>(table: Entity<T>): Repository<T> 
 			});
 		},
 
-		insert(data: NullablePartial<Omit<T, ExcludedInsertKeys>>): Promise<{ id: T['id'] }> {
+		insert(data: NullablePartial<Omit<T, OptionalKeys>> & { [K in OptionalKeys]?: T[K] }): Promise<{ id: T['id'] }> {
 			return new Promise((resolve) => {
-				const uuid = table.columns.id.type === 'integer' ? undefined : randomUUID();
+				const uuid = data.id ?? table.columns.id.type === 'integer' ? undefined : randomUUID();
 				const keys = Object.keys(data)
-					.filter((key) => data[key as keyof NullablePartial<Omit<T, ExcludedInsertKeys>>] !== undefined)
+					.filter((key) => data[key as keyof NullablePartial<Omit<T, OptionalKeys>>] !== undefined)
 					.map((key) => table.columns[key].name ?? key);
 				const placeholders = Object.keys(data)
-					.filter((key) => data[key as keyof NullablePartial<Omit<T, ExcludedInsertKeys>>] !== undefined)
+					.filter((key) => data[key as keyof NullablePartial<Omit<T, OptionalKeys>>] !== undefined)
 					.map(() => '?');
 				const values = transformData(data);
 

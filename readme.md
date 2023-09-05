@@ -44,6 +44,7 @@ Please take a look at the little todo app example in the src directory for some 
 - `bun fmt` formats your code using prettier
 - `bun lint` lints your code using eslint
 - `bun check` type checks your code using tsc
+- `bun bundle` bundles your code for portability
 - `bun test:dev` runs your tests with hot reload
 - `bun test:prod` runs your tests for production
 - `bun start:dev` starts your http server with hot reload
@@ -349,11 +350,11 @@ app.get('/docs', null, () => {
 
 ### repository
 
-`repository()` provide an entity and get access to rich data manipulation. use functions like `findMany()` `insert()` `update()` and `delete()` to work with the chosen entity
+`repository()` provide an entity and get access to rich data manipulation. use functions like `find()` `insert()` `update()` and `delete()` to work with the chosen entity
 
 `IdEntity` the most basic entity possible. all entities must correspond to this type
 
-`FindManyOptions FindOneOptions` the types used in `findMany` and `findOne` from repository. they require generics to work
+`FindOptions FindOneOptions` the types used in `find` and `findOne` from repository. they require generics to work
 
 ### router
 

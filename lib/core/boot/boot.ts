@@ -1,4 +1,5 @@
 import { serve, Serve, Server, version } from 'bun';
+import { randomUUID } from 'crypto';
 import pack from '../../../package.json';
 import { verifyJwt } from '../../auth/jwt';
 import { config } from '../../config/config';
@@ -23,8 +24,9 @@ export const bootstrap = (): FluxifyServer => {
 	const options: Serve = {
 		port: config.stage === 'test' ? 0 : config.port,
 		development: config.stage === 'dev',
-		async fetch(request: Request, server: Server): Promise<Response> {
-			const time = performance.now();
+		async fetch(request: Request & { id: string; time: number }, server: Server): Promise<Response> {
+			request.id = randomUUID();
+			request.time = performance.now();
 
 			// TODO: use real implementation once available
 			const mock = { requestIp: (__: Request) => '127.0.0.1' };
@@ -33,7 +35,7 @@ export const bootstrap = (): FluxifyServer => {
 			const method = extractMethod(request.method);
 			const endpoint = url.pathname;
 
-			req(ip, method, endpoint);
+			req(request.id, ip, method, endpoint);
 
 			const matchingRoutes = global.server.routes.filter((route) => compareEndpoint(route, endpoint));
 			const targetRoute = matchingRoutes.find((route) => compareMethod(route, method));
@@ -49,15 +51,15 @@ export const bootstrap = (): FluxifyServer => {
 				const authRoutes = matchingRoutes.filter((route) => route.schema?.jwt);
 				if (authRoutes.length > 0) {
 					const methods = authRoutes.filter((route) => compareEndpoint(route, endpoint)).map((route) => route.method);
-					return createResponse(null, 200, time, {
+					return createResponse(null, 200, request, {
 						'access-control-allow-origin': config.allowOrigin,
-						'access-control-allow-headers': 'authorization',
+						'access-control-allow-headers': 'authorization,content-type',
 						'access-control-allow-methods': methods.join(', ').toUpperCase(),
 						'access-control-allow-credentials': 'true',
 					});
 				} else {
 					const methods = matchingRoutes.map((route) => route.method);
-					return createResponse(null, 200, time, { allow: methods.join(', ').toUpperCase() });
+					return createResponse(null, 200, request, { allow: methods.join(', ').toUpperCase() });
 				}
 			}
 
@@ -74,7 +76,7 @@ export const bootstrap = (): FluxifyServer => {
 							if (entry.hits > config.throttleLimit) {
 								debug(`throttle limit on route ${endpoint}`);
 								const status = 429;
-								return createResponse({ status, message: 'too many requests' }, status, time, {
+								return createResponse({ status, message: 'too many requests' }, status, request, {
 									'retry-after': `${Math.ceil((entry.exp - Date.now()) / 1000)}`,
 								});
 							}
@@ -125,7 +127,7 @@ export const bootstrap = (): FluxifyServer => {
 						);
 						if (hit) {
 							debug(`cache hit on route ${endpoint}`);
-							return createResponse(hit.data, hit.status, time, {
+							return createResponse(hit.data, hit.status, request, {
 								expires: new Date(hit.exp).toUTCString(),
 							});
 						}
@@ -133,7 +135,7 @@ export const bootstrap = (): FluxifyServer => {
 
 					const data = await targetRoute.handler({ param, query, body, jwt, req: request, ip });
 					if (data instanceof Response) {
-						res(data.status, performance.now() - time);
+						res(request.id, data.status, performance.now() - request.time);
 						return data;
 					}
 
@@ -148,31 +150,40 @@ export const bootstrap = (): FluxifyServer => {
 							status,
 						});
 					}
-					return createResponse(data, status, time);
+					return createResponse(data, status, request);
 				} catch (err) {
 					if (err instanceof ValidationError) {
 						const status = 400;
-						return createResponse({ status, message: err.message }, status, time);
+						return createResponse({ status, message: err.message }, status, request);
 					}
 					if (err instanceof HttpException) {
 						const status = err.status;
-						return createResponse({ status, message: err.message }, status, time);
+						return createResponse({ status, message: err.message }, status, request);
 					}
-					throw err;
+					throw {
+						name: (err as { name?: string })?.name,
+						message: (err as { message?: string })?.message,
+						cause: (err as { cause?: string })?.cause,
+						stack: (err as { stack?: string })?.stack,
+						request,
+					};
 				}
 			} else if (matchingRoutes.length > 0) {
 				const status = 405;
-				return createResponse({ status, message: 'method not allowed' }, status, time);
+				return createResponse({ status, message: 'method not allowed' }, status, request);
 			} else {
 				const status = 404;
-				return createResponse({ status, message: 'not found' }, status, time);
+				return createResponse({ status, message: 'not found' }, status, request);
 			}
 		},
 		error(err: Error): Response {
-			const time = performance.now();
 			error(err?.message, config.logLevel === 'trace' ? err : '');
 			const status = 500;
-			return createResponse({ status, message: 'internal server error' }, status, time);
+			return createResponse(
+				{ status, message: 'internal server error' },
+				status,
+				(err as Error & { request: Request & { id: string; time: number } }).request,
+			);
 		},
 	};
 
