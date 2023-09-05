@@ -350,11 +350,11 @@ app.get('/docs', null, () => {
 
 ### repository
 
-`repository()` provide an entity and get access to rich data manipulation. use functions like `findMany()` `insert()` `update()` and `delete()` to work with the chosen entity
+`repository()` provide an entity and get access to rich data manipulation. use functions like `find()` `insert()` `update()` and `delete()` to work with the chosen entity
 
 `IdEntity` the most basic entity possible. all entities must correspond to this type
 
-`FindManyOptions FindOneOptions` the types used in `findMany` and `findOne` from repository. they require generics to work
+`FindOptions FindOneOptions` the types used in `find` and `findOne` from repository. they require generics to work
 
 ### router
 

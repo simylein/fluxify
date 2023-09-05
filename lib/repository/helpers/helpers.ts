@@ -1,7 +1,7 @@
-import { FindManyOptions, FindOneOptions, IdEntity } from '../repository.type';
+import { FindOneOptions, FindOptions, IdEntity } from '../repository.type';
 
 export const orderBy = <T extends IdEntity, S extends keyof T>(
-	order?: FindManyOptions<T, S>['order'],
+	order?: FindOptions<T, S>['order'],
 ): string | undefined => {
 	if (order && Object.keys(order).length) {
 		const keys = Object.keys(order).map((key) => `${key} ${order[key]}`);
@@ -39,8 +39,8 @@ export const whereMany = <T extends IdEntity, S extends keyof T>(
 };
 
 export const paginate = <T extends IdEntity, S extends keyof T>(
-	take: FindManyOptions<T, S>['take'],
-	skip: FindManyOptions<T, S>['skip'],
+	take: FindOptions<T, S>['take'],
+	skip: FindOptions<T, S>['skip'],
 ): string => {
 	if (take !== undefined && skip !== undefined) {
 		return `limit ${take} offset ${skip}`;

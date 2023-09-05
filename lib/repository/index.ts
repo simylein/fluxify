@@ -1,2 +1,2 @@
 export { repository } from './repository';
-export type { FindManyOptions, FindOneOptions, IdEntity } from './repository.type';
+export type { FindOneOptions, FindOptions, IdEntity } from './repository.type';

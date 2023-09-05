@@ -25,7 +25,7 @@ export const findTodos = async (
 ): Promise<Omit<Todo, 'userId' | 'createdAt' | 'updatedAt' | 'deletedAt'>[]> => {
 	info('finding all todos');
 
-	const todos = await todoRepository.findMany({
+	const todos = await todoRepository.find({
 		select: { id: true, title: true, description: true, done: true, dueAt: true },
 		where: { userId: user.id, title: query.title ? `%${query.title}%` : undefined },
 		take: query.take,
