@@ -1,4 +1,5 @@
 import { Mock, beforeAll, describe, expect, mock, test } from 'bun:test';
+import { randomUUID } from 'crypto';
 import { config } from '../config/config';
 import { expectType } from '../test/expect-type';
 import { blue, bold, cyan, green, purple, red, reset, yellow } from './color';
@@ -85,22 +86,24 @@ describe(mask.name, () => {
 
 describe(req.name, () => {
 	test('should call the custom logger request function', () => {
-		const result = req('get', '/test');
+		const id = randomUUID();
+		const result = req(id, 'get', '/test');
 		expectType<void>(result);
 		expect(customLogger.req).toHaveBeenCalledTimes(1);
 		expect((customLogger.req as Mock<() => void>).mock.calls[0]).toEqual([
-			{ timestamp: expect.any(Number), method: 'get', endpoint: '/test' },
+			{ id, timestamp: expect.any(Number), method: 'get', endpoint: '/test' },
 		]);
 	});
 });
 
 describe(res.name, () => {
 	test('should call the custom logger response function', () => {
-		const result = res(200, 16);
+		const id = randomUUID();
+		const result = res(id, 200, 16);
 		expectType<void>(result);
 		expect(customLogger.res).toHaveBeenCalledTimes(1);
 		expect((customLogger.res as Mock<() => void>).mock.calls[0]).toEqual([
-			{ timestamp: expect.any(Number), status: 200, time: 16 },
+			{ id, timestamp: expect.any(Number), status: 200, time: 16 },
 		]);
 	});
 });

@@ -65,7 +65,7 @@ beforeAll(() => {
 		throw InternalServerError();
 	});
 	app.get('/throw', null, () => {
-		throw 'up';
+		throw Error('up');
 	});
 	app.get('/custom', null, () => {
 		return new Response('custom response body', { status: 240 });
