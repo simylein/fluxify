@@ -77,11 +77,11 @@ import { bootstrap } from 'lib/core';
 
 const server = bootstrap();
 server.logger({
-	res: ({ timestamp, status, time }) => {
-		console.log('fires on request', { timestamp, status, time });
+	res: ({ id, timestamp, status, time }) => {
+		console.log('fires on request', { id, timestamp, status, time });
 	},
-	info: ({ timestamp, message }) => {
-		console.log('fires on info', { timestamp, message });
+	info: ({ timestamp, message, context }) => {
+		console.log('fires on info', { timestamp, message, context });
 	},
 });
 ```
