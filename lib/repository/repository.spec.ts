@@ -162,6 +162,19 @@ describe(userRepository.find.name, () => {
 		expect(result).toEqual([todo2]);
 		expectType<Pick<Todo, 'name' | 'done'>[]>(result);
 	});
+
+	test('should return all entities which conform to all constraints', async () => {
+		await todoRepository.insert(todo1);
+		await todoRepository.insert(todo2);
+
+		const result = await todoRepository.find({
+			select: { name: true },
+			where: { updatedAt: null },
+			order: { name: 'desc' },
+		});
+		expect(result).toEqual([{ name: todo2.name }, { name: todo1.name }]);
+		expectType<Pick<Todo, 'name'>[]>(result);
+	});
 });
 
 describe(userRepository.findOne.name, () => {

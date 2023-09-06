@@ -84,8 +84,8 @@ export const repository = <T extends IdEntity>(table: Entity<T>): Repository<T> 
 				const constraints = [
 					selectKeys(select),
 					table.name,
-					orderBy<T, S>(order),
 					whereKeys(where),
+					orderBy<T, S>(order),
 					paginate<T, S>(take, skip),
 				].filter((constraint) => !!constraint);
 				const entities = selectMany<T>(`${constraints.join(' ')}`, whereMany<T, S>(where));
