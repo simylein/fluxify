@@ -322,7 +322,7 @@ describe(todoRepository.softDelete.name, () => {
 	});
 });
 
-describe(todoRepository.softDelete.name, () => {
+describe(todoRepository.restore.name, () => {
 	test('should restore the entity with the id using short form', async () => {
 		const { id } = await todoRepository.insert(todo1);
 		await todoRepository.softDelete(id);
