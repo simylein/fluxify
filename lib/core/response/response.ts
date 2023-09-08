@@ -1,5 +1,6 @@
 import { config } from '../../config/config';
 import { res } from '../../logger/logger';
+import { FluxifyRequest } from '../boot/boot.type';
 
 let customHeaders: HeadersInit = {};
 
@@ -18,7 +19,7 @@ export const header = (custom: HeadersInit): void => {
 export const createResponse = (
 	body: unknown | null,
 	status: number,
-	request: Request & { id: string; time: number },
+	request: FluxifyRequest,
 	headers?: HeadersInit,
 ): Response => {
 	const data = body ? JSON.stringify(body) : null;

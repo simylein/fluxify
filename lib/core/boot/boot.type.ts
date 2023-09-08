@@ -9,3 +9,8 @@ export type FluxifyServer = Server & {
 	logger: (custom: Logger) => void;
 	header: (custom: HeadersInit) => void;
 };
+
+export type FluxifyRequest = Request & {
+	id: string;
+	time: number;
+};

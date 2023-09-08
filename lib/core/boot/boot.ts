@@ -13,7 +13,7 @@ import { compareEndpoint, compareMethod } from '../compare/compare';
 import { extractMethod, extractParam } from '../extract/extract';
 import { parseBody } from '../request/request';
 import { createResponse, header } from '../response/response';
-import { FluxifyServer } from './boot.type';
+import { FluxifyRequest, FluxifyServer } from './boot.type';
 
 declare global {
 	// eslint-disable-next-line no-var
@@ -24,7 +24,7 @@ export const bootstrap = (): FluxifyServer => {
 	const options: Serve = {
 		port: config.stage === 'test' ? 0 : config.port,
 		development: config.stage === 'dev',
-		async fetch(request: Request & { id: string; time: number }): Promise<Response> {
+		async fetch(request: FluxifyRequest): Promise<Response> {
 			request.id = randomUUID();
 			request.time = performance.now();
 
@@ -34,7 +34,7 @@ export const bootstrap = (): FluxifyServer => {
 
 			req(request.id, method, endpoint);
 
-			const matchingRoutes = routes.filter((route) => compareEndpoint(route, endpoint));
+			const matchingRoutes = global.server.routes.filter((route) => compareEndpoint(route, endpoint));
 			const targetRoute = matchingRoutes.find((route) => compareMethod(route, method));
 			const useCache =
 				method === 'get' &&
@@ -150,7 +150,7 @@ export const bootstrap = (): FluxifyServer => {
 			return createResponse(
 				{ status, message: 'internal server error' },
 				status,
-				(err as Error & { request: Request & { id: string; time: number } }).request,
+				(err as Error & { request: FluxifyRequest }).request,
 			);
 		},
 	};

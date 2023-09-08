@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, mock, test } from 'bun:test';
 import { randomUUID } from 'crypto';
+import { FluxifyRequest } from '../boot/boot.type';
 import { createResponse } from './response';
 
 beforeAll(() => {
@@ -8,7 +9,7 @@ beforeAll(() => {
 
 describe(createResponse.name, () => {
 	test('should create a response with null as body if unused', () => {
-		const request = new Request('http://example.com') as Request & { id: string; time: number };
+		const request = new Request('http://example.com') as FluxifyRequest;
 		request.id = randomUUID();
 		request.time = performance.now();
 		const status = 200;
@@ -19,7 +20,7 @@ describe(createResponse.name, () => {
 	});
 
 	test('should create a response with the input as body if used', async () => {
-		const request = new Request('http://example.com') as Request & { id: string; time: number };
+		const request = new Request('http://example.com') as FluxifyRequest;
 		request.id = randomUUID();
 		request.time = performance.now();
 		const status = 200;
