@@ -1,6 +1,7 @@
 import { Mock, beforeAll, describe, expect, mock, test } from 'bun:test';
 import { randomUUID } from 'crypto';
 import { config } from '../config/config';
+import { FluxifyRequest } from '../core/boot/boot.type';
 import { expectType } from '../test/expect-type';
 import { blue, bold, cyan, green, purple, red, reset, yellow } from './color';
 import {
@@ -86,13 +87,12 @@ describe(mask.name, () => {
 
 describe(req.name, () => {
 	test('should call the custom logger request function', () => {
-		const id = randomUUID();
-		const ip = '127.0.0.1';
-		const result = req(id, ip, 'get', '/test');
+		const request = { id: randomUUID(), ip: '127.0.0.1' } as FluxifyRequest;
+		const result = req(request, 'get', '/test');
 		expectType<void>(result);
 		expect(customLogger.req).toHaveBeenCalledTimes(1);
 		expect((customLogger.req as Mock<() => void>).mock.calls[0]).toEqual([
-			{ id, ip, timestamp: expect.any(Number), method: 'get', endpoint: '/test' },
+			{ id: request.id, ip: request.ip, timestamp: expect.any(Number), method: 'get', endpoint: '/test' },
 		]);
 	});
 });

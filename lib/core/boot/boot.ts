@@ -25,17 +25,17 @@ export const bootstrap = (): FluxifyServer => {
 		port: config.stage === 'test' ? 0 : config.port,
 		development: config.stage === 'dev',
 		async fetch(request: FluxifyRequest, server: Server): Promise<Response> {
-			request.id = randomUUID();
 			request.time = performance.now();
+			// TODO: use real implementation once available from bun
+			const mockServer = { requestIp: (request: Request) => '127.0.0.1' };
+			request.ip = mockServer.requestIp(request);
+			request.id = randomUUID();
 
-			// TODO: use real implementation once available
-			const mock = { requestIp: (request: Request) => '127.0.0.1' };
-			const ip = mock.requestIp(request);
 			const url = new URL(request.url);
 			const method = extractMethod(request.method);
 			const endpoint = url.pathname;
 
-			req(request.id, ip, method, endpoint);
+			req(request, method, endpoint);
 
 			const matchingRoutes = global.server.routes.filter((route) => compareEndpoint(route, endpoint));
 			const targetRoute = matchingRoutes.find((route) => compareMethod(route, method));
@@ -66,7 +66,7 @@ export const bootstrap = (): FluxifyServer => {
 			if (targetRoute) {
 				try {
 					if (useThrottle) {
-						const entry = global.server.throttle[ip]?.[endpoint];
+						const entry = global.server.throttle[request.ip]?.[endpoint];
 						if (entry) {
 							if (entry.exp < Date.now()) {
 								entry.exp = Date.now() + config.throttleTtl * 1000;
@@ -81,10 +81,10 @@ export const bootstrap = (): FluxifyServer => {
 								});
 							}
 						} else {
-							if (!global.server.throttle[ip]) {
-								global.server.throttle[ip] = {};
+							if (!global.server.throttle[request.ip]) {
+								global.server.throttle[request.ip] = {};
 							}
-							global.server.throttle[ip][endpoint] = {
+							global.server.throttle[request.ip][endpoint] = {
 								exp: Date.now() + config.throttleTtl * 1000,
 								hits: 1,
 								path: endpoint,
@@ -133,7 +133,7 @@ export const bootstrap = (): FluxifyServer => {
 						}
 					}
 
-					const data = await targetRoute.handler({ param, query, body, jwt, req: request, ip });
+					const data = await targetRoute.handler({ param, query, body, jwt, req: request });
 					if (data instanceof Response) {
 						res(request.id, data.status, performance.now() - request.time);
 						return data;

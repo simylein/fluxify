@@ -14,5 +14,6 @@ export type FluxifyServer = Server & {
 
 export type FluxifyRequest = Request & {
 	id: string;
+	ip: string;
 	time: number;
 };

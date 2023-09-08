@@ -1,3 +1,4 @@
+import { FluxifyRequest } from '../core/boot/boot.type';
 import { IdEntity } from '../repository/repository.type';
 import { Parser } from '../validation/parser.type';
 
@@ -14,7 +15,7 @@ export type Route = {
 	endpoint: string;
 	schema: Schema<unknown, unknown, unknown, unknown> | null;
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	handler: ({ param, query, body, jwt, req, ip }: HandlerSchema<any, any, any, any>) => RouteReturn;
+	handler: ({ param, query, body, jwt, req }: HandlerSchema<any, any, any, any>) => RouteReturn;
 };
 
 export type Schema<P, Q, B, J> = {
@@ -29,8 +30,7 @@ export type HandlerSchema<P, Q, B, J> = {
 	query: TypedQuery<Q>;
 	body: TypedBody<B>;
 	jwt: TypedJwt<J>;
-	req: Request;
-	ip: string;
+	req: FluxifyRequest;
 };
 
 type TypedParam<P> = P extends undefined
