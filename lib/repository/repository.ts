@@ -4,7 +4,8 @@ import { ColumnOptions } from '../database/column/column.type';
 import { insertOne, runQuery, selectMany, selectOne } from '../database/database';
 import { Entity } from '../database/entity/entity.type';
 import { debug } from '../logger/logger';
-import { determineOperator, orderBy, paginate, whereMany, whereOne } from './helpers/helpers';
+import { orderBy, paginate, whereMany, whereOne } from './helpers/helpers';
+import { determineOperator } from './operators/operators';
 import { FindOneOptions, FindOptions, IdEntity, NullablePartial, OptionalKeys } from './repository.type';
 import { transformData, transformEntity } from './transform/transform';
 
@@ -27,13 +28,13 @@ export const repository = <T extends IdEntity>(table: Entity<T>): Repository<T> 
 		runQuery(table.schema);
 	}
 
-	const selectKeys = <S extends keyof T>(select?: Partial<Record<S, boolean>>): string => {
+	const selectKeys = <S extends keyof T>(select?: FindOptions<T, S>['select']): string => {
 		const keys = Object.keys(table.columns).map((key) =>
 			table.columns[key].name ? `${table.columns[key].name} as ${key}` : key,
 		);
 		if (select && Object.keys(select).length) {
 			const filteredKeys = Object.keys(select)
-				.filter((key) => select[key as keyof Partial<Record<S, boolean>>] === true)
+				.filter((key) => select[key as keyof FindOptions<T, S>['select']] === true)
 				.map((key) => (table.columns[key].name ? `${table.columns[key].name} as ${key}` : key));
 			if (filteredKeys.length) {
 				return `select ${filteredKeys.join(',')} from`;
@@ -42,7 +43,7 @@ export const repository = <T extends IdEntity>(table: Entity<T>): Repository<T> 
 		return `select ${keys.join(',')} from`;
 	};
 
-	const whereKeys = (where?: Partial<T>, deleted = false): string | undefined => {
+	const whereKeys = (where?: FindOptions<T, keyof T>['where'], deleted = false): string | undefined => {
 		const columns = Object.keys(table.columns).filter((key) => !('references' in table.columns[key]));
 		const deletedColumn = columns.find(
 			(column) => (table.columns as Record<string, ColumnOptions>)[column].onDelete === `(datetime('now'))`,
@@ -55,7 +56,9 @@ export const repository = <T extends IdEntity>(table: Entity<T>): Repository<T> 
 		if (where && Object.keys(where).length) {
 			const filtered = Object.keys(where).filter((key) => where[key] !== undefined);
 			if (filtered.length) {
-				const keys = filtered.map((key) => `${table.columns[key].name ?? key} ${determineOperator<T>(where, key)} ?`);
+				const keys = filtered.map(
+					(key) => `${table.columns[key].name ?? key} ${determineOperator<T, keyof T>(where, key)} ?`,
+				);
 				if (deletedKey && !deleted) keys.push(`${deletedKey} is null`);
 				return `where ${keys.join(' and ')}`;
 			}

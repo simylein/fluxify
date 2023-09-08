@@ -1,7 +1,7 @@
 import { emit, subscribe } from 'lib/events';
 import { Forbidden, NoContent } from 'lib/exception';
 import { info, mask } from 'lib/logger';
-import { repository } from 'lib/repository';
+import { like, repository } from 'lib/repository';
 import { AuthUser } from '../auth/auth.service';
 import { TodoCreateDto } from './dto/todo-create.dto';
 import { TodoQueryDto } from './dto/todo-query.dto';
@@ -27,7 +27,7 @@ export const findTodos = async (
 
 	const todos = await todoRepository.find({
 		select: { id: true, title: true, description: true, done: true, dueAt: true },
-		where: { userId: user.id, title: query.title ? `%${query.title}%` : undefined },
+		where: { userId: user.id, title: query.title ? like(`%${query.title}%`) : undefined },
 		take: query.take,
 		skip: query.skip,
 	});

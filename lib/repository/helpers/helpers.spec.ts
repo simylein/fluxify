@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { determineOperator, orderBy, paginate, whereMany, whereOne } from './helpers';
+import { orderBy, paginate, whereMany, whereOne } from './helpers';
 
 describe(orderBy.name, () => {
 	test('should return undefined given no order keys', () => {
@@ -10,20 +10,6 @@ describe(orderBy.name, () => {
 		expect(orderBy({ name: 'asc' })).toEqual('order by name asc');
 		expect(orderBy({ title: 'desc' })).toEqual('order by title desc');
 		expect(orderBy({ name: 'asc', title: 'desc' })).toEqual('order by name asc,title desc');
-	});
-});
-
-describe(determineOperator.name, () => {
-	test('should return an equals for numbers', () => {
-		expect(determineOperator({ amount: 4 }, 'amount')).toEqual('=');
-	});
-
-	test('should return is for null', () => {
-		expect(determineOperator({ title: null }, 'title')).toEqual('is');
-	});
-
-	test('should return like for strings including a percent', () => {
-		expect(determineOperator({ name: '%alice%' }, 'name')).toEqual('like');
 	});
 });
 

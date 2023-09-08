@@ -8,6 +8,7 @@ import { Infer } from '../database/entity/entity.type';
 import { primary } from '../database/primary/primary';
 import { updated } from '../database/updated/updated';
 import { expectType } from '../test/expect-type';
+import { lessThan, like, moreThan } from './operators/operators';
 import { repository } from './repository';
 import { OptionalKeys } from './repository.type';
 
@@ -161,6 +162,33 @@ describe(userRepository.find.name, () => {
 		const result = await todoRepository.find({ select: { name: true, done: true } });
 		expect(result).toEqual([todo2]);
 		expectType<Pick<Todo, 'name' | 'done'>[]>(result);
+	});
+
+	test('should respect like operator in where clause', async () => {
+		await todoRepository.insert(todo1);
+		await todoRepository.insert(todo2);
+
+		const result = await todoRepository.find({ select: { name: true, done: true }, where: { name: like('%nd%') } });
+		expect(result).toEqual([todo1]);
+		expectType<Pick<Todo, 'name' | 'done'>[]>(result);
+	});
+
+	test('should respect less than operator in where clause', async () => {
+		const { id } = await userRepository.insert(user1);
+		await userRepository.insert(user2);
+
+		const result = await userRepository.find({ where: { age: lessThan(50) } });
+		expect(result).toEqual([{ id, ...user1 }]);
+		expectType<User[]>(result);
+	});
+
+	test('should respect more than operator in where clause', async () => {
+		await userRepository.insert(user1);
+		const { id } = await userRepository.insert(user2);
+
+		const result = await userRepository.find({ where: { age: moreThan(60) } });
+		expect(result).toEqual([{ id, ...user2 }]);
+		expectType<User[]>(result);
 	});
 
 	test('should return all entities which conform to all constraints', async () => {
