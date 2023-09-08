@@ -1,2 +1,2 @@
 export { bootstrap } from './boot/boot';
-export type { FluxifyServer } from './boot/boot.type';
+export type { FluxifyRequest, FluxifyServer } from './boot/boot.type';

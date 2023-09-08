@@ -13,7 +13,7 @@ import { compareEndpoint, compareMethod } from '../compare/compare';
 import { extractMethod, extractParam } from '../extract/extract';
 import { parseBody } from '../request/request';
 import { createResponse, header } from '../response/response';
-import { FluxifyServer } from './boot.type';
+import { FluxifyRequest, FluxifyServer } from './boot.type';
 
 declare global {
 	// eslint-disable-next-line no-var
@@ -24,12 +24,12 @@ export const bootstrap = (): FluxifyServer => {
 	const options: Serve = {
 		port: config.stage === 'test' ? 0 : config.port,
 		development: config.stage === 'dev',
-		async fetch(request: Request & { id: string; time: number }, server: Server): Promise<Response> {
+		async fetch(request: FluxifyRequest, server: Server): Promise<Response> {
 			request.id = randomUUID();
 			request.time = performance.now();
 
 			// TODO: use real implementation once available
-			const mock = { requestIp: (__: Request) => '127.0.0.1' };
+			const mock = { requestIp: (request: Request) => '127.0.0.1' };
 			const ip = mock.requestIp(request);
 			const url = new URL(request.url);
 			const method = extractMethod(request.method);
@@ -182,7 +182,7 @@ export const bootstrap = (): FluxifyServer => {
 			return createResponse(
 				{ status, message: 'internal server error' },
 				status,
-				(err as Error & { request: Request & { id: string; time: number } }).request,
+				(err as Error & { request: FluxifyRequest }).request,
 			);
 		},
 	};
