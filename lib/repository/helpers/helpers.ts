@@ -9,24 +9,13 @@ export const orderBy = <T extends IdEntity, S extends keyof T>(
 	}
 };
 
-export const determineOperator = <T extends IdEntity>(where: Partial<T>, key: string): string => {
-	if (
-		typeof where[key] === 'string' &&
-		((where[key] as string).startsWith('%') || (where[key] as string).endsWith('%'))
-	) {
-		return 'like';
-	}
-	if (where[key] === null) {
-		return 'is';
-	}
-	return '=';
-};
-
 export const whereOne = <T extends IdEntity, S extends keyof T>(
 	where: FindOneOptions<T, S>['where'],
 ): string[] | undefined => {
 	if (where && Object.keys(where).length) {
-		return Object.values(where).filter((value) => value !== undefined);
+		return Object.values(where)
+			.filter((value) => value !== undefined)
+			.map((value) => (value && typeof value === 'object' ? value.value : value));
 	}
 };
 
@@ -34,7 +23,9 @@ export const whereMany = <T extends IdEntity, S extends keyof T>(
 	where?: FindOneOptions<T, S>['where'],
 ): string[] | undefined => {
 	if (where && Object.keys(where).length) {
-		return Object.values(where).filter((value) => value !== undefined);
+		return Object.values(where)
+			.filter((value) => value !== undefined)
+			.map((value) => (value && typeof value === 'object' ? value.value : value));
 	}
 };
 

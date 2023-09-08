@@ -1,3 +1,4 @@
+import { IdEntity } from '../repository/repository.type';
 import { Parser } from '../validation/parser.type';
 
 export type Method = 'get' | 'post' | 'put' | 'patch' | 'delete' | 'options';
@@ -6,10 +7,12 @@ export type Param = Record<string, unknown>;
 
 export type Query = Record<string, unknown>;
 
+export type RouteReturn = unknown | IdEntity | IdEntity[] | Promise<unknown | IdEntity | IdEntity[]>;
+
 export type Route = {
 	method: Method;
-	schema: Schema<unknown, unknown, unknown, unknown> | null;
 	endpoint: string;
+	schema: Schema<unknown, unknown, unknown, unknown> | null;
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	handler: ({ param, query, body, jwt, req, ip }: HandlerSchema<any, any, any, any>) => RouteReturn;
 };
@@ -29,8 +32,6 @@ export type HandlerSchema<P, Q, B, J> = {
 	req: Request;
 	ip: string;
 };
-
-export type RouteReturn = Promise<unknown> | unknown;
 
 type TypedParam<P> = P extends undefined
 	? undefined

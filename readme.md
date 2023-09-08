@@ -78,7 +78,7 @@ import { bootstrap } from 'lib/core';
 const server = bootstrap();
 server.logger({
 	res: ({ id, timestamp, status, time }) => {
-		console.log('fires on request', { id, timestamp, status, time });
+		console.log('fires on response', { id, timestamp, status, time });
 	},
 	info: ({ timestamp, message, context }) => {
 		console.log('fires on info', { timestamp, message, context });
