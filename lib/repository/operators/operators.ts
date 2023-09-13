@@ -1,6 +1,10 @@
 import { FindOneOptions, IdEntity, Operator } from '../repository.type';
 import { Modifier } from './operators.type';
 
+export const not = <T>(value: T): Modifier<T> => {
+	return { operator: '!=', value };
+};
+
 export const like = <T>(value: T): Modifier<T> => {
 	return { operator: 'like', value };
 };

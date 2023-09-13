@@ -9,7 +9,7 @@ export type IdEntity = {
 	[key: string]: unknown;
 };
 
-export type Operator = 'like' | '<' | '>' | '<=' | '>=';
+export type Operator = '!=' | 'like' | '<' | '>' | '<=' | '>=';
 
 export type SelectOptions<T, S extends keyof T> = Partial<Record<S, boolean>>;
 
