@@ -77,17 +77,18 @@ export const repository = <T extends IdEntity>(table: Entity<T>): Repository<T> 
 
 		find<S extends keyof T>(options?: FindOptions<T, S>): Promise<Pick<T, S>[]> {
 			return new Promise((resolve) => {
-				const [where, select, order, skip, take] = [
+				const [where, select, order, skip, take, deleted] = [
 					options?.where,
 					options?.select,
 					options?.order,
 					options?.skip,
 					options?.take,
+					options?.deleted,
 				];
 				const constraints = [
 					selectKeys(select),
 					table.name,
-					whereKeys(where),
+					whereKeys(where, deleted),
 					orderBy<T, S>(order),
 					paginate<T, S>(take, skip),
 				].filter((constraint) => !!constraint);
@@ -101,13 +102,18 @@ export const repository = <T extends IdEntity>(table: Entity<T>): Repository<T> 
 			return new Promise((resolve) => {
 				let where: FindOneOptions<T, S>['where'] = {};
 				let select: FindOptions<T, S>['select'] = undefined;
-				typeof options !== 'object' ? (where.id = options) : ([where, select] = [options.where, options?.select]);
+				let deleted: FindOptions<T, S>['deleted'] = false;
+				typeof options !== 'object'
+					? (where.id = options)
+					: ([where, select, deleted] = [options.where, options?.select, options?.deleted]);
 
 				if (!Object.keys(where).length) {
 					throw Error(`find one needs at least one where key`);
 				}
 
-				const constraints = [selectKeys(select), table.name, whereKeys(where)].filter((constraint) => !!constraint);
+				const constraints = [selectKeys(select), table.name, whereKeys(where, deleted)].filter(
+					(constraint) => !!constraint,
+				);
 				const entity = selectOne<T>(`${constraints.join(' ')}`, whereOne<T, S>(where));
 				const transformed = entity === null ? null : transformEntity<T>(table, entity);
 				return resolve(transformed);

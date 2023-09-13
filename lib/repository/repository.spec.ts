@@ -164,6 +164,16 @@ describe(userRepository.find.name, () => {
 		expectType<Pick<Todo, 'name' | 'done'>[]>(result);
 	});
 
+	test('should also return entities which are soft deleted', async () => {
+		const { id } = await todoRepository.insert(todo1);
+		await todoRepository.insert(todo2);
+		await todoRepository.softDelete(id);
+
+		const result = await todoRepository.find({ select: { name: true, done: true }, deleted: true });
+		expect(result).toEqual([todo1, todo2]);
+		expectType<Pick<Todo, 'name' | 'done'>[]>(result);
+	});
+
 	test('should respect like operator in where clause', async () => {
 		await todoRepository.insert(todo1);
 		await todoRepository.insert(todo2);
