@@ -11,21 +11,23 @@ export type IdEntity = {
 
 export type Operator = 'like' | '<' | '>' | '<=' | '>=';
 
-export type Select<T, S extends keyof T> = Partial<Record<S, boolean>>;
+export type SelectOptions<T, S extends keyof T> = Partial<Record<S, boolean>>;
 
-export type Where<T> = Partial<{ [K in keyof T]: T[K] | { operator: Operator; value: T[K] } }>;
+export type WhereOptions<T> = Partial<{ [K in keyof T]: T[K] | { operator: Operator; value: T[K] } }>;
 
 export type FindOptions<T, S extends keyof T> = {
-	select?: Select<T, S>;
-	where?: Where<T>;
+	select?: SelectOptions<T, S>;
+	where?: WhereOptions<T>;
 	order?: Partial<Record<keyof T, 'asc' | 'desc'>>;
 	skip?: number;
 	take?: number;
+	deleted?: boolean;
 };
 
 export type FindOneOptions<T, S extends keyof T> = {
-	select?: Select<T, S>;
-	where: Where<T>;
+	select?: SelectOptions<T, S>;
+	where: WhereOptions<T>;
+	deleted?: boolean;
 };
 
 export type OptionalKeys = 'id' | 'createdAt' | 'updatedAt' | 'deletedAt';

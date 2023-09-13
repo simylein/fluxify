@@ -32,14 +32,30 @@ const todoEntity = entity('repository_todo', {
 type Todo = Infer<typeof todoEntity>;
 
 const userRepository = repository(userEntity);
-
-const user1: Omit<User, 'id'> = { age: 42, name: 'alice', active: true, isAdmin: false };
-const user2: Omit<User, 'id'> = { age: 73, name: 'bob', active: false, isAdmin: true };
-
 const todoRepository = repository(todoEntity);
+
+const user1: Omit<User, OptionalKeys> = { age: 42, name: 'alice', active: true, isAdmin: false };
+const user2: Omit<User, OptionalKeys> = { age: 73, name: 'bob', active: false, isAdmin: true };
+const user3: Omit<User, OptionalKeys> = { age: 12, name: 'charlie', active: true, isAdmin: false };
+const user4: Omit<User, OptionalKeys> = { age: 24, name: 'dave', active: false, isAdmin: false };
 
 const todo1: Omit<Todo, OptionalKeys> = { name: 'land', done: false };
 const todo2: Omit<Todo, OptionalKeys> = { name: 'launch', done: true };
+const todo3: Omit<Todo, OptionalKeys> = { name: 'compile', done: true };
+const todo4: Omit<Todo, OptionalKeys> = { name: 'execute', done: false };
+
+const users = [user1, user2, user3, user4];
+const todos = [todo1, todo2, todo3, todo4];
+
+const seedUsers = async (userData: Omit<User, OptionalKeys>[]): Promise<User['id'][]> => {
+	const data = await Promise.all(userData.map((user) => userRepository.insert(user)));
+	return data.map((user) => user.id);
+};
+
+const seedTodos = async (todoData: Omit<Todo, OptionalKeys>[]): Promise<Todo['id'][]> => {
+	const data = await Promise.all(todoData.map((todo) => todoRepository.insert(todo)));
+	return data.map((todo) => todo.id);
+};
 
 afterEach(() => Promise.all([userRepository.wipe(), todoRepository.wipe()]));
 
@@ -53,40 +69,45 @@ describe(userRepository.find.name, () => {
 	});
 
 	test('should return all entities when no options are provided for users', async () => {
-		const { id: id1 } = await userRepository.insert(user1);
-		const { id: id2 } = await userRepository.insert(user2);
+		const [id1, id2, id3, id4] = await seedUsers(users);
 
 		const result = await userRepository.find();
 		expect(result).toEqual([
 			{ id: expect.any(String), ...user1 },
 			{ id: expect.any(String), ...user2 },
+			{ id: expect.any(String), ...user3 },
+			{ id: expect.any(String), ...user4 },
 		]);
 		expect(result).toEqual([
 			{ id: id1, ...user1 },
 			{ id: id2, ...user2 },
+			{ id: id3, ...user3 },
+			{ id: id4, ...user4 },
 		]);
 		expectType<User[]>(result);
 	});
 
 	test('should return all entities when no options are provided for todos', async () => {
-		const { id: id1 } = await todoRepository.insert(todo1);
-		const { id: id2 } = await todoRepository.insert(todo2);
+		const [id1, id2, id3, id4] = await seedTodos(todos);
 
 		const result = await todoRepository.find({ select: { id: true, name: true, done: true } });
 		expect(result).toEqual([
 			{ id: expect.any(Number), ...todo1 },
 			{ id: expect.any(Number), ...todo2 },
+			{ id: expect.any(Number), ...todo3 },
+			{ id: expect.any(Number), ...todo4 },
 		]);
 		expect(result).toEqual([
 			{ id: id1, ...todo1 },
 			{ id: id2, ...todo2 },
+			{ id: id3, ...todo3 },
+			{ id: id4, ...todo4 },
 		]);
 		expectType<Pick<Todo, 'id' | 'name' | 'done'>[]>(result);
 	});
 
 	test('should return entities that match the where clause', async () => {
-		const { id } = await userRepository.insert(user1);
-		await userRepository.insert(user2);
+		const [id] = await seedUsers(users);
 
 		const result = await userRepository.find({ where: { age: 42 } });
 		expect(result).toEqual([{ id, ...user1 }]);
@@ -94,20 +115,20 @@ describe(userRepository.find.name, () => {
 	});
 
 	test('should return entities with selected fields only', async () => {
-		await userRepository.insert(user1);
-		await userRepository.insert(user2);
+		await seedUsers(users);
 
 		const result = await userRepository.find({ select: { name: true } });
-		expect(result).toEqual([{ name: user1.name }, { name: user2.name }]);
+		expect(result).toEqual([{ name: user1.name }, { name: user2.name }, { name: user3.name }, { name: user4.name }]);
 		expectType<Pick<User, 'name'>[]>(result);
 	});
 
 	test('should return entities ordered by given criteria', async () => {
-		const { id: id1 } = await userRepository.insert(user1);
-		const { id: id2 } = await userRepository.insert(user2);
+		const [id1, id2, id3, id4] = await seedUsers(users);
 
 		const result = await userRepository.find({ order: { name: 'desc' } });
 		expect(result).toEqual([
+			{ id: id4, ...user4 },
+			{ id: id3, ...user3 },
 			{ id: id2, ...user2 },
 			{ id: id1, ...user1 },
 		]);
@@ -115,17 +136,19 @@ describe(userRepository.find.name, () => {
 	});
 
 	test('should return entities while skipping the given value', async () => {
-		await userRepository.insert(user1);
-		const { id } = await userRepository.insert(user2);
+		const [, id2, id3, id4] = await seedUsers(users);
 
 		const result = await userRepository.find({ skip: 1 });
-		expect(result).toEqual([{ id, ...user2 }]);
+		expect(result).toEqual([
+			{ id: id2, ...user2 },
+			{ id: id3, ...user3 },
+			{ id: id4, ...user4 },
+		]);
 		expectType<User[]>(result);
 	});
 
 	test('should return entities up to the given value', async () => {
-		const { id } = await userRepository.insert(user1);
-		await userRepository.insert(user2);
+		const [id] = await seedUsers(users);
 
 		const result = await userRepository.find({ take: 1 });
 		expect(result).toEqual([{ id, ...user1 }]);
@@ -133,40 +156,47 @@ describe(userRepository.find.name, () => {
 	});
 
 	test('should disregard undefined values as keys in the where clause', async () => {
-		const { id: id1 } = await userRepository.insert(user1);
-		const { id: id2 } = await userRepository.insert(user2);
+		const [id1, id2, id3, id4] = await seedUsers(users);
 
 		const result = await userRepository.find({ where: { age: undefined } });
 		expect(result).toEqual([
 			{ id: id1, ...user1 },
 			{ id: id2, ...user2 },
+			{ id: id3, ...user3 },
+			{ id: id4, ...user4 },
 		]);
 		expectType<User[]>(result);
 	});
 
 	test('should respect null values as keys in the where clause', async () => {
-		const inserted = await todoRepository.insert(todo1);
-		await todoRepository.insert(todo2);
-		await todoRepository.update(inserted.id, { done: true });
+		const [id] = await seedTodos(todos);
+		await todoRepository.update(id, { done: true });
 
 		const result = await todoRepository.find({ select: { name: true, done: true }, where: { updatedAt: null } });
-		expect(result).toEqual([todo2]);
+		expect(result).toEqual([todo2, todo3, todo4]);
 		expectType<Pick<Todo, 'name' | 'done'>[]>(result);
 	});
 
 	test('should only return entities which are not soft deleted', async () => {
-		const { id } = await todoRepository.insert(todo1);
-		await todoRepository.insert(todo2);
+		const [id] = await seedTodos(todos);
 		await todoRepository.softDelete(id);
 
 		const result = await todoRepository.find({ select: { name: true, done: true } });
-		expect(result).toEqual([todo2]);
+		expect(result).toEqual([todo2, todo3, todo4]);
+		expectType<Pick<Todo, 'name' | 'done'>[]>(result);
+	});
+
+	test('should also return entities which are soft deleted', async () => {
+		const [id] = await seedTodos(todos);
+		await todoRepository.softDelete(id);
+
+		const result = await todoRepository.find({ select: { name: true, done: true }, deleted: true });
+		expect(result).toEqual(todos);
 		expectType<Pick<Todo, 'name' | 'done'>[]>(result);
 	});
 
 	test('should respect like operator in where clause', async () => {
-		await todoRepository.insert(todo1);
-		await todoRepository.insert(todo2);
+		await seedTodos(todos);
 
 		const result = await todoRepository.find({ select: { name: true, done: true }, where: { name: like('%nd%') } });
 		expect(result).toEqual([todo1]);
@@ -174,17 +204,18 @@ describe(userRepository.find.name, () => {
 	});
 
 	test('should respect less than operator in where clause', async () => {
-		const { id } = await userRepository.insert(user1);
-		await userRepository.insert(user2);
+		const [, , id3, id4] = await seedUsers(users);
 
-		const result = await userRepository.find({ where: { age: lessThan(50) } });
-		expect(result).toEqual([{ id, ...user1 }]);
+		const result = await userRepository.find({ where: { age: lessThan(25) } });
+		expect(result).toEqual([
+			{ id: id3, ...user3 },
+			{ id: id4, ...user4 },
+		]);
 		expectType<User[]>(result);
 	});
 
 	test('should respect more than operator in where clause', async () => {
-		await userRepository.insert(user1);
-		const { id } = await userRepository.insert(user2);
+		const [, id] = await seedUsers(users);
 
 		const result = await userRepository.find({ where: { age: moreThan(60) } });
 		expect(result).toEqual([{ id, ...user2 }]);
@@ -192,15 +223,15 @@ describe(userRepository.find.name, () => {
 	});
 
 	test('should return all entities which conform to all constraints', async () => {
-		await todoRepository.insert(todo1);
-		await todoRepository.insert(todo2);
+		const [, id] = await seedTodos(todos);
+		await todoRepository.update(id, { name: 'fly' });
 
 		const result = await todoRepository.find({
 			select: { name: true },
 			where: { updatedAt: null },
 			order: { name: 'desc' },
 		});
-		expect(result).toEqual([{ name: todo2.name }, { name: todo1.name }]);
+		expect(result).toEqual([{ name: todo1.name }, { name: todo4.name }, { name: todo3.name }]);
 		expectType<Pick<Todo, 'name'>[]>(result);
 	});
 });
@@ -213,8 +244,7 @@ describe(userRepository.findOne.name, () => {
 	});
 
 	test('should return the entity with the id using where', async () => {
-		const { id } = await userRepository.insert(user1);
-		await userRepository.insert(user2);
+		const [id] = await seedUsers(users);
 
 		const result = await userRepository.findOne({ where: { id } });
 		expect(result).toEqual({ id, ...user1 });
@@ -222,8 +252,7 @@ describe(userRepository.findOne.name, () => {
 	});
 
 	test('should return the entity with the id using short form', async () => {
-		const { id } = await userRepository.insert(user1);
-		await userRepository.insert(user2);
+		const [id] = await seedUsers(users);
 
 		const result = await userRepository.findOne(id);
 		expect(result).toEqual({ id, ...user1 });
@@ -231,8 +260,7 @@ describe(userRepository.findOne.name, () => {
 	});
 
 	test('should return null when no entity matches the where clause', async () => {
-		await userRepository.insert(user1);
-		await userRepository.insert(user2);
+		await seedUsers(users);
 
 		const result = await userRepository.findOne({ where: { id: 'non-existing-id', age: 69 } });
 		expect(result).toEqual(null);
@@ -240,8 +268,7 @@ describe(userRepository.findOne.name, () => {
 	});
 
 	test('should return the entity with selected fields only', async () => {
-		const { id } = await userRepository.insert(user1);
-		await userRepository.insert(user2);
+		const [id] = await seedUsers(users);
 
 		const result = await userRepository.findOne({ select: { age: true, name: true }, where: { id } });
 		expect(result).toEqual({ age: user1.age, name: user1.name });
@@ -249,8 +276,7 @@ describe(userRepository.findOne.name, () => {
 	});
 
 	test('should disregard undefined values as keys in the where clause', async () => {
-		const { id } = await userRepository.insert(user1);
-		await userRepository.insert(user2);
+		const [id] = await seedUsers(users);
 
 		const result = await userRepository.findOne({ where: { name: undefined } });
 		expect(result).toEqual({ id, ...user1 });
