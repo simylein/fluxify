@@ -12,7 +12,9 @@ export const findExisting = async <S extends keyof User>(options: FindOneOptions
 	const user = await userRepository.findOne(options);
 
 	if (!user) {
-		throw NotFound(`user with id '${options.where.id}' was not found`);
+		throw NotFound(
+			`user with id '${typeof options.where === 'object' && 'id' in options.where && options.where.id}' was not found`,
+		);
 	}
 	return user;
 };

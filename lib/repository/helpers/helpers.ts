@@ -12,20 +12,42 @@ export const orderBy = <T extends IdEntity, S extends keyof T>(
 export const whereOne = <T extends IdEntity, S extends keyof T>(
 	where: FindOneOptions<T, S>['where'],
 ): string[] | undefined => {
-	if (where && Object.keys(where).length) {
-		return Object.values(where)
-			.filter((value) => value !== undefined)
-			.map((value) => (value && typeof value === 'object' ? value.value : value));
+	if (where) {
+		if (Array.isArray(where) && where.length) {
+			return where
+				.map((whe) => {
+					return Object.values(whe)
+						.filter((value) => value !== undefined)
+						.map((value) => (value && typeof value === 'object' ? value.value : value));
+				})
+				.flat();
+		}
+		if (Object.keys(where).length) {
+			return Object.values(where)
+				.filter((value) => value !== undefined)
+				.map((value) => (value && typeof value === 'object' ? value.value : value));
+		}
 	}
 };
 
 export const whereMany = <T extends IdEntity, S extends keyof T>(
-	where?: FindOneOptions<T, S>['where'],
+	where?: FindOptions<T, S>['where'],
 ): string[] | undefined => {
-	if (where && Object.keys(where).length) {
-		return Object.values(where)
-			.filter((value) => value !== undefined)
-			.map((value) => (value && typeof value === 'object' ? value.value : value));
+	if (where) {
+		if (Array.isArray(where) && where.length) {
+			return where
+				.map((whe) => {
+					return Object.values(whe)
+						.filter((value) => value !== undefined)
+						.map((value) => (value && typeof value === 'object' ? value.value : value));
+				})
+				.flat();
+		}
+		if (Object.keys(where).length) {
+			return Object.values(where)
+				.filter((value) => value !== undefined)
+				.map((value) => (value && typeof value === 'object' ? value.value : value));
+		}
 	}
 };
 

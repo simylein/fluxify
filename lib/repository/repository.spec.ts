@@ -114,6 +114,17 @@ describe(userRepository.find.name, () => {
 		expectType<User[]>(result);
 	});
 
+	test('should return entities that match the where clause with or', async () => {
+		const [id1, , id3] = await seedUsers(users);
+
+		const result = await userRepository.find({ where: [{ age: 42 }, { age: 12 }] });
+		expect(result).toEqual([
+			{ id: id1, ...user1 },
+			{ id: id3, ...user3 },
+		]);
+		expectType<User[]>(result);
+	});
+
 	test('should return entities with selected fields only', async () => {
 		await seedUsers(users);
 

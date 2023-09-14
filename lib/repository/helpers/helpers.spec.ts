@@ -14,8 +14,9 @@ describe(orderBy.name, () => {
 });
 
 describe(whereOne.name, () => {
-	test('should return undefined given an empty where object', () => {
+	test('should return undefined given an empty where object or array', () => {
 		expect(whereOne({})).toEqual(undefined);
+		expect(whereOne([])).toEqual(undefined);
 	});
 
 	test('should return all values in an array', () => {
@@ -25,11 +26,26 @@ describe(whereOne.name, () => {
 	test('should return all values in an array and filter undefined', () => {
 		expect(whereOne({ hello: 'world', how: 'are you', today: undefined })).toEqual(['world', 'are you']);
 	});
+
+	test('should return all values in an array when using or notation', () => {
+		expect(whereOne([{ hello: 'world' }, { how: 'are' }])).toEqual(['world', 'are']);
+	});
+
+	test('should return all values in an array when using or notation and filter undefined', () => {
+		expect(
+			whereOne([
+				{ hello: 'world', today: undefined },
+				{ how: 'are', today: undefined },
+			]),
+		).toEqual(['world', 'are']);
+	});
 });
 
 describe(whereMany.name, () => {
-	test('should return undefined given no where object', () => {
+	test('should return undefined given no where object or an empty object or array', () => {
 		expect(whereMany()).toEqual(undefined);
+		expect(whereMany({})).toEqual(undefined);
+		expect(whereMany([])).toEqual(undefined);
 	});
 
 	test('should return all values in an array', () => {
@@ -38,6 +54,19 @@ describe(whereMany.name, () => {
 
 	test('should return all values in an array and filter undefined', () => {
 		expect(whereMany({ hello: 'world', how: 'are you', today: undefined })).toEqual(['world', 'are you']);
+	});
+
+	test('should return all values in an array when using or notation', () => {
+		expect(whereMany([{ hello: 'world' }, { how: 'are' }])).toEqual(['world', 'are']);
+	});
+
+	test('should return all values in an array when using or notation and filter undefined', () => {
+		expect(
+			whereMany([
+				{ hello: 'world', today: undefined },
+				{ how: 'are', today: undefined },
+			]),
+		).toEqual(['world', 'are']);
 	});
 });
 
