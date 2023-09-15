@@ -61,7 +61,7 @@ export const repository = <T extends IdEntity>(table: Entity<T>): Repository<T> 
 					if (deletedKey && !deleted) keys.push(`${deletedKey} is null`);
 					return `${keys.join(' and ')}`;
 				});
-				return where.length ? `where (${constraints.join(') or (')})` : '';
+				return where.length ? `where ${constraints.join(' or ')}` : '';
 			}
 			if (Object.keys(where).length) {
 				const filtered = Object.keys(where).filter((key) => where[key] !== undefined);
