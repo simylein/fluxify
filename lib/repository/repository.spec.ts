@@ -8,7 +8,7 @@ import { Infer } from '../database/entity/entity.type';
 import { primary } from '../database/primary/primary';
 import { updated } from '../database/updated/updated';
 import { expectType } from '../test/expect-type';
-import { lessThan, like, moreThan } from './operators/operators';
+import { lessThan, like, moreThan, not } from './operators/operators';
 import { repository } from './repository';
 import { OptionalKeys } from './repository.type';
 
@@ -114,6 +114,17 @@ describe(userRepository.find.name, () => {
 		expectType<User[]>(result);
 	});
 
+	test('should return entities that match the where clause with or', async () => {
+		const [id1, , id3] = await seedUsers(users);
+
+		const result = await userRepository.find({ where: [{ age: 42 }, { age: 12 }] });
+		expect(result).toEqual([
+			{ id: id1, ...user1 },
+			{ id: id3, ...user3 },
+		]);
+		expectType<User[]>(result);
+	});
+
 	test('should return entities with selected fields only', async () => {
 		await seedUsers(users);
 
@@ -193,6 +204,22 @@ describe(userRepository.find.name, () => {
 		const result = await todoRepository.find({ select: { name: true, done: true }, deleted: true });
 		expect(result).toEqual(todos);
 		expectType<Pick<Todo, 'name' | 'done'>[]>(result);
+	});
+
+	test('should respect not operator in where clause', async () => {
+		const [id1, , id3, id4] = await seedUsers(users);
+
+		const result = await userRepository.find({ where: { name: not(user2.name) } });
+		expect(result).toEqual([
+			{ id: id1, ...user1 },
+			{ id: id3, ...user3 },
+			{ id: id4, ...user4 },
+		]);
+		expectType<User[]>([
+			{ id: id1, ...user1 },
+			{ id: id3, ...user3 },
+			{ id: id4, ...user4 },
+		]);
 	});
 
 	test('should respect like operator in where clause', async () => {

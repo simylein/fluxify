@@ -53,14 +53,23 @@ export const repository = <T extends IdEntity>(table: Entity<T>): Repository<T> 
 			deletedKey = (table.columns[deletedColumn] as ColumnOptions).name ?? deletedColumn;
 		}
 
-		if (where && Object.keys(where).length) {
-			const filtered = Object.keys(where).filter((key) => where[key] !== undefined);
-			if (filtered.length) {
-				const keys = filtered.map(
-					(key) => `${table.columns[key].name ?? key} ${determineOperator<T, keyof T>(where, key)} ?`,
-				);
-				if (deletedKey && !deleted) keys.push(`${deletedKey} is null`);
-				return `where ${keys.join(' and ')}`;
+		if (where) {
+			if (Array.isArray(where)) {
+				const constraints = where.map((whe) => {
+					const filtered = Object.keys(whe).filter((key) => whe[key] !== undefined);
+					const keys = filtered.map((key) => `${table.columns[key].name ?? key} ${determineOperator<T>(whe, key)} ?`);
+					if (deletedKey && !deleted) keys.push(`${deletedKey} is null`);
+					return `${keys.join(' and ')}`;
+				});
+				return where.length ? `where ${constraints.join(' or ')}` : '';
+			}
+			if (Object.keys(where).length) {
+				const filtered = Object.keys(where).filter((key) => where[key] !== undefined);
+				if (filtered.length) {
+					const keys = filtered.map((key) => `${table.columns[key].name ?? key} ${determineOperator<T>(where, key)} ?`);
+					if (deletedKey && !deleted) keys.push(`${deletedKey} is null`);
+					return `where ${keys.join(' and ')}`;
+				}
 			}
 		}
 

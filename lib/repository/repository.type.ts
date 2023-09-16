@@ -9,7 +9,7 @@ export type IdEntity = {
 	[key: string]: unknown;
 };
 
-export type Operator = 'like' | '<' | '>' | '<=' | '>=';
+export type Operator = '!=' | 'like' | '<' | '>' | '<=' | '>=';
 
 export type SelectOptions<T, S extends keyof T> = Partial<Record<S, boolean>>;
 
@@ -17,7 +17,7 @@ export type WhereOptions<T> = Partial<{ [K in keyof T]: T[K] | { operator: Opera
 
 export type FindOptions<T, S extends keyof T> = {
 	select?: SelectOptions<T, S>;
-	where?: WhereOptions<T>;
+	where?: WhereOptions<T> | WhereOptions<T>[];
 	order?: Partial<Record<keyof T, 'asc' | 'desc'>>;
 	skip?: number;
 	take?: number;
@@ -26,7 +26,7 @@ export type FindOptions<T, S extends keyof T> = {
 
 export type FindOneOptions<T, S extends keyof T> = {
 	select?: SelectOptions<T, S>;
-	where: WhereOptions<T>;
+	where: WhereOptions<T> | WhereOptions<T>[];
 	deleted?: boolean;
 };
 

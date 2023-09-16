@@ -10,7 +10,7 @@ export type Config = {
 	cacheLimit: number;
 	throttleTtl: number;
 	throttleLimit: number;
-	databasePath: string | ':memory;';
+	databasePath: string | ':memory:';
 	databaseMode: 'readwrite' | 'readonly';
 	logLevel: 'trace' | 'debug' | 'info' | 'warn' | 'error';
 	logRequests: boolean;
