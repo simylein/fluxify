@@ -8,7 +8,7 @@ node_modules
 *.sqlite
 
 # build
-main.js
+fluxify.js
 
 # credentials
 .env

@@ -8,7 +8,7 @@ export type Config = {
 	jwtExpiry: number;
 	cacheTtl: number;
 	cacheLimit: number;
-	databasePath: string | ':memory;';
+	databasePath: string | ':memory:';
 	databaseMode: 'readwrite' | 'readonly';
 	logLevel: 'trace' | 'debug' | 'info' | 'warn' | 'error';
 	logRequests: boolean;
