@@ -1,7 +1,19 @@
 import { config } from '../config/config';
 import { Config } from '../config/config.type';
 import { Method } from '../router/router.type';
-import { blue, bold, coloredStatus, coloredTime, cyan, green, purple, red, reset, yellow } from './color';
+import {
+	blue,
+	bold,
+	coloredMethod,
+	coloredStatus,
+	coloredTime,
+	cyan,
+	green,
+	purple,
+	red,
+	reset,
+	yellow,
+} from './color';
 import { Logger } from './logger.type';
 
 const uuidRegex = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi;
@@ -79,7 +91,8 @@ export const mask = (uuid: string): string => {
 export const req = (id: string, method: Method, endpoint: string): void => {
 	if (config.logRequests) {
 		const timestamp = Date.now();
-		console.log(`${makeBase(timestamp, 'req')} ${method} ${endpoint.replace(uuidRegex, (uuid) => mask(uuid))}`);
+		const masked = endpoint.replace(uuidRegex, (uuid) => mask(uuid));
+		console.log(`${makeBase(timestamp, 'req')} ${coloredMethod(method)} ${masked}`);
 		if (customLogger.req) {
 			void customLogger.req({ id, timestamp, method, endpoint });
 		}
