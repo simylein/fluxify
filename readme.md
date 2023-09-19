@@ -97,6 +97,17 @@ const server = bootstrap();
 server.header({ 'cache-control': 'no-cache' });
 ```
 
+for those who do not like json feel free to override request and response serialization
+
+`main.ts`
+
+```ts
+import { bootstrap } from 'lib/core';
+
+const server = bootstrap();
+server.serialize({ req: (request) => 'hello', res: (body) => 'world' });
+```
+
 ### entities
 
 every entity has to have an `id: primary()` column
