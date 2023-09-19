@@ -13,6 +13,7 @@ import { compareEndpoint, compareMethod } from '../compare/compare';
 import { extractMethod, extractParam } from '../extract/extract';
 import { parseBody } from '../request/request';
 import { createResponse, header } from '../response/response';
+import { serialize } from '../serialize/serialize';
 import { FluxifyRequest, FluxifyServer } from './boot.type';
 
 declare global {
@@ -200,6 +201,7 @@ export const bootstrap = (): FluxifyServer => {
 		bunServer.throttle = {};
 		bunServer.logger = logger;
 		bunServer.header = header;
+		bunServer.serialize = serialize;
 		global.server = bunServer as FluxifyServer;
 	} else {
 		global.server.reload(options);
@@ -208,6 +210,7 @@ export const bootstrap = (): FluxifyServer => {
 		global.server.throttle = {};
 		global.server.logger = logger;
 		global.server.header = header;
+		global.server.serialize = serialize;
 	}
 
 	routes.map((route, _index, array) =>

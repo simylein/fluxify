@@ -113,6 +113,7 @@ describe(bootstrap.name, () => {
 		expect(server.stop).toBeInstanceOf(Function);
 		expect(server.logger).toBeInstanceOf(Function);
 		expect(server.header).toBeInstanceOf(Function);
+		expect(server.serialize).toBeInstanceOf(Function);
 		expectType<FluxifyServer>(server);
 	});
 
