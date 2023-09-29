@@ -93,7 +93,7 @@ export const req = (request: FluxifyRequest, method: Method, endpoint: string): 
 	if (config.logRequests) {
 		const timestamp = Date.now();
 		const masked = endpoint.replace(uuidRegex, (uuid) => mask(uuid));
-		console.log(`${makeBase(timestamp, 'req')} ${coloredMethod(method)} ${masked} from ${request.ip}`);
+		console.log(`${makeBase(timestamp, 'req')} ${coloredMethod(method)} ${masked} from ${mask(request.ip)}`);
 		if (customLogger.req) {
 			void customLogger.req({ id: request.id, timestamp, ip: request.ip, method, endpoint });
 		}

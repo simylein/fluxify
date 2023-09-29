@@ -14,6 +14,7 @@ import { extractMethod, extractParam } from '../extract/extract';
 import { parseBody } from '../request/request';
 import { createResponse, header } from '../response/response';
 import { serialize } from '../serialize/serialize';
+
 import { FluxifyRequest, FluxifyServer } from './boot.type';
 
 declare global {
@@ -27,9 +28,7 @@ export const bootstrap = (): FluxifyServer => {
 		development: config.stage === 'dev',
 		async fetch(request: FluxifyRequest, server: Server): Promise<Response> {
 			request.time = performance.now();
-			// TODO: use real implementation once available from bun
-			const mockServer = { requestIp: (request: Request) => '127.0.0.1' };
-			request.ip = mockServer.requestIp(request);
+			request.ip = server.requestIP(request).address;
 			request.id = randomUUID();
 
 			const url = new URL(request.url);

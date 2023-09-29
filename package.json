@@ -20,7 +20,7 @@
 	"devDependencies": {
 		"@typescript-eslint/eslint-plugin": "6.6.0",
 		"@typescript-eslint/parser": "6.6.0",
-		"bun-types": "1.0.1",
+		"bun-types": "1.0.4",
 		"eslint": "8.48.0",
 		"eslint-config-prettier": "9.0.0",
 		"eslint-plugin-more": "1.0.5",
