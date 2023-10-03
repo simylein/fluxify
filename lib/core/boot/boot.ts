@@ -28,7 +28,7 @@ export const bootstrap = (): FluxifyServer => {
 		development: config.stage === 'dev',
 		async fetch(request: FluxifyRequest, server: Server): Promise<Response> {
 			request.time = performance.now();
-			request.ip = server.requestIP(request).address;
+			request.ip = server.requestIP(request)?.address ?? '';
 			request.id = randomUUID();
 
 			const url = new URL(request.url);
