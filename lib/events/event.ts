@@ -2,6 +2,7 @@ import EventEmitter from 'events';
 import { debug, info } from '../logger/logger';
 
 export const emitter = new EventEmitter();
+emitter.setMaxListeners(2048);
 
 export const subscribe = (req: Request, channel: string): Response => {
 	info(`subscribing to channel '${channel}'`);
@@ -16,11 +17,11 @@ export const subscribe = (req: Request, channel: string): Response => {
 					id++;
 				};
 				emitter.on(channel, handler);
-				if (req.signal.aborted) {
+				req.signal.onabort = () => {
 					info(`unsubscribing from channel '${channel}'`);
 					emitter.off(channel, handler);
 					controller.close();
-				}
+				};
 				return new Promise(() => void 0);
 			},
 		}),
