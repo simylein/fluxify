@@ -2,6 +2,7 @@ import EventEmitter from 'events';
 import { debug, info } from '../logger/logger';
 
 export const emitter = new EventEmitter();
+emitter.setMaxListeners(2048);
 
 export const subscribe = (req: Request, channel: string): Response => {
 	info(`subscribing to channel '${channel}'`);
