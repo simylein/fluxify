@@ -17,11 +17,11 @@ export const subscribe = (req: Request, channel: string): Response => {
 					id++;
 				};
 				emitter.on(channel, handler);
-				if (req.signal.aborted) {
+				req.signal.onabort = () => {
 					info(`unsubscribing from channel '${channel}'`);
 					emitter.off(channel, handler);
 					controller.close();
-				}
+				};
 				return new Promise(() => void 0);
 			},
 		}),
