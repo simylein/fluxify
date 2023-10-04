@@ -30,6 +30,10 @@ export const bootstrap = (): FluxifyServer => {
 			request.ip = config.stage === 'test' ? '' : server.requestIP(request)?.address ?? '';
 			request.id = randomUUID();
 
+			if (request.ip === '::1' || request.ip === '127.0.0.1') {
+				request.ip = request.headers.get('x-forwarded-for') ?? '';
+			}
+
 			const url = new URL(request.url);
 			const method = extractMethod(request.method);
 			const endpoint = url.pathname;
