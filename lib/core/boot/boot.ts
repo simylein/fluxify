@@ -14,7 +14,6 @@ import { extractMethod, extractParam } from '../extract/extract';
 import { parseBody } from '../request/request';
 import { createResponse, header } from '../response/response';
 import { serialize } from '../serialize/serialize';
-
 import { FluxifyRequest, FluxifyServer } from './boot.type';
 
 declare global {
