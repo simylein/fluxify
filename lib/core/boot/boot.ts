@@ -1,4 +1,4 @@
-import { serve, Serve, version } from 'bun';
+import { serve, Serve, Server, version } from 'bun';
 import { randomUUID } from 'crypto';
 import pack from '../../../package.json';
 import { verifyJwt } from '../../auth/jwt';
@@ -14,6 +14,7 @@ import { extractMethod, extractParam } from '../extract/extract';
 import { parseBody } from '../request/request';
 import { createResponse, header } from '../response/response';
 import { serialize } from '../serialize/serialize';
+
 import { FluxifyRequest, FluxifyServer } from './boot.type';
 
 declare global {
@@ -25,23 +26,26 @@ export const bootstrap = (): FluxifyServer => {
 	const options: Serve = {
 		port: config.stage === 'test' ? 0 : config.port,
 		development: config.stage === 'dev',
-		async fetch(request: FluxifyRequest): Promise<Response> {
-			request.id = randomUUID();
+		async fetch(request: FluxifyRequest, server: Server): Promise<Response> {
 			request.time = performance.now();
+			request.ip = config.stage === 'test' ? '' : server.requestIP(request)?.address ?? '';
+			request.id = randomUUID();
 
 			const url = new URL(request.url);
 			const method = extractMethod(request.method);
 			const endpoint = url.pathname;
 
-			req(request.id, method, endpoint);
+			req(request, method, endpoint);
 
 			const matchingRoutes = global.server.routes.filter((route) => compareEndpoint(route, endpoint));
 			const targetRoute = matchingRoutes.find((route) => compareMethod(route, method));
+
 			const useCache =
 				method === 'get' &&
 				config.cacheTtl > 0 &&
 				config.cacheLimit > 0 &&
 				request.headers.get('cache-control')?.toLowerCase() !== 'no-cache';
+			const useThrottle = config.throttleTtl > 0 && config.throttleLimit > 0;
 
 			if (method === 'options') {
 				const authRoutes = matchingRoutes.filter((route) => route.schema?.jwt);
@@ -61,6 +65,33 @@ export const bootstrap = (): FluxifyServer => {
 
 			if (targetRoute) {
 				try {
+					if (useThrottle) {
+						const entry = global.server.throttle[request.ip]?.[endpoint];
+						if (entry) {
+							if (entry.exp < Date.now()) {
+								entry.exp = Date.now() + config.throttleTtl * 1000;
+								entry.hits = 0;
+							}
+							entry.hits += 1;
+							if (entry.hits > config.throttleLimit) {
+								debug(`throttle limit on route ${endpoint}`);
+								const status = 429;
+								return createResponse({ status, message: 'too many requests' }, status, request, {
+									'retry-after': `${Math.ceil((entry.exp - Date.now()) / 1000)}`,
+								});
+							}
+						} else {
+							if (!global.server.throttle[request.ip]) {
+								global.server.throttle[request.ip] = {};
+							}
+							global.server.throttle[request.ip][endpoint] = {
+								exp: Date.now() + config.throttleTtl * 1000,
+								hits: 1,
+								path: endpoint,
+							};
+						}
+					}
+
 					if (config.databaseMode === 'readonly' && method !== 'get') {
 						throw Locked();
 					}
@@ -166,6 +197,7 @@ export const bootstrap = (): FluxifyServer => {
 		const bunServer: Partial<FluxifyServer> = serve(options);
 		bunServer.routes = routes;
 		bunServer.cache = [];
+		bunServer.throttle = {};
 		bunServer.logger = logger;
 		bunServer.header = header;
 		bunServer.serialize = serialize;
@@ -174,6 +206,7 @@ export const bootstrap = (): FluxifyServer => {
 		global.server.reload(options);
 		global.server.routes = routes;
 		global.server.cache = [];
+		global.server.throttle = {};
 		global.server.logger = logger;
 		global.server.header = header;
 		global.server.serialize = serialize;

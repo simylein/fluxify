@@ -1,5 +1,6 @@
 import { config } from '../config/config';
 import { Config } from '../config/config.type';
+import { FluxifyRequest } from '../core/boot/boot.type';
 import { Method } from '../router/router.type';
 import {
 	blue,
@@ -88,18 +89,18 @@ export const mask = (uuid: string): string => {
 	return `${head}..${tail}`;
 };
 
-export const req = (id: string, method: Method, endpoint: string): void => {
+export const req = (request: FluxifyRequest, method: Method, endpoint: string): void => {
 	if (config.logRequests) {
 		const timestamp = Date.now();
 		const masked = endpoint.replace(uuidRegex, (uuid) => mask(uuid));
-		console.log(`${makeBase(timestamp, 'req')} ${coloredMethod(method)} ${masked}`);
+		console.log(`${makeBase(timestamp, 'req')} ${coloredMethod(method)} ${masked} from ${mask(request.ip)}`);
 		if (customLogger.req) {
-			void customLogger.req({ id, timestamp, method, endpoint });
+			void customLogger.req({ id: request.id, timestamp, ip: request.ip, method, endpoint });
 		}
 	}
 };
 
-export const res = (id: string, status: number, time: number): void => {
+export const res = (id: FluxifyRequest['id'], status: number, time: number): void => {
 	if (config.logResponses) {
 		const timestamp = Date.now();
 		console.log(`${makeBase(timestamp, 'res')} status ${coloredStatus(status)} took ${coloredTime(time)}`);

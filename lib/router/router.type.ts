@@ -1,3 +1,4 @@
+import { FluxifyRequest } from '../core/boot/boot.type';
 import { IdEntity } from '../repository/repository.type';
 import { Parser } from '../validation/parser.type';
 
@@ -29,7 +30,7 @@ export type HandlerSchema<P, Q, B, J> = {
 	query: TypedQuery<Q>;
 	body: TypedBody<B>;
 	jwt: TypedJwt<J>;
-	req: Request;
+	req: FluxifyRequest;
 };
 
 type TypedParam<P> = P extends undefined
