@@ -1,8 +1,8 @@
 import { info } from '../../logger/logger';
 import { runQuery } from '../database';
-import { extractExports, searchFiles } from './helper';
+import { extractExports, filterFiles, searchFiles } from './helper';
 
-const matchingFiles = searchFiles('./src', /\.entity\.ts$/);
+const matchingFiles = filterFiles(searchFiles('./src', /\.entity\.ts$/), process.argv[2]);
 const entities = await extractExports(matchingFiles);
 
 if (entities.length === 0) {

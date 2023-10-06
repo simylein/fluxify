@@ -1,8 +1,17 @@
 import { readdirSync, statSync } from 'fs';
 import { join } from 'path';
+import { debug } from '../../logger/logger';
 
 export const sortFiles = (files: string[]): string[] => {
 	return files.sort((alpha, bravo) => alpha.localeCompare(bravo));
+};
+
+export const filterFiles = (files: string[], filter: string | undefined): string[] => {
+	if (filter) {
+		debug(`filtering for ${filter}`);
+		return files.filter((file) => file.includes(filter));
+	}
+	return files;
 };
 
 export const searchFiles = (dir: string, pattern: RegExp): string[] => {

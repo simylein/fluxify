@@ -1,7 +1,7 @@
 import { info } from '../../logger/logger';
-import { extractExports, searchFiles } from './helper';
+import { extractExports, filterFiles, searchFiles } from './helper';
 
-const matchingFiles = searchFiles('./src', /\.seed\.ts$/);
+const matchingFiles = filterFiles(searchFiles('./src', /\.seed\.ts$/), process.argv[2]);
 const seeds = await extractExports(matchingFiles);
 
 if (seeds.length === 0) {

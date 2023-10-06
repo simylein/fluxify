@@ -15,7 +15,8 @@
 		"schema:init": "bun ./lib/database/scripts/init.ts",
 		"schema:drop": "bun ./lib/database/scripts/drop.ts",
 		"schema:sync": "bun ./lib/database/scripts/sync.ts",
-		"schema:seed": "bun ./lib/database/scripts/seed.ts"
+		"schema:seed": "bun ./lib/database/scripts/seed.ts",
+		"schema:setup": "bun schema:init && bun schema:drop && bun schema:sync && bun schema:seed"
 	},
 	"devDependencies": {
 		"@typescript-eslint/eslint-plugin": "6.6.0",
