@@ -7,6 +7,7 @@ beforeAll(() => {
 	console.debug = mock(() => void 0);
 	console.info = mock(() => void 0);
 	emitter.on = mock(() => new EventEmitter());
+	emitter.off = mock(() => new EventEmitter());
 	emitter.emit = mock(() => false);
 });
 
@@ -24,6 +25,16 @@ describe(subscribe.name, () => {
 			.text()
 			.catch(() => void 0);
 		expect(emitter.on).toHaveBeenCalledTimes(1);
+		expectType<Response>(subscribe(new Request('http://example.com'), '/test'));
+	});
+
+	test('should call the off method from the emitter', () => {
+		const controller = new AbortController();
+		subscribe(new Request('http://example.com', { signal: controller.signal }), '/test')
+			.text()
+			.catch(() => void 0);
+		controller.abort();
+		expect(emitter.off).toHaveBeenCalledTimes(1);
 		expectType<Response>(subscribe(new Request('http://example.com'), '/test'));
 	});
 });
