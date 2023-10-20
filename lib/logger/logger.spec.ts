@@ -54,25 +54,25 @@ describe(makeBase.name, () => {
 		const timestamp = Date.now();
 		const time = formatTimestamp(timestamp);
 		expect(makeBase(timestamp, 'req')).toEqual(
-			`${bold}${blue}[${config.appName}]${reset} ${bold}(${config.stage})${reset} ${time} ${bold}req${reset}:`,
+			`${bold}${blue}[${config.appName}]${reset} (${config.stage}) ${time} ${bold}req${reset}:`,
 		);
 		expect(makeBase(timestamp, 'res')).toEqual(
-			`${bold}${blue}[${config.appName}]${reset} ${bold}(${config.stage})${reset} ${time} ${bold}res${reset}:`,
+			`${bold}${blue}[${config.appName}]${reset} (${config.stage}) ${time} ${bold}res${reset}:`,
 		);
 		expect(makeBase(timestamp, 'trace')).toEqual(
-			`${bold}${blue}[${config.appName}]${reset} ${bold}(${config.stage})${reset} ${time} ${bold}${purple}trace${reset}:`,
+			`${bold}${blue}[${config.appName}]${reset} (${config.stage}) ${time} ${bold}${purple}trace${reset}:`,
 		);
 		expect(makeBase(timestamp, 'debug')).toEqual(
-			`${bold}${blue}[${config.appName}]${reset} ${bold}(${config.stage})${reset} ${time} ${bold}${cyan}debug${reset}:`,
+			`${bold}${blue}[${config.appName}]${reset} (${config.stage}) ${time} ${bold}${cyan}debug${reset}:`,
 		);
 		expect(makeBase(timestamp, 'info')).toEqual(
-			`${bold}${blue}[${config.appName}]${reset} ${bold}(${config.stage})${reset} ${time} ${bold}${green}info${reset}:`,
+			`${bold}${blue}[${config.appName}]${reset} (${config.stage}) ${time} ${bold}${green}info${reset}:`,
 		);
 		expect(makeBase(timestamp, 'warn')).toEqual(
-			`${bold}${blue}[${config.appName}]${reset} ${bold}(${config.stage})${reset} ${time} ${bold}${yellow}warn${reset}:`,
+			`${bold}${blue}[${config.appName}]${reset} (${config.stage}) ${time} ${bold}${yellow}warn${reset}:`,
 		);
 		expect(makeBase(timestamp, 'error')).toEqual(
-			`${bold}${blue}[${config.appName}]${reset} ${bold}(${config.stage})${reset} ${time} ${bold}${red}error${reset}:`,
+			`${bold}${blue}[${config.appName}]${reset} (${config.stage}) ${time} ${bold}${red}error${reset}:`,
 		);
 	});
 });

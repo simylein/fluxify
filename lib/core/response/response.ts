@@ -1,5 +1,5 @@
 import { config } from '../../config/config';
-import { res } from '../../logger/logger';
+import { debug, res } from '../../logger/logger';
 import { FluxifyRequest } from '../boot/boot.type';
 import { serializer } from '../serialize/serialize';
 
@@ -14,6 +14,7 @@ export const defaultHeaders = {
 };
 
 export const header = (custom: HeadersInit): void => {
+	debug(`registered ${Object.keys(custom).length} custom header`);
 	customHeaders = custom;
 };
 

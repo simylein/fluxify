@@ -4,7 +4,7 @@ import pack from '../../../package.json';
 import { verifyJwt } from '../../auth/jwt';
 import { config } from '../../config/config';
 import { HttpException, Locked, Unauthorized } from '../../exception/exception';
-import { bold, coloredMethod, reset } from '../../logger/color';
+import { coloredMethod } from '../../logger/color';
 import { debug, error, info, logger, req, res, warn } from '../../logger/logger';
 import { routes } from '../../router/router';
 import { Param, Query } from '../../router/router.type';
@@ -192,10 +192,21 @@ export const bootstrap = (): FluxifyServer => {
 
 	info(`starting http server...`);
 	info(`bun v${version} ${pack.name} v${pack.version}`);
+	if (config.cacheTtl && config.cacheLimit) {
+		debug(`cache ttl ${config.cacheTtl} with limit ${config.cacheLimit}`);
+	}
+	if (config.throttleTtl && config.throttleLimit) {
+		debug(`throttle ttl ${config.throttleTtl} with limit ${config.throttleLimit}`);
+	}
 	info(`log level is set to ${config.logLevel}`);
 	info(`using database ${config.databasePath}`);
 	debug(`database mode is ${config.databaseMode}`);
-	debug(`global prefix is ${config.globalPrefix}`);
+	if (config.allowOrigin !== '*') {
+		debug(`allowed origin is ${config.allowOrigin}`);
+	}
+	if (config.globalPrefix) {
+		debug(`global prefix is ${config.globalPrefix}`);
+	}
 	if (!global.server) {
 		const bunServer: Partial<FluxifyServer> = serve(options);
 		bunServer.routes = routes;
@@ -217,11 +228,13 @@ export const bootstrap = (): FluxifyServer => {
 
 	routes.map((route, _index, array) =>
 		array.filter((rout) => rout.endpoint === route.endpoint && rout.method === route.method).length > 1
-			? warn(`ambiguous route ${coloredMethod(route.method)} ${bold}${route.endpoint}${reset}`)
-			: debug(`mapped route ${coloredMethod(route.method)} ${bold}${route.endpoint}${reset}`),
+			? warn(`ambiguous route ${coloredMethod(route.method)} ${route.endpoint}`)
+			: debug(`mapped route ${coloredMethod(route.method)} ${route.endpoint}`),
 	);
 	info(`mapped ${routes.length} routes of which ${routes.filter((route) => route.schema?.jwt).length} have auth`);
 	info(`listening for requests on localhost:${config.port}`);
+	debug(`request logging is ${config.logRequests ? 'active' : 'inactive'}`);
+	debug(`response logging is ${config.logResponses ? 'active' : 'inactive'}`);
 
 	return global.server;
 };

@@ -44,8 +44,7 @@ export const formatTimestamp = (timestamp: number): string => {
 
 export const makeBase = (timestamp: number, variant: Config['logLevel'] | 'req' | 'res'): string => {
 	const name = `${bold}${blue}[${config.appName}]${reset}`;
-	const stage = `${bold}(${config.stage})${reset}`;
-	return `${name} ${stage} ${formatTimestamp(timestamp)} ${makeLevel(variant)}`;
+	return `${name} (${config.stage}) ${formatTimestamp(timestamp)} ${makeLevel(variant)}`;
 };
 
 export const makeLevel = (logLevel: Config['logLevel'] | 'req' | 'res'): string => {
@@ -70,13 +69,34 @@ export const makeLevel = (logLevel: Config['logLevel'] | 'req' | 'res'): string 
 };
 
 export const logger = (custom: Logger): void => {
-	customLogger.req = custom.req;
-	customLogger.res = custom.res;
-	customLogger.trace = custom.trace;
-	customLogger.debug = custom.debug;
-	customLogger.info = custom.info;
-	customLogger.warn = custom.warn;
-	customLogger.error = custom.error;
+	if (custom.req) {
+		debug('adding logger hook for req');
+		customLogger.req = custom.req;
+	}
+	if (custom.res) {
+		debug('adding logger hook for res');
+		customLogger.res = custom.res;
+	}
+	if (custom.trace) {
+		debug('adding logger hook for trace');
+		customLogger.trace = custom.trace;
+	}
+	if (custom.debug) {
+		debug('adding logger hook for debug');
+		customLogger.debug = custom.debug;
+	}
+	if (custom.info) {
+		debug('adding logger hook for info');
+		customLogger.info = custom.info;
+	}
+	if (custom.warn) {
+		debug('adding logger hook for warn');
+		customLogger.warn = custom.warn;
+	}
+	if (custom.error) {
+		debug('adding logger hook for error');
+		customLogger.error = custom.error;
+	}
 };
 
 export const mask = (uuid: string): string => {
