@@ -23,7 +23,7 @@ describe(validateConfig.name, () => {
 		expect(validateConfig(env)).toEqual({
 			port: 4000,
 			stage: 'test',
-			appName: 'fluxify',
+			name: 'fluxify',
 			allowOrigin: '*',
 			globalPrefix: '',
 			jwtSecret: 'secret',
@@ -45,7 +45,7 @@ describe(validateConfig.name, () => {
 			NODE_ENV: '',
 			PORT: '8000',
 			STAGE: 'test',
-			APP_NAME: 'hello',
+			NAME: 'hello',
 			ALLOW_ORIGIN: 'localhost',
 			GLOBAL_PREFIX: '/api',
 			JWT_SECRET: 'secret',
@@ -64,7 +64,7 @@ describe(validateConfig.name, () => {
 		expect(validateConfig(env)).toEqual({
 			port: 8000,
 			stage: 'test',
-			appName: 'hello',
+			name: 'hello',
 			allowOrigin: 'localhost',
 			globalPrefix: '/api',
 			jwtSecret: 'secret',

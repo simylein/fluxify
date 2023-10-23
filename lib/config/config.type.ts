@@ -1,7 +1,7 @@
 export type Config = {
 	stage?: 'test' | 'stage' | 'dev' | 'prod';
 	port: number;
-	appName: string;
+	name: string;
 	allowOrigin: string;
 	globalPrefix: string;
 	jwtSecret: string;

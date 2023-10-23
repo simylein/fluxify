@@ -43,7 +43,7 @@ export const formatTimestamp = (timestamp: number): string => {
 };
 
 export const makeBase = (timestamp: number, variant: Config['logLevel'] | 'req' | 'res'): string => {
-	const name = `${bold}${blue}[${config.appName}]${reset}`;
+	const name = `${bold}${blue}[${config.name}]${reset}`;
 	return `${name} (${config.stage}) ${formatTimestamp(timestamp)} ${makeLevel(variant)}`;
 };
 

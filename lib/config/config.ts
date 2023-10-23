@@ -13,7 +13,7 @@ export const validateConfig = (env: Env): Config => {
 		const schema = object({
 			stage: union(['test', 'stage', 'dev', 'prod']).optional(),
 			port: number().optional().transform().min(0).max(65535).default(4000),
-			appName: string().optional().max(12).default('fluxify'),
+			name: string().optional().max(12).default('fluxify'),
 
 			allowOrigin: string().optional().default('*'),
 			globalPrefix: string().optional().max(12).default(''),
@@ -38,7 +38,7 @@ export const validateConfig = (env: Env): Config => {
 		const config = schema.parse({
 			stage: determineStage(env.npm_lifecycle_event, env.NODE_ENV),
 			port: env.PORT,
-			appName: env.APP_NAME,
+			name: env.NAME,
 			allowOrigin: env.ALLOW_ORIGIN,
 			globalPrefix: env.GLOBAL_PREFIX,
 			jwtSecret: env.JWT_SECRET,
