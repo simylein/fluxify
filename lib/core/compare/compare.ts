@@ -21,7 +21,7 @@ export const compareEndpoint = (route: Route, endpoint: string): boolean => {
 };
 
 export const compareMethod = (route: Route, method: Method | null): boolean => {
-	if (method === 'all') {
+	if (route.method === 'all') {
 		return true;
 	}
 	return route.method === method;

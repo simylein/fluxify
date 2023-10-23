@@ -42,7 +42,7 @@ describe(fuseEndpoint.name, () => {
 describe(app.all.name, () => {
 	test('should add an all route', () => {
 		const method: Route['method'] = 'all';
-		const endpoint: Route['endpoint'] = '/user';
+		const endpoint: Route['endpoint'] = '/all';
 		const schema: Route['schema'] = null;
 		const handler: Route['handler'] = () => void 0;
 
