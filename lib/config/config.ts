@@ -31,7 +31,6 @@ export const validateConfig = (env: Env): Config => {
 			databaseMode: union(['readwrite', 'readonly']).optional().default('readwrite'),
 
 			logLevel: union(['trace', 'debug', 'info', 'warn', 'error']).optional().default('info'),
-
 			logRequests: boolean().optional().transform().default(false),
 			logResponses: boolean().optional().transform().default(false),
 		});
