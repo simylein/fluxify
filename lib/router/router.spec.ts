@@ -39,6 +39,21 @@ describe(fuseEndpoint.name, () => {
 	});
 });
 
+describe(app.all.name, () => {
+	test('should add an all route', () => {
+		const method: Route['method'] = 'all';
+		const endpoint: Route['endpoint'] = '/user';
+		const schema: Route['schema'] = null;
+		const handler: Route['handler'] = () => void 0;
+
+		app.all(endpoint, schema, handler);
+
+		const prefixedEndpoint = `${config.globalPrefix}${endpoint}`;
+		const target = routes.find((route) => compareEndpoint(route, prefixedEndpoint) && compareMethod(route, method));
+		expect(target).toEqual({ method, schema, endpoint: prefixedEndpoint, handler });
+	});
+});
+
 describe(app.get.name, () => {
 	test('should add a get route', () => {
 		const method: Route['method'] = 'get';

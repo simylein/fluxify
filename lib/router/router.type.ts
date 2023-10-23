@@ -2,7 +2,7 @@ import { FluxifyRequest } from '../core/boot/boot.type';
 import { IdEntity } from '../repository/repository.type';
 import { Parser } from '../validation/parser.type';
 
-export type Method = 'get' | 'post' | 'put' | 'patch' | 'delete' | 'options';
+export type Method = 'all' | 'get' | 'post' | 'put' | 'patch' | 'delete' | 'options';
 
 export type Param = Record<string, unknown>;
 

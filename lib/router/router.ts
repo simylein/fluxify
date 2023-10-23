@@ -4,6 +4,11 @@ import { HandlerSchema, Route, RouteReturn, Schema } from './router.type';
 export const routes: Route[] = [];
 
 type Router = {
+	all: <P, Q, B, J>(
+		endpoint: string,
+		schema: Schema<P, Q, B, J> | null,
+		handler: ({ param, query, body, jwt }: HandlerSchema<P, Q, B, J>) => RouteReturn,
+	) => void;
 	get: <P, Q, B, J>(
 		endpoint: string,
 		schema: Schema<P, Q, B, J> | null,
@@ -46,6 +51,14 @@ export const fuseEndpoint = (endpoint: string, prefix?: string, base?: string): 
 
 export const router = (base?: string): Router => {
 	return {
+		all<P, Q, B, J>(
+			endpoint: string,
+			schema: Schema<P, Q, B, J> | null,
+			handler: ({ param, query, body, jwt }: HandlerSchema<P, Q, B, J>) => RouteReturn,
+		): void {
+			routes.push({ method: 'all', schema, endpoint: fuseEndpoint(endpoint, config.globalPrefix, base), handler });
+		},
+
 		get<P, Q, B, J>(
 			endpoint: string,
 			schema: Schema<P, Q, B, J> | null,
