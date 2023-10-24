@@ -31,3 +31,9 @@ export type FindOneOptions<T, S extends keyof T> = {
 };
 
 export type OptionalKeys = 'id' | 'createdAt' | 'updatedAt' | 'deletedAt';
+
+export type InsertData<T extends IdEntity> = NullablePartial<Omit<T, OptionalKeys>> & { [K in OptionalKeys]?: T[K] };
+
+export type UpdateData<T extends IdEntity> = NullablePartial<Partial<Omit<T, 'id'>>>;
+
+export type Criteria<T extends IdEntity> = T['id'] | Partial<T>;

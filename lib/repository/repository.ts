@@ -6,18 +6,18 @@ import { Entity } from '../database/entity/entity.type';
 import { debug } from '../logger/logger';
 import { orderBy, paginate, whereMany, whereOne } from './helpers/helpers';
 import { determineOperator } from './operators/operators';
-import { FindOneOptions, FindOptions, IdEntity, NullablePartial, OptionalKeys } from './repository.type';
+import { Criteria, FindOneOptions, FindOptions, IdEntity, InsertData, UpdateData } from './repository.type';
 import { transformData, transformEntity } from './transform/transform';
 
 type Repository<T extends IdEntity> = {
 	init: () => Promise<void>;
 	find: <S extends keyof T>(options?: FindOptions<T, S>) => Promise<Pick<T, S>[]>;
 	findOne: <S extends keyof T>(options: T['id'] | FindOneOptions<T, S>) => Promise<Pick<T, S> | null>;
-	insert: (data: NullablePartial<Omit<T, OptionalKeys>> & { [K in OptionalKeys]?: T[K] }) => Promise<{ id: T['id'] }>;
-	update: (criteria: T['id'] | Partial<T>, data: NullablePartial<Partial<Omit<T, 'id'>>>) => Promise<void>;
-	delete: (criteria: T['id'] | Partial<T>) => Promise<void>;
-	softDelete: (criteria: T['id'] | Partial<T>) => Promise<void>;
-	restore: (criteria: T['id'] | Partial<T>) => Promise<void>;
+	insert: (data: InsertData<T>) => Promise<{ id: T['id'] }>;
+	update: (criteria: Criteria<T>, data: UpdateData<T>) => Promise<void>;
+	delete: (criteria: Criteria<T>) => Promise<void>;
+	softDelete: (criteria: Criteria<T>) => Promise<void>;
+	restore: (criteria: Criteria<T>) => Promise<void>;
 	wipe: () => Promise<void>;
 	drop: () => Promise<void>;
 };
@@ -129,14 +129,14 @@ export const repository = <T extends IdEntity>(table: Entity<T>): Repository<T> 
 			});
 		},
 
-		insert(data: NullablePartial<Omit<T, OptionalKeys>> & { [K in OptionalKeys]?: T[K] }): Promise<{ id: T['id'] }> {
+		insert(data: InsertData<T>): Promise<{ id: T['id'] }> {
 			return new Promise((resolve) => {
 				const uuid = data.id ?? table.columns.id.type === 'integer' ? undefined : randomUUID();
 				const keys = Object.keys(data)
-					.filter((key) => data[key as keyof NullablePartial<Omit<T, OptionalKeys>>] !== undefined)
+					.filter((key) => data[key as keyof InsertData<T>] !== undefined)
 					.map((key) => table.columns[key].name ?? key);
 				const placeholders = Object.keys(data)
-					.filter((key) => data[key as keyof NullablePartial<Omit<T, OptionalKeys>>] !== undefined)
+					.filter((key) => data[key as keyof InsertData<T>] !== undefined)
 					.map(() => '?');
 				const values = transformData(data);
 
@@ -174,10 +174,10 @@ export const repository = <T extends IdEntity>(table: Entity<T>): Repository<T> 
 			});
 		},
 
-		update(criteria: T['id'] | Partial<T>, data: NullablePartial<Partial<Omit<T, 'id'>>>): Promise<void> {
+		update(criteria: Criteria<T>, data: UpdateData<T>): Promise<void> {
 			return new Promise((resolve) => {
 				const keys = Object.keys(data)
-					.filter((key) => data[key as keyof NullablePartial<Partial<Omit<T, 'id'>>>] !== undefined)
+					.filter((key) => data[key as keyof UpdateData<T>] !== undefined)
 					.map((key) => table.columns[key].name ?? key)
 					.map((key) => `${key} = ?`);
 
@@ -202,7 +202,7 @@ export const repository = <T extends IdEntity>(table: Entity<T>): Repository<T> 
 			});
 		},
 
-		delete(criteria: T['id'] | Partial<T>): Promise<void> {
+		delete(criteria: Criteria<T>): Promise<void> {
 			return new Promise((resolve) => {
 				let where: Partial<T> = {};
 				typeof criteria !== 'object' ? (where.id = criteria) : (where = criteria);
@@ -212,7 +212,7 @@ export const repository = <T extends IdEntity>(table: Entity<T>): Repository<T> 
 			});
 		},
 
-		softDelete(criteria: T['id'] | Partial<T>): Promise<void> {
+		softDelete(criteria: Criteria<T>): Promise<void> {
 			return new Promise((resolve) => {
 				const columns = Object.keys(table.columns).filter((key) => !('references' in table.columns[key]));
 				const deletedColumn = columns.find(
@@ -235,7 +235,7 @@ export const repository = <T extends IdEntity>(table: Entity<T>): Repository<T> 
 			});
 		},
 
-		restore(criteria: T['id'] | Partial<T>): Promise<void> {
+		restore(criteria: Criteria<T>): Promise<void> {
 			return new Promise((resolve) => {
 				const columns = Object.keys(table.columns).filter((key) => !('references' in table.columns[key]));
 				const deletedColumn = columns.find(
