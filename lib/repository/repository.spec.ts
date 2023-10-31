@@ -343,6 +343,46 @@ describe(userRepository.insert.name, () => {
 	});
 });
 
+describe(userRepository.insertMany.name, () => {
+	test('should insert multiple new entities', async () => {
+		const [{ id: id1 }, { id: id2 }] = await userRepository.insertMany([user1, user2]);
+
+		const result = await userRepository.find();
+		expect(result).toEqual([
+			{ id: id1, ...user1 },
+			{ id: id2, ...user1 },
+		]);
+	});
+
+	test('should insert multiple entities and ignore values which are undefined', async () => {
+		const [{ id: id1 }, { id: id2 }] = await userRepository.insertMany([{ ...user1 }, { ...user2, active: undefined }]);
+
+		const result = await userRepository.find();
+		expect(result).toEqual([
+			{ id: id1, ...user1 },
+			{ id: id2, ...user2, active: null },
+		]);
+	});
+
+	test('should insert multiple entities and provide a created at date', async () => {
+		const [{ id: id1 }, { id: id2 }] = await todoRepository.insertMany([todo1, todo2]);
+
+		const result = await todoRepository.find();
+		expect(result).toEqual([
+			{ id: id1, ...todo1, createdAt: expect.any(Date), updatedAt: null, deletedAt: null },
+			{ id: id2, ...todo2, createdAt: expect.any(Date), updatedAt: null, deletedAt: null },
+		]);
+	});
+
+	test('should insert multiple entities and respect the primary key', async () => {
+		const [id, uuid] = [42, randomUUID()];
+		const [{ id: userId }] = await userRepository.insertMany([{ id: uuid, ...user1 }]);
+		const [{ id: todoId }] = await todoRepository.insertMany([{ id, ...todo1 }]);
+		expect(userId).toEqual(uuid);
+		expect(todoId).toEqual(id);
+	});
+});
+
 describe(userRepository.update.name, () => {
 	test('should update the entity with the id using short form', async () => {
 		const { id } = await userRepository.insert(user1);

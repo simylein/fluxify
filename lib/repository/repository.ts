@@ -14,6 +14,7 @@ type Repository<T extends IdEntity> = {
 	find: <S extends keyof T>(options?: FindOptions<T, S>) => Promise<Pick<T, S>[]>;
 	findOne: <S extends keyof T>(options: T['id'] | FindOneOptions<T, S>) => Promise<Pick<T, S> | null>;
 	insert: (data: InsertData<T>) => Promise<{ id: T['id'] }>;
+	insertMany: (data: InsertData<T>[]) => Promise<{ id: T['id'] }[]>;
 	update: (criteria: Criteria<T>, data: UpdateData<T>) => Promise<void>;
 	delete: (criteria: Criteria<T>) => Promise<void>;
 	softDelete: (criteria: Criteria<T>) => Promise<void>;
@@ -171,6 +172,12 @@ export const repository = <T extends IdEntity>(table: Entity<T>): Repository<T> 
 					values,
 				);
 				return resolve({ id });
+			});
+		},
+
+		insertMany(data: InsertData<T>[]): Promise<{ id: T['id'] }[]> {
+			return new Promise((resolve) => {
+				return resolve([]);
 			});
 		},
 
