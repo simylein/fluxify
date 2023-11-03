@@ -1,6 +1,6 @@
 import { Env } from 'bun';
 import { randomBytes } from 'crypto';
-import { readFile } from 'fs/promises';
+import { readFileSync } from 'fs';
 import { boolean } from '../validation/boolean/boolean';
 import { number } from '../validation/number/number';
 import { object } from '../validation/object/object';
@@ -64,7 +64,7 @@ export const validateConfig = (env: Env): Config => {
 };
 
 // FIXME: remove this hacky workaround when bun implements a hot reloaded env
-export const hotReloadEnv = (env: string | null): void => {
+export const hotReloadEnv = (env: string): void => {
 	if (env && determineStage(process.env.npm_lifecycle_event, process.env.NODE_ENV) === 'dev') {
 		const lines = env
 			.split('\n')
@@ -77,7 +77,11 @@ export const hotReloadEnv = (env: string | null): void => {
 };
 
 // TODO: remove function call
-hotReloadEnv((await readFile('.env', 'utf8').catch(() => null)) ?? null);
+try {
+	hotReloadEnv(readFileSync('.env', 'utf8'));
+} catch {
+	null;
+}
 
 // TODO: make this const again and rename to config for direct export
 validatedConfig = validateConfig(process.env);
