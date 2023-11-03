@@ -27,11 +27,12 @@ export const bootstrap = (): FluxifyServer => {
 		development: config.stage === 'dev',
 		async fetch(request: FluxifyRequest, server: Server): Promise<Response> {
 			request.time = performance.now();
+			// FIXME: remove testing shenanigans when bun fixes request ip undefined in testing
 			request.ip = config.stage === 'test' ? '' : server.requestIP(request)?.address ?? '';
 			request.id = randomUUID();
 
 			if (request.ip === '::1' || request.ip === '127.0.0.1') {
-				request.ip = request.headers.get('x-forwarded-for') ?? '';
+				request.ip = request.headers.get('x-forwarded-for') ?? request.ip;
 			}
 
 			const url = new URL(request.url);
@@ -208,23 +209,16 @@ export const bootstrap = (): FluxifyServer => {
 		debug(`global prefix is ${config.globalPrefix}`);
 	}
 	if (!global.server) {
-		const bunServer: Partial<FluxifyServer> = serve(options);
-		bunServer.routes = routes;
-		bunServer.cache = [];
-		bunServer.throttle = {};
-		bunServer.logger = logger;
-		bunServer.header = header;
-		bunServer.serialize = serialize;
-		global.server = bunServer as FluxifyServer;
+		global.server = serve(options) as FluxifyServer;
 	} else {
 		global.server.reload(options);
-		global.server.routes = routes;
-		global.server.cache = [];
-		global.server.throttle = {};
-		global.server.logger = logger;
-		global.server.header = header;
-		global.server.serialize = serialize;
 	}
+	global.server.routes = routes;
+	global.server.cache = [];
+	global.server.throttle = {};
+	global.server.logger = logger;
+	global.server.header = header;
+	global.server.serialize = serialize;
 
 	routes.map((route, _index, array) =>
 		array.filter((rout) => rout.endpoint === route.endpoint && rout.method === route.method).length > 1
