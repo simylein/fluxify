@@ -1,6 +1,6 @@
 import { config } from '../../config/config';
 import { debug, res } from '../../logger/logger';
-import { FluxifyRequest } from '../boot/boot.type';
+import { FluxifyRequest } from '../../router/router.type';
 import { serializer } from '../serialize/serialize';
 
 let customHeaders: HeadersInit = {};

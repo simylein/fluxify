@@ -1,7 +1,6 @@
 import { config } from '../config/config';
 import { Config } from '../config/config.type';
-import { FluxifyRequest } from '../core/boot/boot.type';
-import { Method } from '../router/router.type';
+import { FluxifyRequest, Method } from '../router/router.type';
 import {
 	blue,
 	bold,

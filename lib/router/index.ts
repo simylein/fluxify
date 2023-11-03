@@ -1,2 +1,2 @@
 export { router } from './router';
-export type { Method, Route } from './router.type';
+export type { FluxifyRequest, FluxifyResponse, Method, Route } from './router.type';

@@ -13,9 +13,3 @@ export type FluxifyServer = Server & {
 	header: (custom: HeadersInit) => void;
 	serialize: (custom: Serializer) => void;
 };
-
-export type FluxifyRequest = Request & {
-	id: string;
-	ip: string;
-	time: number;
-};

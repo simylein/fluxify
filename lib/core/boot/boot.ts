@@ -7,14 +7,14 @@ import { HttpException, Locked, Unauthorized } from '../../exception/exception';
 import { coloredMethod } from '../../logger/color';
 import { debug, error, info, logger, req, res, warn } from '../../logger/logger';
 import { routes } from '../../router/router';
-import { Param, Query } from '../../router/router.type';
+import { FluxifyRequest, Param, Query } from '../../router/router.type';
 import { ValidationError } from '../../validation/error';
 import { compareEndpoint, compareMethod } from '../compare/compare';
 import { extractMethod, extractParam } from '../extract/extract';
 import { parseBody } from '../request/request';
 import { createResponse, header } from '../response/response';
 import { serialize } from '../serialize/serialize';
-import { FluxifyRequest, FluxifyServer } from './boot.type';
+import { FluxifyServer } from './boot.type';
 
 declare global {
 	// eslint-disable-next-line no-var

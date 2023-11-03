@@ -1,7 +1,7 @@
 import { Mock, beforeAll, describe, expect, mock, test } from 'bun:test';
 import { randomUUID } from 'crypto';
 import { config } from '../config/config';
-import { FluxifyRequest } from '../core/boot/boot.type';
+import { FluxifyRequest } from '../router/router.type';
 import { expectType } from '../test/expect-type';
 import { blue, bold, cyan, green, purple, red, reset, yellow } from './color';
 import {

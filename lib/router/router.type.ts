@@ -1,4 +1,3 @@
-import { FluxifyRequest } from '../core/boot/boot.type';
 import { IdEntity } from '../repository/repository.type';
 import { Parser } from '../validation/parser.type';
 
@@ -8,14 +7,20 @@ export type Param = Record<string, unknown>;
 
 export type Query = Record<string, unknown>;
 
-export type RouteReturn = unknown | IdEntity | IdEntity[] | Promise<unknown | IdEntity | IdEntity[]>;
+export type FluxifyRequest = Request & {
+	id: string;
+	ip: string;
+	time: number;
+};
+
+export type FluxifyResponse = unknown | IdEntity | IdEntity[] | Promise<unknown | IdEntity | IdEntity[]>;
 
 export type Route = {
 	method: Method;
 	endpoint: string;
 	schema: Schema<unknown, unknown, unknown, unknown> | null;
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	handler: ({ param, query, body, jwt, req }: HandlerSchema<any, any, any, any>) => RouteReturn;
+	handler: ({ param, query, body, jwt, req }: HandlerSchema<any, any, any, any>) => FluxifyResponse;
 };
 
 export type Schema<P, Q, B, J> = {

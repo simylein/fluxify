@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, mock, test } from 'bun:test';
 import { randomUUID } from 'crypto';
-import { FluxifyRequest } from '../boot/boot.type';
+import { FluxifyRequest } from '../../router/router.type';
 import { createResponse } from './response';
 
 beforeAll(() => {
