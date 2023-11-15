@@ -350,16 +350,19 @@ describe(userRepository.insertMany.name, () => {
 		const result = await userRepository.find();
 		expect(result).toEqual([
 			{ id: id1, ...user1 },
-			{ id: id2, ...user1 },
+			{ id: id2, ...user2 },
 		]);
 	});
 
 	test('should insert multiple entities and ignore values which are undefined', async () => {
-		const [{ id: id1 }, { id: id2 }] = await userRepository.insertMany([{ ...user1 }, { ...user2, active: undefined }]);
+		const [{ id: id1 }, { id: id2 }] = await userRepository.insertMany([
+			{ ...user1, active: undefined },
+			{ ...user2, active: undefined },
+		]);
 
 		const result = await userRepository.find();
 		expect(result).toEqual([
-			{ id: id1, ...user1 },
+			{ id: id1, ...user1, active: null },
 			{ id: id2, ...user2, active: null },
 		]);
 	});
