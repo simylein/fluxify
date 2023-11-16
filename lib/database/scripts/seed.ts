@@ -1,4 +1,4 @@
-import { info } from '../../logger/logger';
+import { error, info } from '../../logger/logger';
 import { extractExports, filterFiles, searchFiles } from './helper';
 
 const matchingFiles = filterFiles(searchFiles('./src', /\.seed\.ts$/), process.argv[2]);
@@ -14,7 +14,11 @@ await (async (): Promise<void> => {
 	for (const seed of seeds) {
 		if (seed && seed instanceof Function) {
 			info(`running seed ${seed.name}...`);
-			await seed();
+			try {
+				await seed();
+			} catch (err) {
+				error(`failed to run seed ${seed.name}`, err);
+			}
 		}
 	}
 })();

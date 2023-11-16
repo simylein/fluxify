@@ -1,4 +1,4 @@
-import { info } from '../../logger/logger';
+import { error, info } from '../../logger/logger';
 import { runQuery } from '../database';
 import { extractExports, filterFiles, searchFiles } from './helper';
 
@@ -23,6 +23,10 @@ entities.forEach((entity) => {
 		typeof entity.schema === 'string'
 	) {
 		info(`dropping table ${entity.name}...`);
-		runQuery(`drop table if exists ${entity.name}`);
+		try {
+			runQuery(`drop table if exists ${entity.name}`);
+		} catch (err) {
+			error(`failed to drop table ${entity.name}`, err);
+		}
 	}
 });

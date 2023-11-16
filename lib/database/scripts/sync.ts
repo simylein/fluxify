@@ -1,4 +1,4 @@
-import { info } from '../../logger/logger';
+import { error, info } from '../../logger/logger';
 import { runQuery } from '../database';
 import { extractExports, filterFiles, searchFiles } from './helper';
 
@@ -23,6 +23,10 @@ entities.forEach((entity) => {
 		typeof entity.schema === 'string'
 	) {
 		info(`syncing table ${entity.name}...`);
-		runQuery(entity.schema);
+		try {
+			runQuery(entity.schema);
+		} catch (err) {
+			error(`failed to sync table ${entity.name}`, err);
+		}
 	}
 });
