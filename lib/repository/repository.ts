@@ -1,7 +1,8 @@
+import { SQLQueryBindings } from 'bun:sqlite';
 import { randomUUID } from 'crypto';
 import { config } from '../config/config';
 import { ColumnOptions } from '../database/column/column.type';
-import { insertOne, runQuery, selectMany, selectOne } from '../database/database';
+import { insertMulti, insertSingle, runQuery, selectMany, selectOne } from '../database/database';
 import { Entity } from '../database/entity/entity.type';
 import { debug } from '../logger/logger';
 import { orderBy, paginate, whereMany, whereOne } from './helpers/helpers';
@@ -14,6 +15,7 @@ type Repository<T extends IdEntity> = {
 	find: <S extends keyof T>(options?: FindOptions<T, S>) => Promise<Pick<T, S>[]>;
 	findOne: <S extends keyof T>(options: T['id'] | FindOneOptions<T, S>) => Promise<Pick<T, S> | null>;
 	insert: (data: InsertData<T>) => Promise<{ id: T['id'] }>;
+	insertMany: (data: InsertData<T>[]) => Promise<{ id: T['id'] }[]>;
 	update: (criteria: Criteria<T>, data: UpdateData<T>) => Promise<void>;
 	delete: (criteria: Criteria<T>) => Promise<void>;
 	softDelete: (criteria: Criteria<T>) => Promise<void>;
@@ -166,11 +168,66 @@ export const repository = <T extends IdEntity>(table: Entity<T>): Repository<T> 
 					placeholders.unshift('?');
 				}
 
-				const { id } = insertOne(
+				const result = insertSingle(
 					`insert into ${table.name} (${keys.join(',')}) values (${placeholders.join(',')})`,
 					values,
 				);
-				return resolve({ id });
+				return resolve(result);
+			});
+		},
+
+		insertMany(data: InsertData<T>[]): Promise<{ id: T['id'] }[]> {
+			return new Promise((resolve) => {
+				const uuids = data.map((dat) => (dat.id ?? table.columns.id.type === 'integer' ? undefined : randomUUID()));
+				const keys = Object.keys(data[0])
+					.filter((key) => data[0][key as keyof InsertData<T>] !== undefined)
+					.map((key) => table.columns[key].name ?? key);
+
+				const placeholders: string[][] = [];
+				const values: unknown[][] = [];
+
+				const columnKeys = Object.keys(table.columns).filter((key) => !('references' in table.columns[key]));
+				const columns = table.columns as Record<string, ColumnOptions>;
+
+				const createdColumn = columnKeys.find((column) => columns[column].onInsert === `(datetime('now'))`);
+				const updatedColumn = columnKeys.find((column) => columns[column].onUpdate === `(datetime('now'))`);
+				const deletedColumn = columnKeys.find((column) => columns[column].onDelete === `(datetime('now'))`);
+
+				uuids.forEach((uuid, ind) => {
+					values.push(transformData(data[ind]));
+					placeholders.push(
+						Object.keys(data[ind])
+							.filter((key) => data[ind][key as keyof InsertData<T>] !== undefined)
+							.map(() => '?'),
+					);
+
+					if (createdColumn) {
+						ind === 0 && keys.push(columns[createdColumn].name ?? createdColumn);
+						placeholders[ind].push(`${columns[createdColumn].default}`);
+					}
+					if (updatedColumn) {
+						ind === 0 && keys.push(columns[updatedColumn].name ?? updatedColumn);
+						placeholders[ind].push(`${columns[updatedColumn].default}`);
+					}
+					if (deletedColumn) {
+						ind === 0 && keys.push(columns[deletedColumn].name ?? deletedColumn);
+						placeholders[ind].push(`${columns[deletedColumn].default}`);
+					}
+
+					if (uuid) {
+						ind === 0 && keys.unshift('id');
+						values[ind].unshift(uuid);
+						placeholders[ind].unshift('?');
+					}
+				});
+
+				const result = insertMulti(
+					`insert into ${table.name} (${keys.join(',')}) values ${placeholders
+						.map((places) => `(${places.join(',')})`)
+						.join(',')}`,
+					values.flat() as SQLQueryBindings[],
+				);
+				return resolve(result);
 			});
 		},
 
