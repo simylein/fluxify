@@ -9,16 +9,15 @@ const todoRepository = repository(todoEntity);
 
 export const todos = async (): Promise<void> => {
 	const users = await userRepository.find({ select: { id: true } });
-	await Promise.all(
+	await todoRepository.insertMany(
 		Array(32)
 			.fill(null)
-			.map(() =>
-				todoRepository.insert({
-					title: words(2),
-					description: words(randomInt(4, 16)),
-					done: !!randomInt(0, 1),
-					userId: users[randomInt(0, users.length - 1)].id,
-				}),
-			),
+			.map(() => ({
+				title: words(2),
+				description: words(randomInt(4, 16)),
+				done: randomInt(0, 2) === 0,
+				dueAt: randomInt(0, 2) === 0 ? new Date() : null,
+				userId: users[randomInt(0, users.length - 1)].id,
+			})),
 	);
 };
