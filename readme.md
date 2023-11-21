@@ -357,7 +357,7 @@ app.get('/docs', null, () => {
 
 `deleted()` creates a column which holds the date on which the entity was soft deleted
 
-`runQuery()` `selectMany()` `selectOne()` `insertSingle()` `insertMulti()` raw methods in which you may write your sql directly. only use them if you cannot fulfill you needs using the `repository`
+`runQuery()` `selectMany()` `selectOne()` `insertOne()` `insertMany()` raw methods in which you may write your sql directly. only use them if you cannot fulfill you needs using the `repository`
 
 `Entity` the return type of the `entity` function
 

@@ -2,7 +2,7 @@ import { SQLQueryBindings } from 'bun:sqlite';
 import { randomUUID } from 'crypto';
 import { config } from '../config/config';
 import { ColumnOptions } from '../database/column/column.type';
-import { insertMulti, insertSingle, runQuery, selectMany, selectOne } from '../database/database';
+import { insertMany, insertOne, runQuery, selectMany, selectOne } from '../database/database';
 import { Entity } from '../database/entity/entity.type';
 import { debug } from '../logger/logger';
 import { orderBy, paginate, whereMany, whereOne } from './helpers/helpers';
@@ -168,7 +168,7 @@ export const repository = <T extends IdEntity>(table: Entity<T>): Repository<T> 
 					placeholders.unshift('?');
 				}
 
-				const result = insertSingle(
+				const result = insertOne(
 					`insert into ${table.name} (${keys.join(',')}) values (${placeholders.join(',')})`,
 					values,
 				);
@@ -221,7 +221,7 @@ export const repository = <T extends IdEntity>(table: Entity<T>): Repository<T> 
 					}
 				});
 
-				const result = insertMulti(
+				const result = insertMany(
 					`insert into ${table.name} (${keys.join(',')}) values ${placeholders
 						.map((places) => `(${places.join(',')})`)
 						.join(',')}`,
