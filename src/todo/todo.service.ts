@@ -1,4 +1,4 @@
-import { emit, subscribe } from 'lib/events';
+import { emit, subscribe } from 'lib/event';
 import { Forbidden, NoContent } from 'lib/exception';
 import { info, mask } from 'lib/logger';
 import { like, repository } from 'lib/repository';

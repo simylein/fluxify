@@ -21,7 +21,7 @@
 - [lib/core](#core)
 - [lib/database](#database)
 - [lib/docs](#docs)
-- [lib/events](#events)
+- [lib/event](#event)
 - [lib/exception](#exception)
 - [lib/fake](#fake)
 - [lib/logger](#logger)
@@ -367,7 +367,7 @@ app.get('/docs', null, () => {
 
 `generateDocs()` returns a openapi v3 compliant spec of your api routes. return this from any route handler
 
-### events
+### event
 
 `subscribe()` used for server sent events. return this from a get route handler and provide a channel for listening
 
