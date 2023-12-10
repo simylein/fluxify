@@ -108,10 +108,16 @@ export const bootstrap = (): FluxifyServer => {
 					if (targetRoute.schema) {
 						if (targetRoute.schema.jwt) {
 							const token = request.headers.get('authorization');
-							if (!token || !token.toLowerCase().includes('bearer ')) {
+							const cookie = request.headers.get('cookie');
+							if (
+								(!token || !token.toLowerCase().startsWith('bearer ')) &&
+								(!cookie || !cookie.toLowerCase().startsWith('bearer='))
+							) {
 								throw Unauthorized();
 							}
-							jwt = targetRoute.schema.jwt.parse(verifyJwt(token.split(' ')[1]));
+							jwt = targetRoute.schema.jwt.parse(
+								verifyJwt(token ? token.split(' ')[1].trim() : cookie ? cookie.split('=')[1].trim() : ''),
+							);
 						}
 						if (targetRoute.schema.param) param = targetRoute.schema.param.parse(param);
 						if (targetRoute.schema.query) query = targetRoute.schema.query.parse(query);
