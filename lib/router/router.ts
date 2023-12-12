@@ -1,58 +1,61 @@
 import { config } from '../config/config';
-import { FluxifyResponse, HandlerSchema, Route, Schema } from './router.type';
+import { FluxifyResponse, HandlerSchema, Path, Route, Schema } from './router.type';
 
 export const routes: Route[] = [];
 
 type Router = {
 	all: <P, Q, B, J>(
-		endpoint: string,
+		endpoint: Path,
 		schema: Schema<P, Q, B, J> | null,
 		handler: ({ param, query, body, jwt }: HandlerSchema<P, Q, B, J>) => FluxifyResponse,
 	) => void;
 	get: <P, Q, B, J>(
-		endpoint: string,
+		endpoint: Path,
 		schema: Schema<P, Q, B, J> | null,
 		handler: ({ param, query, body, jwt }: HandlerSchema<P, Q, B, J>) => FluxifyResponse,
 	) => void;
 	post: <P, Q, B, J>(
-		endpoint: string,
+		endpoint: Path,
 		schema: Schema<P, Q, B, J> | null,
 		handler: ({ param, query, body, jwt }: HandlerSchema<P, Q, B, J>) => FluxifyResponse,
 	) => void;
 	put: <P, Q, B, J>(
-		endpoint: string,
+		endpoint: Path,
 		schema: Schema<P, Q, B, J> | null,
 		handler: ({ param, query, body, jwt }: HandlerSchema<P, Q, B, J>) => FluxifyResponse,
 	) => void;
 	patch: <P, Q, B, J>(
-		endpoint: string,
+		endpoint: Path,
 		schema: Schema<P, Q, B, J> | null,
 		handler: ({ param, query, body, jwt }: HandlerSchema<P, Q, B, J>) => FluxifyResponse,
 	) => void;
 	delete: <P, Q, B, J>(
-		endpoint: string,
+		endpoint: Path,
 		schema: Schema<P, Q, B, J> | null,
 		handler: ({ param, query, body, jwt }: HandlerSchema<P, Q, B, J>) => FluxifyResponse,
 	) => void;
 };
 
-export const fuseEndpoint = (endpoint: string, prefix?: string, base?: string): string => {
-	const fragments: string[] = [];
-	if (prefix) fragments.push(prefix.endsWith('/') ? prefix.substring(0, prefix.length - 1) : prefix);
-	if (base) fragments.push(base.endsWith('/') ? base.substring(0, base.length - 1) : base);
-	fragments.push(endpoint.endsWith('/') ? endpoint.substring(0, endpoint.length - 1) : endpoint);
+export const fuseEndpoint = (endpoint: Path, prefix?: string, base?: Path): string => {
+	const fragments: string[] = [
+		prefix ?? '',
+		typeof endpoint === 'object' ? `v${endpoint.version}` : typeof base === 'object' ? `v${base.version}` : '',
+		typeof base === 'object' ? base.path : base ?? '',
+		typeof endpoint === 'object' ? endpoint.path : endpoint,
+	];
 	return (
 		fragments
 			.filter((frag) => frag.length)
 			.map((frag) => (frag.startsWith('/') ? frag : `/${frag}`))
+			.map((frag) => (frag.endsWith('/') ? frag.substring(0, frag.length - 1) : frag))
 			.join('') || '/'
 	);
 };
 
-export const router = (base?: string): Router => {
+export const router = (base?: Path): Router => {
 	return {
 		all<P, Q, B, J>(
-			endpoint: string,
+			endpoint: Path,
 			schema: Schema<P, Q, B, J> | null,
 			handler: ({ param, query, body, jwt }: HandlerSchema<P, Q, B, J>) => FluxifyResponse,
 		): void {
@@ -60,7 +63,7 @@ export const router = (base?: string): Router => {
 		},
 
 		get<P, Q, B, J>(
-			endpoint: string,
+			endpoint: Path,
 			schema: Schema<P, Q, B, J> | null,
 			handler: ({ param, query, body, jwt }: HandlerSchema<P, Q, B, J>) => FluxifyResponse,
 		): void {
@@ -68,7 +71,7 @@ export const router = (base?: string): Router => {
 		},
 
 		post<P, Q, B, J>(
-			endpoint: string,
+			endpoint: Path,
 			schema: Schema<P, Q, B, J> | null,
 			handler: ({ param, query, body, jwt }: HandlerSchema<P, Q, B, J>) => FluxifyResponse,
 		): void {
@@ -76,7 +79,7 @@ export const router = (base?: string): Router => {
 		},
 
 		put<P, Q, B, J>(
-			endpoint: string,
+			endpoint: Path,
 			schema: Schema<P, Q, B, J> | null,
 			handler: ({ param, query, body, jwt }: HandlerSchema<P, Q, B, J>) => FluxifyResponse,
 		): void {
@@ -84,7 +87,7 @@ export const router = (base?: string): Router => {
 		},
 
 		patch<P, Q, B, J>(
-			endpoint: string,
+			endpoint: Path,
 			schema: Schema<P, Q, B, J> | null,
 			handler: ({ param, query, body, jwt }: HandlerSchema<P, Q, B, J>) => FluxifyResponse,
 		): void {
@@ -92,7 +95,7 @@ export const router = (base?: string): Router => {
 		},
 
 		delete<P, Q, B, J>(
-			endpoint: string,
+			endpoint: Path,
 			schema: Schema<P, Q, B, J> | null,
 			handler: ({ param, query, body, jwt }: HandlerSchema<P, Q, B, J>) => FluxifyResponse,
 		): void {

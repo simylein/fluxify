@@ -37,6 +37,18 @@ describe(fuseEndpoint.name, () => {
 	test('should return a slash if the combined string is empty', () => {
 		expect(fuseEndpoint('', '', '')).toEqual('/');
 	});
+
+	test('should accept optional object as base with path and version', () => {
+		expect(fuseEndpoint('me/', 'api', { path: '/auth', version: 1 })).toEqual('/api/v1/auth/me');
+	});
+
+	test('should accept optional object as endpoint with path and version', () => {
+		expect(fuseEndpoint({ path: 'me', version: 2 }, 'api/', '/auth')).toEqual('/api/v2/auth/me');
+	});
+
+	test('should accept noth optional objects and prefer the endpoint', () => {
+		expect(fuseEndpoint({ path: '/me', version: 3 }, 'api', { path: 'auth', version: 1 })).toEqual('/api/v3/auth/me');
+	});
 });
 
 describe(app.all.name, () => {
