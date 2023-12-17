@@ -66,7 +66,7 @@ beforeAll(() => {
 		throw Gone();
 	});
 	app.get('/error', null, () => {
-		throw InternalServerError();
+		throw InternalServerError('something went very wrong');
 	});
 	app.get('/throw', null, () => {
 		throw Error('up');
@@ -168,7 +168,7 @@ describe(bootstrap.name, () => {
 		const data = await response.json();
 
 		expect(response.status).toEqual(400);
-		expect(data).toEqual({ status: 400, message: 'id is missing and should be of type number' });
+		expect(data).toEqual({ status: 400, message: 'bad request', detail: 'id is missing and should be of type number' });
 	});
 
 	test('should return unauthorized because no authorization header was provided', async () => {
@@ -224,7 +224,7 @@ describe(bootstrap.name, () => {
 		const data = await response.json();
 
 		expect(response.status).toEqual(500);
-		expect(data).toEqual({ status: 500, message: 'internal server error' });
+		expect(data).toEqual({ status: 500, message: 'internal server error', detail: 'something went very wrong' });
 	});
 
 	test('should throw up because the code in the handler does so', () => {

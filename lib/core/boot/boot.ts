@@ -164,11 +164,11 @@ export const bootstrap = (): FluxifyServer => {
 				} catch (err) {
 					if (err instanceof ValidationError) {
 						const status = 400;
-						return createResponse({ status, message: err.message }, status, request);
+						return createResponse({ status, message: 'bad request', detail: err.message }, status, request);
 					}
 					if (err instanceof HttpException) {
 						const status = err.status;
-						return createResponse({ status, message: err.message }, status, request);
+						return createResponse({ status, message: err.message, detail: err.detail }, status, request);
 					}
 					throw {
 						name: (err as { name?: string })?.name,
