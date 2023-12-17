@@ -60,26 +60,26 @@ configuration is done by environment variables in the `.env` file.
 you can find an example in the `example.env` file.
 default values are given below and will be used if none are provided.
 
-`PORT=4000` the server will run on this port, the port must not be occupied
+`PORT=4000` the server will run on this port, the port must not be occupied <br>
 `NAME=fluxify` the name of you app, put anything you like, this will show in logs
 
-`ALLOW_ORIGIN=*` used for cors, put your frontend address there, the star is a wildcard
+`ALLOW_ORIGIN=*` used for cors, put your frontend address there, the star is a wildcard <br>
 `GLOBAL_PREFIX=` if you would like to prefix all your routes, should start with a slash
 
-`JWT_SECRET=random` keep this secret, use a strong random value
+`JWT_SECRET=random` keep this secret, use a strong random value <br>
 `JWT_EXPIRY=1600` after that many seconds your token will expire
 
-`CACHE_TTL=0` your cache's time to live in seconds, 0 means disabled
+`CACHE_TTL=0` your cache's time to live in seconds, 0 means disabled <br>
 `CACHE_LIMIT=0` the maximum amount of items in the cache, 0 means disabled
 
-`THROTTLE_TTL=0` your throttle's time to live in seconds, 0 means disabled
+`THROTTLE_TTL=0` your throttle's time to live in seconds, 0 means disabled <br>
 `THROTTLE_LIMIT=0` how many requests a single ip may do in the given ttl, 0 means disabled
 
-`DATABASE_PATH=:memory:` provide a file path to a database on your system
+`DATABASE_PATH=:memory:` provide a file path to a database on your system <br>
 `DATABASE_MODE=readwrite` can either be readwrite or readonly
 
-`LOG_LEVEL=info` can be one of trace debug info warn error, trace will log the most info
-`LOG_REQUESTS=false` set to true for logging incoming requests, useful in development
+`LOG_LEVEL=info` can be one of trace debug info warn error, trace will log the most info <br>
+`LOG_REQUESTS=false` set to true for logging incoming requests, useful in development <br>
 `LOG_RESPONSES=false` set to true for logging outgoing responses, useful in development
 
 ### bootstrap
