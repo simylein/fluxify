@@ -190,7 +190,7 @@ export const bootstrap = (): FluxifyServer => {
 			error(err?.message, config.logLevel === 'trace' ? err : '');
 			const status = 500;
 			return createResponse(
-				{ status, message: 'internal server error' },
+				{ status, message: 'internal server error', detail: config.stage === 'dev' ? err?.message : undefined },
 				status,
 				(err as Error & { request: FluxifyRequest }).request,
 			);

@@ -1,56 +1,58 @@
 export class HttpException {
-	constructor(status: number, message: string) {
+	constructor(status: number, message: string, detail?: string) {
 		this.status = status;
 		this.message = message;
+		this.detail = detail;
 	}
 	status: number;
 	message: string;
+	detail?: string;
 }
 
-export const Accepted = (message?: string): HttpException => {
-	return new HttpException(202, message ?? 'accepted');
+export const Accepted = (detail?: string): HttpException => {
+	return new HttpException(202, 'accepted', detail);
 };
 
-export const NoContent = (message?: string): HttpException => {
-	return new HttpException(204, message ?? 'no content');
+export const NoContent = (detail?: string): HttpException => {
+	return new HttpException(204, 'no content', detail);
 };
 
-export const Unauthorized = (message?: string): HttpException => {
-	return new HttpException(401, message ?? 'unauthorized');
+export const Unauthorized = (detail?: string): HttpException => {
+	return new HttpException(401, 'unauthorized', detail);
 };
 
-export const Forbidden = (message?: string): HttpException => {
-	return new HttpException(403, message ?? 'forbidden');
+export const Forbidden = (detail?: string): HttpException => {
+	return new HttpException(403, 'forbidden', detail);
 };
 
-export const NotFound = (message?: string): HttpException => {
-	return new HttpException(404, message ?? 'not found');
+export const NotFound = (detail?: string): HttpException => {
+	return new HttpException(404, 'not found', detail);
 };
 
-export const MethodNotAllowed = (message?: string): HttpException => {
-	return new HttpException(405, message ?? 'method not allowed');
+export const MethodNotAllowed = (detail?: string): HttpException => {
+	return new HttpException(405, 'method not allowed', detail);
 };
 
-export const Conflict = (message?: string): HttpException => {
-	return new HttpException(409, message ?? 'conflict');
+export const Conflict = (detail?: string): HttpException => {
+	return new HttpException(409, 'conflict', detail);
 };
 
-export const Gone = (message?: string): HttpException => {
-	return new HttpException(410, message ?? 'gone');
+export const Gone = (detail?: string): HttpException => {
+	return new HttpException(410, 'gone', detail);
 };
 
-export const IamTeapot = (message?: string): HttpException => {
-	return new HttpException(418, message ?? 'iam teapot');
+export const IamTeapot = (detail?: string): HttpException => {
+	return new HttpException(418, 'iam teapot', detail);
 };
 
-export const Locked = (message?: string): HttpException => {
-	return new HttpException(423, message ?? 'locked');
+export const Locked = (detail?: string): HttpException => {
+	return new HttpException(423, 'locked', detail);
 };
 
-export const TooManyRequests = (message?: string): HttpException => {
-	return new HttpException(429, message ?? 'too many requests');
+export const TooManyRequests = (detail?: string): HttpException => {
+	return new HttpException(429, 'too many requests', detail);
 };
 
-export const InternalServerError = (message?: string): HttpException => {
-	return new HttpException(500, message ?? 'internal server error');
+export const InternalServerError = (detail?: string): HttpException => {
+	return new HttpException(500, 'internal server error', detail);
 };

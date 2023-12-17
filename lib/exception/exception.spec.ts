@@ -24,8 +24,8 @@ describe(Accepted.name, () => {
 		expect(Accepted()).toEqual({ status: 202, message: 'accepted' });
 	});
 
-	test('should return a http exception with custom message', () => {
-		expect(Accepted('custom message')).toEqual({ status: 202, message: 'custom message' });
+	test('should return a http exception with more details', () => {
+		expect(Accepted('more details')).toEqual({ status: 202, message: 'accepted', detail: 'more details' });
 	});
 });
 
@@ -38,8 +38,8 @@ describe(NoContent.name, () => {
 		expect(NoContent()).toEqual({ status: 204, message: 'no content' });
 	});
 
-	test('should return a http exception with custom message', () => {
-		expect(NoContent('custom message')).toEqual({ status: 204, message: 'custom message' });
+	test('should return a http exception with more details', () => {
+		expect(NoContent('more details')).toEqual({ status: 204, message: 'no content', detail: 'more details' });
 	});
 });
 
@@ -52,8 +52,8 @@ describe(Unauthorized.name, () => {
 		expect(Unauthorized()).toEqual({ status: 401, message: 'unauthorized' });
 	});
 
-	test('should return a http exception with custom message', () => {
-		expect(Unauthorized('custom message')).toEqual({ status: 401, message: 'custom message' });
+	test('should return a http exception with more details', () => {
+		expect(Unauthorized('more details')).toEqual({ status: 401, message: 'unauthorized', detail: 'more details' });
 	});
 });
 
@@ -66,8 +66,8 @@ describe(Forbidden.name, () => {
 		expect(Forbidden()).toEqual({ status: 403, message: 'forbidden' });
 	});
 
-	test('should return a http exception with custom message', () => {
-		expect(Forbidden('custom message')).toEqual({ status: 403, message: 'custom message' });
+	test('should return a http exception with more details', () => {
+		expect(Forbidden('more details')).toEqual({ status: 403, message: 'forbidden', detail: 'more details' });
 	});
 });
 
@@ -80,8 +80,8 @@ describe(NotFound.name, () => {
 		expect(NotFound()).toEqual({ status: 404, message: 'not found' });
 	});
 
-	test('should return a http exception with custom message', () => {
-		expect(NotFound('custom message')).toEqual({ status: 404, message: 'custom message' });
+	test('should return a http exception with more details', () => {
+		expect(NotFound('more details')).toEqual({ status: 404, message: 'not found', detail: 'more details' });
 	});
 });
 
@@ -94,8 +94,12 @@ describe(MethodNotAllowed.name, () => {
 		expect(MethodNotAllowed()).toEqual({ status: 405, message: 'method not allowed' });
 	});
 
-	test('should return a http exception with custom message', () => {
-		expect(MethodNotAllowed('custom message')).toEqual({ status: 405, message: 'custom message' });
+	test('should return a http exception with more details', () => {
+		expect(MethodNotAllowed('more details')).toEqual({
+			status: 405,
+			message: 'method not allowed',
+			detail: 'more details',
+		});
 	});
 });
 
@@ -108,8 +112,8 @@ describe(Conflict.name, () => {
 		expect(Conflict()).toEqual({ status: 409, message: 'conflict' });
 	});
 
-	test('should return a http exception with custom message', () => {
-		expect(Conflict('custom message')).toEqual({ status: 409, message: 'custom message' });
+	test('should return a http exception with more details', () => {
+		expect(Conflict('more details')).toEqual({ status: 409, message: 'conflict', detail: 'more details' });
 	});
 });
 
@@ -122,8 +126,8 @@ describe(Gone.name, () => {
 		expect(Gone()).toEqual({ status: 410, message: 'gone' });
 	});
 
-	test('should return a http exception with custom message', () => {
-		expect(Gone('custom message')).toEqual({ status: 410, message: 'custom message' });
+	test('should return a http exception with more details', () => {
+		expect(Gone('more details')).toEqual({ status: 410, message: 'gone', detail: 'more details' });
 	});
 });
 
@@ -136,8 +140,8 @@ describe(IamTeapot.name, () => {
 		expect(IamTeapot()).toEqual({ status: 418, message: 'iam teapot' });
 	});
 
-	test('should return a http exception with custom message', () => {
-		expect(IamTeapot('custom message')).toEqual({ status: 418, message: 'custom message' });
+	test('should return a http exception with more details', () => {
+		expect(IamTeapot('more details')).toEqual({ status: 418, message: 'iam teapot', detail: 'more details' });
 	});
 });
 
@@ -150,8 +154,8 @@ describe(Locked.name, () => {
 		expect(Locked()).toEqual({ status: 423, message: 'locked' });
 	});
 
-	test('should return a http exception with custom message', () => {
-		expect(Locked('custom message')).toEqual({ status: 423, message: 'custom message' });
+	test('should return a http exception with more details', () => {
+		expect(Locked('more details')).toEqual({ status: 423, message: 'locked', detail: 'more details' });
 	});
 });
 
@@ -164,8 +168,12 @@ describe(TooManyRequests.name, () => {
 		expect(TooManyRequests()).toEqual({ status: 429, message: 'too many requests' });
 	});
 
-	test('should return a http exception with custom message', () => {
-		expect(TooManyRequests('custom message')).toEqual({ status: 429, message: 'custom message' });
+	test('should return a http exception with more details', () => {
+		expect(TooManyRequests('more details')).toEqual({
+			status: 429,
+			message: 'too many requests',
+			detail: 'more details',
+		});
 	});
 });
 
@@ -178,7 +186,11 @@ describe(InternalServerError.name, () => {
 		expect(InternalServerError()).toEqual({ status: 500, message: 'internal server error' });
 	});
 
-	test('should return a http exception with custom message', () => {
-		expect(InternalServerError('custom message')).toEqual({ status: 500, message: 'custom message' });
+	test('should return a http exception with more details', () => {
+		expect(InternalServerError('more details')).toEqual({
+			status: 500,
+			message: 'internal server error',
+			detail: 'more details',
+		});
 	});
 });
