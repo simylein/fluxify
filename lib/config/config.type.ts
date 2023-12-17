@@ -4,6 +4,7 @@ export type Config = {
 	name: string;
 	allowOrigin: string;
 	globalPrefix: string;
+	defaultVersion: number;
 	jwtSecret: string;
 	jwtExpiry: number;
 	cacheTtl: number;

@@ -21,6 +21,7 @@ export const validateConfig = (env: Env): Config => {
 
 			allowOrigin: string().optional().default('*'),
 			globalPrefix: string().optional().max(12).default(''),
+			defaultVersion: number().optional().transform().min(1).default(0),
 
 			jwtSecret: string().optional().default(randomBytes(32).toString('hex')),
 			jwtExpiry: number().optional().transform().min(0).default(1600),
@@ -44,6 +45,7 @@ export const validateConfig = (env: Env): Config => {
 			name: env.NAME,
 			allowOrigin: env.ALLOW_ORIGIN,
 			globalPrefix: env.GLOBAL_PREFIX,
+			defaultVersion: env.DEFAULT_VERSION,
 			jwtSecret: env.JWT_SECRET,
 			jwtExpiry: env.JWT_EXPIRY,
 			cacheTtl: env.CACHE_TTL,

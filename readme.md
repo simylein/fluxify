@@ -64,7 +64,8 @@ default values are given below and will be used if none are provided.
 `NAME=fluxify` the name of you app, put anything you like, this will show in logs
 
 `ALLOW_ORIGIN=*` used for cors, put your frontend address there, the star is a wildcard <br>
-`GLOBAL_PREFIX=` if you would like to prefix all your routes, should start with a slash
+`GLOBAL_PREFIX=` if you would like to prefix all your routes, should start with a slash <br>
+`DEFAULT_VERSION=0` used when no version was provided in the router nor endpoint, 0 means disabled
 
 `JWT_SECRET=random` keep this secret, use a strong random value <br>
 `JWT_EXPIRY=1600` after that many seconds your token will expire

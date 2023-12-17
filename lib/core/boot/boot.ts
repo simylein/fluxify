@@ -214,6 +214,9 @@ export const bootstrap = (): FluxifyServer => {
 	if (config.globalPrefix) {
 		debug(`global prefix is ${config.globalPrefix}`);
 	}
+	if (config.defaultVersion) {
+		debug(`default version is v${config.defaultVersion}`);
+	}
 	if (!global.server) {
 		global.server = serve(options) as FluxifyServer;
 	} else {

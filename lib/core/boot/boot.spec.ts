@@ -20,6 +20,8 @@ beforeAll(() => {
 	config.throttleTtl = 8;
 	config.throttleLimit = 4;
 	config.databaseMode = 'readwrite';
+	config.globalPrefix = '';
+	config.defaultVersion = 0;
 	console.log = mock(() => void 0);
 	console.debug = mock(() => void 0);
 	console.info = mock(() => void 0);
@@ -118,21 +120,16 @@ describe(bootstrap.name, () => {
 	});
 
 	test('should return no body and no allow header', async () => {
-		const response = await server.fetch(
-			new Request(`http://${server.hostname}:${server.port}${config.globalPrefix}`, { method: 'options' }),
-		);
+		const response = await server.fetch(new Request(`http://${server.hostname}:${server.port}`, { method: 'options' }));
 		const data = await response.text();
 
-		expect(Object.fromEntries(response.headers.entries())).toEqual({
-			allow: '',
-			...defaultHeaders,
-		});
+		expect(Object.fromEntries(response.headers.entries())).toEqual({ allow: '', ...defaultHeaders });
 		expect(data).toEqual('');
 	});
 
 	test('should return no body and the appropriate allow header', async () => {
 		const response = await server.fetch(
-			new Request(`http://${server.hostname}:${server.port}${config.globalPrefix}/methods`, { method: 'options' }),
+			new Request(`http://${server.hostname}:${server.port}/methods`, { method: 'options' }),
 		);
 		const data = await response.text();
 
@@ -145,7 +142,7 @@ describe(bootstrap.name, () => {
 
 	test('should return no body and the appropriate access control allow header with auth', async () => {
 		const response = await server.fetch(
-			new Request(`http://${server.hostname}:${server.port}${config.globalPrefix}/auth/methods`, { method: 'options' }),
+			new Request(`http://${server.hostname}:${server.port}/auth/methods`, { method: 'options' }),
 		);
 		const data = await response.text();
 
@@ -159,7 +156,7 @@ describe(bootstrap.name, () => {
 	});
 
 	test('should return hello world because the route and method matches', async () => {
-		const response = await server.fetch(`http://${server.hostname}:${server.port}${config.globalPrefix}/hello`);
+		const response = await server.fetch(`http://${server.hostname}:${server.port}/hello`);
 		const data = await response.json();
 
 		expect(response.status).toEqual(200);
@@ -167,7 +164,7 @@ describe(bootstrap.name, () => {
 	});
 
 	test('should return bad request and tell what is missing', async () => {
-		const response = await server.fetch(`http://${server.hostname}:${server.port}${config.globalPrefix}/bad-request`);
+		const response = await server.fetch(`http://${server.hostname}:${server.port}/bad-request`);
 		const data = await response.json();
 
 		expect(response.status).toEqual(400);
@@ -175,7 +172,7 @@ describe(bootstrap.name, () => {
 	});
 
 	test('should return unauthorized because no authorization header was provided', async () => {
-		const response = await server.fetch(`http://${server.hostname}:${server.port}${config.globalPrefix}/unauthorized`);
+		const response = await server.fetch(`http://${server.hostname}:${server.port}/unauthorized`);
 		const data = await response.json();
 
 		expect(response.status).toEqual(401);
@@ -183,7 +180,7 @@ describe(bootstrap.name, () => {
 	});
 
 	test('should return forbidden because the handler throws', async () => {
-		const response = await server.fetch(`http://${server.hostname}:${server.port}${config.globalPrefix}/forbidden`);
+		const response = await server.fetch(`http://${server.hostname}:${server.port}/forbidden`);
 		const data = await response.json();
 
 		expect(response.status).toEqual(403);
@@ -191,7 +188,7 @@ describe(bootstrap.name, () => {
 	});
 
 	test('should return not found because no routes match', async () => {
-		const response = await server.fetch(`http://${server.hostname}:${server.port}${config.globalPrefix}`);
+		const response = await server.fetch(`http://${server.hostname}:${server.port}`);
 		const data = await response.json();
 
 		expect(response.status).toEqual(404);
@@ -199,7 +196,7 @@ describe(bootstrap.name, () => {
 	});
 
 	test('should return method not allowed because route matches but method is wrong', async () => {
-		const response = await server.fetch(`http://${server.hostname}:${server.port}${config.globalPrefix}/void`);
+		const response = await server.fetch(`http://${server.hostname}:${server.port}/void`);
 		const data = await response.json();
 
 		expect(response.status).toEqual(405);
@@ -207,7 +204,7 @@ describe(bootstrap.name, () => {
 	});
 
 	test('should return conflict because the handler throws', async () => {
-		const response = await server.fetch(`http://${server.hostname}:${server.port}${config.globalPrefix}/conflict`);
+		const response = await server.fetch(`http://${server.hostname}:${server.port}/conflict`);
 		const data = await response.json();
 
 		expect(response.status).toEqual(409);
@@ -215,7 +212,7 @@ describe(bootstrap.name, () => {
 	});
 
 	test('should return conflict because the handler throws', async () => {
-		const response = await server.fetch(`http://${server.hostname}:${server.port}${config.globalPrefix}/gone`);
+		const response = await server.fetch(`http://${server.hostname}:${server.port}/gone`);
 		const data = await response.json();
 
 		expect(response.status).toEqual(410);
@@ -223,7 +220,7 @@ describe(bootstrap.name, () => {
 	});
 
 	test('should return internal server error because the handler throws', async () => {
-		const response = await server.fetch(`http://${server.hostname}:${server.port}${config.globalPrefix}/error`);
+		const response = await server.fetch(`http://${server.hostname}:${server.port}/error`);
 		const data = await response.json();
 
 		expect(response.status).toEqual(500);
@@ -231,11 +228,11 @@ describe(bootstrap.name, () => {
 	});
 
 	test('should throw up because the code in the handler does so', () => {
-		expect(() => server.fetch(`http://${server.hostname}:${server.port}${config.globalPrefix}/throw`)).toThrow('up');
+		expect(() => server.fetch(`http://${server.hostname}:${server.port}/throw`)).toThrow('up');
 	});
 
 	test('should return a custom response body because a response was returned directly', async () => {
-		const response = await server.fetch(`http://${server.hostname}:${server.port}${config.globalPrefix}/custom`);
+		const response = await server.fetch(`http://${server.hostname}:${server.port}/custom`);
 		const data = await response.text();
 
 		expect(response.status).toEqual(240);
@@ -244,7 +241,7 @@ describe(bootstrap.name, () => {
 
 	test('should return the id parameter', async () => {
 		const id = 42;
-		const response = await server.fetch(`http://${server.hostname}:${server.port}${config.globalPrefix}/param/${id}`);
+		const response = await server.fetch(`http://${server.hostname}:${server.port}/param/${id}`);
 		const data = await response.json();
 
 		expect(response.status).toEqual(200);
@@ -254,9 +251,7 @@ describe(bootstrap.name, () => {
 	test('should return the uuid and id parameters', async () => {
 		const uuid = randomUUID();
 		const id = 42;
-		const response = await server.fetch(
-			`http://${server.hostname}:${server.port}${config.globalPrefix}/param/${uuid}/and/${id}`,
-		);
+		const response = await server.fetch(`http://${server.hostname}:${server.port}/param/${uuid}/and/${id}`);
 		const data = await response.json();
 
 		expect(response.status).toEqual(200);
@@ -264,9 +259,7 @@ describe(bootstrap.name, () => {
 	});
 
 	test('should return the hello query parameter', async () => {
-		const response = await server.fetch(
-			`http://${server.hostname}:${server.port}${config.globalPrefix}/query?hello=world`,
-		);
+		const response = await server.fetch(`http://${server.hostname}:${server.port}/query?hello=world`);
 		const data = await response.json();
 
 		expect(response.status).toEqual(200);
@@ -274,9 +267,7 @@ describe(bootstrap.name, () => {
 	});
 
 	test('should return the hello and lorem query parameter', async () => {
-		const response = await server.fetch(
-			`http://${server.hostname}:${server.port}${config.globalPrefix}/query?hello=world&lorem=ipsum`,
-		);
+		const response = await server.fetch(`http://${server.hostname}:${server.port}/query?hello=world&lorem=ipsum`);
 		const data = await response.json();
 
 		expect(response.status).toEqual(200);
@@ -286,10 +277,7 @@ describe(bootstrap.name, () => {
 	test('should return the request body', async () => {
 		const body = { ping: 'pong', hello: 'world' };
 		const response = await server.fetch(
-			new Request(`http://${server.hostname}:${server.port}${config.globalPrefix}/body`, {
-				method: 'post',
-				body: JSON.stringify(body),
-			}),
+			new Request(`http://${server.hostname}:${server.port}/body`, { method: 'post', body: JSON.stringify(body) }),
 		);
 		const data = await response.json();
 
@@ -298,7 +286,7 @@ describe(bootstrap.name, () => {
 	});
 
 	test('should return a live value', async () => {
-		const response = await server.fetch(`http://${server.hostname}:${server.port}${config.globalPrefix}/cache`);
+		const response = await server.fetch(`http://${server.hostname}:${server.port}/cache`);
 		const data = await response.json();
 
 		expect(response.status).toEqual(200);
@@ -308,7 +296,7 @@ describe(bootstrap.name, () => {
 	});
 
 	test('should return a cached value', async () => {
-		const response = await server.fetch(`http://${server.hostname}:${server.port}${config.globalPrefix}/cache`);
+		const response = await server.fetch(`http://${server.hostname}:${server.port}/cache`);
 		const data = await response.json();
 
 		expect(response.status).toEqual(200);
@@ -318,9 +306,7 @@ describe(bootstrap.name, () => {
 
 	test('should return a forced non cached value', async () => {
 		const response = await server.fetch(
-			new Request(`http://${server.hostname}:${server.port}${config.globalPrefix}/cache`, {
-				headers: { 'cache-control': 'no-cache' },
-			}),
+			new Request(`http://${server.hostname}:${server.port}/cache`, { headers: { 'cache-control': 'no-cache' } }),
 		);
 		const data = await response.json();
 
@@ -333,7 +319,7 @@ describe(bootstrap.name, () => {
 		const responses = await Promise.all(
 			new Array(config.throttleLimit + 1)
 				.fill(null)
-				.map(() => server.fetch(`http://${server.hostname}:${server.port}${config.globalPrefix}/throttle`)),
+				.map(() => server.fetch(`http://${server.hostname}:${server.port}/throttle`)),
 		);
 
 		responses.map((response, index) => {

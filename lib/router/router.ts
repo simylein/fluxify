@@ -36,10 +36,16 @@ type Router = {
 	) => void;
 };
 
-export const fuseEndpoint = (endpoint: Path, prefix?: string, base?: Path): string => {
+export const fuseEndpoint = (endpoint: Path, prefix?: string, version?: number, base?: Path): string => {
 	const fragments: string[] = [
 		prefix ?? '',
-		typeof endpoint === 'object' ? `v${endpoint.version}` : typeof base === 'object' ? `v${base.version}` : '',
+		typeof endpoint === 'object'
+			? `v${endpoint.version}`
+			: typeof base === 'object'
+			? `v${base.version}`
+			: version
+			? `v${version}`
+			: '',
 		typeof base === 'object' ? base.path : base ?? '',
 		typeof endpoint === 'object' ? endpoint.path : endpoint,
 	];
@@ -59,7 +65,12 @@ export const router = (base?: Path): Router => {
 			schema: Schema<P, Q, B, J> | null,
 			handler: ({ param, query, body, jwt }: HandlerSchema<P, Q, B, J>) => FluxifyResponse,
 		): void {
-			routes.push({ method: 'all', schema, endpoint: fuseEndpoint(endpoint, config.globalPrefix, base), handler });
+			routes.push({
+				method: 'all',
+				schema,
+				endpoint: fuseEndpoint(endpoint, config.globalPrefix, config.defaultVersion, base),
+				handler,
+			});
 		},
 
 		get<P, Q, B, J>(
@@ -67,7 +78,12 @@ export const router = (base?: Path): Router => {
 			schema: Schema<P, Q, B, J> | null,
 			handler: ({ param, query, body, jwt }: HandlerSchema<P, Q, B, J>) => FluxifyResponse,
 		): void {
-			routes.push({ method: 'get', schema, endpoint: fuseEndpoint(endpoint, config.globalPrefix, base), handler });
+			routes.push({
+				method: 'get',
+				schema,
+				endpoint: fuseEndpoint(endpoint, config.globalPrefix, config.defaultVersion, base),
+				handler,
+			});
 		},
 
 		post<P, Q, B, J>(
@@ -75,7 +91,12 @@ export const router = (base?: Path): Router => {
 			schema: Schema<P, Q, B, J> | null,
 			handler: ({ param, query, body, jwt }: HandlerSchema<P, Q, B, J>) => FluxifyResponse,
 		): void {
-			routes.push({ method: 'post', schema, endpoint: fuseEndpoint(endpoint, config.globalPrefix, base), handler });
+			routes.push({
+				method: 'post',
+				schema,
+				endpoint: fuseEndpoint(endpoint, config.globalPrefix, config.defaultVersion, base),
+				handler,
+			});
 		},
 
 		put<P, Q, B, J>(
@@ -83,7 +104,12 @@ export const router = (base?: Path): Router => {
 			schema: Schema<P, Q, B, J> | null,
 			handler: ({ param, query, body, jwt }: HandlerSchema<P, Q, B, J>) => FluxifyResponse,
 		): void {
-			routes.push({ method: 'put', schema, endpoint: fuseEndpoint(endpoint, config.globalPrefix, base), handler });
+			routes.push({
+				method: 'put',
+				schema,
+				endpoint: fuseEndpoint(endpoint, config.globalPrefix, config.defaultVersion, base),
+				handler,
+			});
 		},
 
 		patch<P, Q, B, J>(
@@ -91,7 +117,12 @@ export const router = (base?: Path): Router => {
 			schema: Schema<P, Q, B, J> | null,
 			handler: ({ param, query, body, jwt }: HandlerSchema<P, Q, B, J>) => FluxifyResponse,
 		): void {
-			routes.push({ method: 'patch', schema, endpoint: fuseEndpoint(endpoint, config.globalPrefix, base), handler });
+			routes.push({
+				method: 'patch',
+				schema,
+				endpoint: fuseEndpoint(endpoint, config.globalPrefix, config.defaultVersion, base),
+				handler,
+			});
 		},
 
 		delete<P, Q, B, J>(
@@ -99,7 +130,12 @@ export const router = (base?: Path): Router => {
 			schema: Schema<P, Q, B, J> | null,
 			handler: ({ param, query, body, jwt }: HandlerSchema<P, Q, B, J>) => FluxifyResponse,
 		): void {
-			routes.push({ method: 'delete', schema, endpoint: fuseEndpoint(endpoint, config.globalPrefix, base), handler });
+			routes.push({
+				method: 'delete',
+				schema,
+				endpoint: fuseEndpoint(endpoint, config.globalPrefix, config.defaultVersion, base),
+				handler,
+			});
 		},
 	};
 };

@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'bun:test';
+import { beforeAll, describe, expect, test } from 'bun:test';
 import { config } from '../config/config';
 import { compareEndpoint, compareMethod } from '../core/compare/compare';
 import { expectType } from '../test/expect-type';
@@ -7,47 +7,58 @@ import { Route } from './router.type';
 
 const app = router();
 
+beforeAll(() => {
+	config.globalPrefix = '';
+	config.defaultVersion = 0;
+});
+
 describe(fuseEndpoint.name, () => {
-	test('should combine endpoint prefix and base', () => {
-		expect(fuseEndpoint('/me', '/api', '/auth')).toEqual('/api/auth/me');
-		expectType<string>(fuseEndpoint('/me', '/api', '/auth'));
+	test('should combine endpoint prefix version and base', () => {
+		expect(fuseEndpoint('/me', '/api', 1, '/auth')).toEqual('/api/v1/auth/me');
+		expectType<string>(fuseEndpoint('/me', '/api', 1, '/auth'));
 	});
 
 	test('should combine endpoint prefix and base and ignore undefined values', () => {
-		expect(fuseEndpoint('/me', undefined, undefined)).toEqual('/me');
-		expectType<string>(fuseEndpoint('/me', undefined, undefined));
+		expect(fuseEndpoint('/me', undefined, undefined, undefined)).toEqual('/me');
+		expectType<string>(fuseEndpoint('/me', undefined, undefined, undefined));
 	});
 
 	test('should remove trailing slashes from endpoint prefix and base', () => {
-		expect(fuseEndpoint('/me/', '/api/', '/auth/')).toEqual('/api/auth/me');
+		expect(fuseEndpoint('/me/', '/api/', 0, '/auth/')).toEqual('/api/auth/me');
 	});
 
 	test('should add missing leading slashes from endpoint prefix and base', () => {
-		expect(fuseEndpoint('me', 'api', 'auth')).toEqual('/api/auth/me');
+		expect(fuseEndpoint('me', 'api', 0, 'auth')).toEqual('/api/auth/me');
 	});
 
 	test('should add missing leading slashes and remove trailing slashes from endpoint prefix and base', () => {
-		expect(fuseEndpoint('me/', 'api/', 'auth/')).toEqual('/api/auth/me');
+		expect(fuseEndpoint('me/', 'api/', 0, 'auth/')).toEqual('/api/auth/me');
 	});
 
 	test('should preserve standalone slashes', () => {
-		expect(fuseEndpoint('/', '/', '/')).toEqual('/');
+		expect(fuseEndpoint('/', '/', 0, '/')).toEqual('/');
 	});
 
 	test('should return a slash if the combined string is empty', () => {
-		expect(fuseEndpoint('', '', '')).toEqual('/');
+		expect(fuseEndpoint('', '', 0, '')).toEqual('/');
+	});
+
+	test('should return the default version when not provided in path', () => {
+		expect(fuseEndpoint('me/', 'api', 1, '/auth')).toEqual('/api/v1/auth/me');
 	});
 
 	test('should accept optional object as base with path and version', () => {
-		expect(fuseEndpoint('me/', 'api', { path: '/auth', version: 1 })).toEqual('/api/v1/auth/me');
+		expect(fuseEndpoint('me/', 'api', 0, { path: '/auth', version: 2 })).toEqual('/api/v2/auth/me');
 	});
 
 	test('should accept optional object as endpoint with path and version', () => {
-		expect(fuseEndpoint({ path: 'me', version: 2 }, 'api/', '/auth')).toEqual('/api/v2/auth/me');
+		expect(fuseEndpoint({ path: 'me', version: 3 }, 'api/', 0, '/auth')).toEqual('/api/v3/auth/me');
 	});
 
 	test('should accept noth optional objects and prefer the endpoint', () => {
-		expect(fuseEndpoint({ path: '/me', version: 3 }, 'api', { path: 'auth', version: 1 })).toEqual('/api/v3/auth/me');
+		expect(fuseEndpoint({ path: '/me', version: 4 }, 'api', 0, { path: 'auth', version: 2 })).toEqual(
+			'/api/v4/auth/me',
+		);
 	});
 });
 
