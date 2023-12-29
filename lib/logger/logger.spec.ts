@@ -1,7 +1,7 @@
-import { Mock, beforeAll, describe, expect, mock, test } from 'bun:test';
+import { Mock, afterAll, beforeAll, describe, expect, mock, test } from 'bun:test';
 import { randomUUID } from 'crypto';
 import { config } from '../config/config';
-import { FluxifyRequest } from '../router/router.type';
+import { FluxifyRequest, Method, Path } from '../router/router.type';
 import { expectType } from '../test/expect-type';
 import { blue, bold, cyan, green, purple, red, reset, yellow } from './color';
 import {
@@ -11,6 +11,7 @@ import {
 	formatTimestamp,
 	getContext,
 	info,
+	logger,
 	makeBase,
 	mask,
 	req,
@@ -20,6 +21,15 @@ import {
 } from './logger';
 
 beforeAll(() => {
+	logger({
+		req: mock(() => void 0),
+		res: mock(() => void 0),
+		trace: mock(() => void 0),
+		debug: mock(() => void 0),
+		info: mock(() => void 0),
+		warn: mock(() => void 0),
+		error: mock(() => void 0),
+	});
 	config.logLevel = 'trace';
 	config.logRequests = true;
 	config.logResponses = true;
@@ -29,13 +39,10 @@ beforeAll(() => {
 	console.info = mock(() => void 0);
 	console.warn = mock(() => void 0);
 	console.error = mock(() => void 0);
-	customLogger.req = mock(() => void 0);
-	customLogger.res = mock(() => void 0);
-	customLogger.trace = mock(() => void 0);
-	customLogger.debug = mock(() => void 0);
-	customLogger.info = mock(() => void 0);
-	customLogger.warn = mock(() => void 0);
-	customLogger.error = mock(() => void 0);
+});
+
+afterAll(() => {
+	logger({});
 });
 
 describe(getContext.name, () => {
@@ -86,25 +93,43 @@ describe(mask.name, () => {
 });
 
 describe(req.name, () => {
+	const request = { id: randomUUID(), ip: '127.0.0.1' } as FluxifyRequest;
+	const method: Method = 'get';
+	const endpoint: Path = '/test';
+	const result = req(request, method, endpoint);
+	expectType<void>(result);
+
+	test('should call the log function on console', () => {
+		expect(console.log).toHaveBeenCalledTimes(2);
+		expect((console.log as Mock<() => void>).mock.calls[0]).toEqual([expect.stringContaining(method)]);
+		expect((console.log as Mock<() => void>).mock.calls[0]).toEqual([expect.stringContaining(endpoint)]);
+	});
+
 	test('should call the custom logger request function', () => {
-		const request = { id: randomUUID(), ip: '127.0.0.1' } as FluxifyRequest;
-		const result = req(request, 'get', '/test');
-		expectType<void>(result);
 		expect(customLogger.req).toHaveBeenCalledTimes(1);
 		expect((customLogger.req as Mock<() => void>).mock.calls[0]).toEqual([
-			{ id: request.id, ip: request.ip, timestamp: expect.any(Number), method: 'get', endpoint: '/test' },
+			{ id: request.id, ip: request.ip, timestamp: expect.any(Number), method, endpoint },
 		]);
 	});
 });
 
 describe(res.name, () => {
+	const id = randomUUID();
+	const status = 200;
+	const time = 16;
+	const result = res(id, status, time);
+	expectType<void>(result);
+
+	test('should call the log function on console', () => {
+		expect(console.log).toHaveBeenCalledTimes(2);
+		expect((console.log as Mock<() => void>).mock.calls[1]).toEqual([expect.stringContaining(`${status}`)]);
+		expect((console.log as Mock<() => void>).mock.calls[1]).toEqual([expect.stringContaining(`${time}`)]);
+	});
+
 	test('should call the custom logger response function', () => {
-		const id = randomUUID();
-		const result = res(id, 200, 16);
-		expectType<void>(result);
 		expect(customLogger.res).toHaveBeenCalledTimes(1);
 		expect((customLogger.res as Mock<() => void>).mock.calls[0]).toEqual([
-			{ id, timestamp: expect.any(Number), status: 200, time: 16 },
+			{ id, timestamp: expect.any(Number), status, time },
 		]);
 	});
 });
@@ -116,7 +141,7 @@ describe(trace.name, () => {
 
 	test('should call the trace function on console', () => {
 		expect(console.trace).toHaveBeenCalledTimes(1);
-		expect((console.trace as Mock<() => void>).mock.calls[0]).toSatisfy((args) => (args as string[])[0].includes(log));
+		expect((console.trace as Mock<() => void>).mock.calls[0]).toSatisfy((args) => (args as [string])[0].includes(log));
 	});
 
 	test('should call the custom logger trace function', () => {
@@ -134,7 +159,7 @@ describe(debug.name, () => {
 
 	test('should call the debug function on console', () => {
 		expect(console.debug).toHaveBeenCalledTimes(1);
-		expect((console.debug as Mock<() => void>).mock.calls[0]).toSatisfy((args) => (args as string[])[0].includes(log));
+		expect((console.debug as Mock<() => void>).mock.calls[0]).toSatisfy((args) => (args as [string])[0].includes(log));
 	});
 
 	test('should call the custom logger debug function', () => {
@@ -152,7 +177,7 @@ describe(info.name, () => {
 
 	test('should call the info function on console', () => {
 		expect(console.info).toHaveBeenCalledTimes(1);
-		expect((console.info as Mock<() => void>).mock.calls[0]).toSatisfy((args) => (args as string[])[0].includes(log));
+		expect((console.info as Mock<() => void>).mock.calls[0]).toSatisfy((args) => (args as [string])[0].includes(log));
 	});
 
 	test('should call the custom logger info function', () => {
@@ -170,7 +195,7 @@ describe(warn.name, () => {
 
 	test('should call the warn function on console', () => {
 		expect(console.warn).toHaveBeenCalledTimes(1);
-		expect((console.warn as Mock<() => void>).mock.calls[0]).toSatisfy((args) => (args as string[])[0].includes(log));
+		expect((console.warn as Mock<() => void>).mock.calls[0]).toSatisfy((args) => (args as [string])[0].includes(log));
 	});
 
 	test('should call the custom logger warn function', () => {
@@ -188,7 +213,7 @@ describe(error.name, () => {
 
 	test('should call the error function on console', () => {
 		expect(console.error).toHaveBeenCalledTimes(1);
-		expect((console.error as Mock<() => void>).mock.calls[0]).toSatisfy((args) => (args as string[])[0].includes(log));
+		expect((console.error as Mock<() => void>).mock.calls[0]).toSatisfy((args) => (args as [string])[0].includes(log));
 	});
 
 	test('should call the custom logger error function', () => {
