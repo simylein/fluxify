@@ -1,10 +1,14 @@
-import { beforeAll, describe, expect, mock, test } from 'bun:test';
+import { afterAll, beforeAll, describe, expect, mock, test } from 'bun:test';
 import { randomUUID } from 'crypto';
 import { FluxifyRequest } from '../../router/router.type';
-import { createResponse } from './response';
+import { createResponse, defaultHeaders, header } from './response';
 
 beforeAll(() => {
 	console.log = mock(() => void 0);
+});
+
+afterAll(() => {
+	header({});
 });
 
 describe(createResponse.name, () => {
@@ -29,5 +33,16 @@ describe(createResponse.name, () => {
 		expect(createResponse(input, status, request).bodyUsed).toEqual(false);
 		expect(createResponse(input, status, request).status).toEqual(status);
 		expect(await createResponse(input, status, request).json()).toEqual(input);
+	});
+
+	test('should register global headers and return them on every response', () => {
+		header({ 'cache-control': 'no-cache' });
+		const request = new Request('http://example.com') as FluxifyRequest;
+		request.id = randomUUID();
+		request.time = performance.now();
+		expect(Object.fromEntries(createResponse(null, 200, request).headers.entries())).toEqual({
+			...defaultHeaders,
+			'cache-control': 'no-cache',
+		});
 	});
 });
