@@ -60,7 +60,7 @@ describe(number.name, () => {
 		expect(() => number().optional().parse({})).toThrow();
 		expect(() => number().optional().parse([])).toThrow();
 		expect(() => number().optional().parse(undefined)).not.toThrow();
-		expect(number().optional().parse(undefined)).toEqual(undefined);
+		expect(number().optional().parse(undefined)).toBeUndefined();
 		expect(() => number().optional().parse(null)).toThrow();
 		expectType<number | undefined>(number().optional().parse(42));
 	});
@@ -86,9 +86,9 @@ describe(number.name, () => {
 		expect(() => number().optional().nullable().parse({})).toThrow();
 		expect(() => number().optional().nullable().parse([])).toThrow();
 		expect(() => number().optional().nullable().parse(undefined)).not.toThrow();
-		expect(number().optional().nullable().parse(undefined)).toEqual(undefined);
+		expect(number().optional().nullable().parse(undefined)).toBeUndefined();
 		expect(() => number().optional().nullable().parse(null)).not.toThrow();
-		expect(number().optional().nullable().parse(null)).toEqual(null);
+		expect(number().optional().nullable().parse(null)).toBeNull();
 		expectType<number | undefined | null>(number().optional().nullable().parse(42));
 	});
 
@@ -100,9 +100,9 @@ describe(number.name, () => {
 		expect(() => number().nullable().optional().parse({})).toThrow();
 		expect(() => number().nullable().optional().parse([])).toThrow();
 		expect(() => number().nullable().optional().parse(undefined)).not.toThrow();
-		expect(number().nullable().optional().parse(undefined)).toEqual(undefined);
+		expect(number().nullable().optional().parse(undefined)).toBeUndefined();
 		expect(() => number().nullable().optional().parse(null)).not.toThrow();
-		expect(number().nullable().optional().parse(null)).toEqual(null);
+		expect(number().nullable().optional().parse(null)).toBeNull();
 		expectType<number | undefined | null>(number().nullable().optional().parse(42));
 	});
 });

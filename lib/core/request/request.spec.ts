@@ -5,7 +5,7 @@ import { parseBody } from './request';
 describe(parseBody.name, () => {
 	test('should return null if body is unused', async () => {
 		const request = new Request('http://example.com');
-		expect(await parseBody(request)).toEqual(null);
+		expect(await parseBody(request)).toBeNull();
 	});
 
 	test('should parse a valid body', async () => {

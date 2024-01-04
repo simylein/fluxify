@@ -290,7 +290,7 @@ describe(bootstrap.name, () => {
 		const data = await response.json();
 
 		expect(response.status).toEqual(200);
-		expect(response.headers.get('expires')).toEqual(null);
+		expect(response.headers.get('expires')).toBeNull();
 		expect(data).toEqual({ value: expect.any(Number) });
 		value = (data as { value?: number }).value;
 	});
@@ -311,7 +311,7 @@ describe(bootstrap.name, () => {
 		const data = await response.json();
 
 		expect(response.status).toEqual(200);
-		expect(response.headers.get('expires')).toEqual(null);
+		expect(response.headers.get('expires')).toBeNull();
 		expect(data).not.toEqual({ value });
 	});
 

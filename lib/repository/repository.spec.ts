@@ -266,7 +266,7 @@ describe(userRepository.find.name, () => {
 describe(userRepository.findOne.name, () => {
 	test('should return null when no entity with the id exists', async () => {
 		const result = await userRepository.findOne({ where: { id: 'non-existing-id' } });
-		expect(result).toEqual(null);
+		expect(result).toBeNull();
 		expectType<User | null>(result);
 	});
 
@@ -290,7 +290,7 @@ describe(userRepository.findOne.name, () => {
 		await seedUsers(users);
 
 		const result = await userRepository.findOne({ where: { id: 'non-existing-id', age: 69 } });
-		expect(result).toEqual(null);
+		expect(result).toBeNull();
 		expectType<User | null>(result);
 	});
 
@@ -429,7 +429,7 @@ describe(userRepository.delete.name, () => {
 		await userRepository.delete(id);
 
 		const result = await userRepository.findOne({ where: { id } });
-		expect(result).toEqual(null);
+		expect(result).toBeNull();
 	});
 
 	test('should delete the entity with the id using long form', async () => {
@@ -437,7 +437,7 @@ describe(userRepository.delete.name, () => {
 		await userRepository.delete({ name: user2.name });
 
 		const result = await userRepository.findOne({ where: { id } });
-		expect(result).toEqual(null);
+		expect(result).toBeNull();
 	});
 });
 
@@ -447,7 +447,7 @@ describe(todoRepository.softDelete.name, () => {
 		await todoRepository.softDelete(id);
 
 		const result = await todoRepository.findOne({ where: { id } });
-		expect(result).toEqual(null);
+		expect(result).toBeNull();
 	});
 
 	test('should soft delete the entity with the id using long form', async () => {
@@ -455,7 +455,7 @@ describe(todoRepository.softDelete.name, () => {
 		await todoRepository.softDelete({ name: todo2.name });
 
 		const result = await todoRepository.findOne({ where: { id } });
-		expect(result).toEqual(null);
+		expect(result).toBeNull();
 	});
 });
 

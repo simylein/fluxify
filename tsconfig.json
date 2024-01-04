@@ -3,7 +3,6 @@
 		"lib": ["esnext"],
 		"module": "esnext",
 		"target": "esnext",
-		"types": ["bun-types"],
 		"moduleResolution": "bundler",
 		"strict": true,
 		"skipLibCheck": true,

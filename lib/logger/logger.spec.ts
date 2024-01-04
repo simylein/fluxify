@@ -1,4 +1,4 @@
-import { Mock, afterAll, beforeAll, describe, expect, mock, test } from 'bun:test';
+import { afterAll, beforeAll, describe, expect, mock, test } from 'bun:test';
 import { randomUUID } from 'crypto';
 import { config } from '../config/config';
 import { FluxifyRequest, Method, Path } from '../router/router.type';
@@ -101,15 +101,19 @@ describe(req.name, () => {
 
 	test('should call the log function on console', () => {
 		expect(console.log).toHaveBeenCalledTimes(2);
-		expect((console.log as Mock<() => void>).mock.calls[0]).toEqual([expect.stringContaining(method)]);
-		expect((console.log as Mock<() => void>).mock.calls[0]).toEqual([expect.stringContaining(endpoint)]);
+		expect(console.log).toHaveBeenCalledWith(expect.stringContaining(method));
+		expect(console.log).toHaveBeenCalledWith(expect.stringContaining(endpoint));
 	});
 
 	test('should call the custom logger request function', () => {
 		expect(customLogger.req).toHaveBeenCalledTimes(1);
-		expect((customLogger.req as Mock<() => void>).mock.calls[0]).toEqual([
-			{ id: request.id, ip: request.ip, timestamp: expect.any(Number), method, endpoint },
-		]);
+		expect(customLogger.req).toHaveBeenCalledWith({
+			id: request.id,
+			ip: request.ip,
+			timestamp: expect.any(Number),
+			method,
+			endpoint,
+		});
 	});
 });
 
@@ -122,15 +126,13 @@ describe(res.name, () => {
 
 	test('should call the log function on console', () => {
 		expect(console.log).toHaveBeenCalledTimes(2);
-		expect((console.log as Mock<() => void>).mock.calls[1]).toEqual([expect.stringContaining(`${status}`)]);
-		expect((console.log as Mock<() => void>).mock.calls[1]).toEqual([expect.stringContaining(`${time}`)]);
+		expect(console.log).toHaveBeenCalledWith(expect.stringContaining(`${status}`));
+		expect(console.log).toHaveBeenCalledWith(expect.stringContaining(`${time}`));
 	});
 
 	test('should call the custom logger response function', () => {
 		expect(customLogger.res).toHaveBeenCalledTimes(1);
-		expect((customLogger.res as Mock<() => void>).mock.calls[0]).toEqual([
-			{ id, timestamp: expect.any(Number), status, time },
-		]);
+		expect(customLogger.res).toHaveBeenCalledWith({ id, timestamp: expect.any(Number), status, time });
 	});
 });
 
@@ -141,14 +143,17 @@ describe(trace.name, () => {
 
 	test('should call the trace function on console', () => {
 		expect(console.trace).toHaveBeenCalledTimes(1);
-		expect((console.trace as Mock<() => void>).mock.calls[0]).toSatisfy((args) => (args as [string])[0].includes(log));
+		expect(console.trace).toHaveBeenCalledWith(expect.stringContaining(log), '');
 	});
 
 	test('should call the custom logger trace function', () => {
 		expect(customLogger.trace).toHaveBeenCalledTimes(1);
-		expect((customLogger.trace as Mock<() => void>).mock.calls[0]).toEqual([
-			{ timestamp: expect.any(Number), message: log, stack: undefined, context: import.meta.file },
-		]);
+		expect(customLogger.trace).toHaveBeenCalledWith({
+			timestamp: expect.any(Number),
+			message: log,
+			stack: undefined,
+			context: import.meta.file,
+		});
 	});
 });
 
@@ -159,14 +164,17 @@ describe(debug.name, () => {
 
 	test('should call the debug function on console', () => {
 		expect(console.debug).toHaveBeenCalledTimes(1);
-		expect((console.debug as Mock<() => void>).mock.calls[0]).toSatisfy((args) => (args as [string])[0].includes(log));
+		expect(console.debug).toHaveBeenCalledWith(expect.stringContaining(log));
 	});
 
 	test('should call the custom logger debug function', () => {
 		expect(customLogger.debug).toHaveBeenCalledTimes(1);
-		expect((customLogger.debug as Mock<() => void>).mock.calls[0]).toEqual([
-			{ timestamp: expect.any(Number), message: log, stack: undefined, context: import.meta.file },
-		]);
+		expect(customLogger.debug).toHaveBeenCalledWith({
+			timestamp: expect.any(Number),
+			message: log,
+			stack: undefined,
+			context: import.meta.file,
+		});
 	});
 });
 
@@ -177,14 +185,17 @@ describe(info.name, () => {
 
 	test('should call the info function on console', () => {
 		expect(console.info).toHaveBeenCalledTimes(1);
-		expect((console.info as Mock<() => void>).mock.calls[0]).toSatisfy((args) => (args as [string])[0].includes(log));
+		expect(console.info).toHaveBeenCalledWith(expect.stringContaining(log));
 	});
 
 	test('should call the custom logger info function', () => {
 		expect(customLogger.info).toHaveBeenCalledTimes(1);
-		expect((customLogger.info as Mock<() => void>).mock.calls[0]).toEqual([
-			{ timestamp: expect.any(Number), message: log, stack: undefined, context: import.meta.file },
-		]);
+		expect(customLogger.info).toHaveBeenCalledWith({
+			timestamp: expect.any(Number),
+			message: log,
+			stack: undefined,
+			context: import.meta.file,
+		});
 	});
 });
 
@@ -195,14 +206,17 @@ describe(warn.name, () => {
 
 	test('should call the warn function on console', () => {
 		expect(console.warn).toHaveBeenCalledTimes(1);
-		expect((console.warn as Mock<() => void>).mock.calls[0]).toSatisfy((args) => (args as [string])[0].includes(log));
+		expect(console.warn).toHaveBeenCalledWith(expect.stringContaining(log));
 	});
 
 	test('should call the custom logger warn function', () => {
 		expect(customLogger.warn).toHaveBeenCalledTimes(1);
-		expect((customLogger.warn as Mock<() => void>).mock.calls[0]).toEqual([
-			{ timestamp: expect.any(Number), message: log, stack: undefined, context: import.meta.file },
-		]);
+		expect(customLogger.warn).toHaveBeenCalledWith({
+			timestamp: expect.any(Number),
+			message: log,
+			stack: undefined,
+			context: import.meta.file,
+		});
 	});
 });
 
@@ -213,13 +227,16 @@ describe(error.name, () => {
 
 	test('should call the error function on console', () => {
 		expect(console.error).toHaveBeenCalledTimes(1);
-		expect((console.error as Mock<() => void>).mock.calls[0]).toSatisfy((args) => (args as [string])[0].includes(log));
+		expect(console.error).toHaveBeenCalledWith(expect.stringContaining(log), '');
 	});
 
 	test('should call the custom logger error function', () => {
 		expect(customLogger.error).toHaveBeenCalledTimes(1);
-		expect((customLogger.error as Mock<() => void>).mock.calls[0]).toEqual([
-			{ timestamp: expect.any(Number), message: log, stack: undefined, context: import.meta.file },
-		]);
+		expect(customLogger.error).toHaveBeenCalledWith({
+			timestamp: expect.any(Number),
+			message: log,
+			stack: undefined,
+			context: import.meta.file,
+		});
 	});
 });

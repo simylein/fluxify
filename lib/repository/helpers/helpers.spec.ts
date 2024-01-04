@@ -3,7 +3,7 @@ import { orderBy, paginate, whereMany, whereOne } from './helpers';
 
 describe(orderBy.name, () => {
 	test('should return undefined given no order keys', () => {
-		expect(orderBy()).toEqual(undefined);
+		expect(orderBy()).toBeUndefined();
 	});
 
 	test('should return a valid order by clause', () => {
@@ -15,8 +15,8 @@ describe(orderBy.name, () => {
 
 describe(whereOne.name, () => {
 	test('should return undefined given an empty where object or array', () => {
-		expect(whereOne({})).toEqual(undefined);
-		expect(whereOne([])).toEqual(undefined);
+		expect(whereOne({})).toBeUndefined();
+		expect(whereOne([])).toBeUndefined();
 	});
 
 	test('should return all values in an array', () => {
@@ -43,9 +43,9 @@ describe(whereOne.name, () => {
 
 describe(whereMany.name, () => {
 	test('should return undefined given no where object or an empty object or array', () => {
-		expect(whereMany()).toEqual(undefined);
-		expect(whereMany({})).toEqual(undefined);
-		expect(whereMany([])).toEqual(undefined);
+		expect(whereMany()).toBeUndefined();
+		expect(whereMany({})).toBeUndefined();
+		expect(whereMany([])).toBeUndefined();
 	});
 
 	test('should return all values in an array', () => {

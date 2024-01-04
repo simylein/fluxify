@@ -33,7 +33,7 @@ describe(union.name, () => {
 		expect(() => union(['light', 'dark', 'auto']).optional().parse({})).toThrow();
 		expect(() => union(['light', 'dark', 'auto']).optional().parse([])).toThrow();
 		expect(() => union(['light', 'dark', 'auto']).optional().parse(undefined)).not.toThrow();
-		expect(union(['light', 'dark', 'auto']).optional().parse(undefined)).toEqual(undefined);
+		expect(union(['light', 'dark', 'auto']).optional().parse(undefined)).toBeUndefined();
 		expect(() => union(['light', 'dark', 'auto']).optional().parse(null)).toThrow();
 		expectType<'light' | 'dark' | 'auto' | undefined>(union(['light', 'dark', 'auto']).optional().parse('dark'));
 	});

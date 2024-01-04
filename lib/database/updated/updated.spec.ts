@@ -9,7 +9,7 @@ describe(updated.name, () => {
 	});
 
 	test('should have the correct constraints', () => {
-		expect(updated().constraints.default).toEqual(null);
+		expect(updated().constraints.default).toBeNull();
 		expect(updated().constraints.hooks).toEqual({ onUpdate: `(datetime('now'))` });
 		expect(updated().name('custom').constraints.name).toEqual('custom');
 	});

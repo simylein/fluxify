@@ -9,7 +9,7 @@ describe(deleted.name, () => {
 	});
 
 	test('should have the correct constraints', () => {
-		expect(deleted().constraints.default).toEqual(null);
+		expect(deleted().constraints.default).toBeNull();
 		expect(deleted().constraints.hooks).toEqual({ onDelete: `(datetime('now'))` });
 		expect(deleted().name('custom').constraints.name).toEqual('custom');
 	});

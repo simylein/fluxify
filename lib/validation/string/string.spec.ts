@@ -46,7 +46,7 @@ describe(string.name, () => {
 		expect(() => string().optional().parse({})).toThrow();
 		expect(() => string().optional().parse([])).toThrow();
 		expect(() => string().optional().parse(undefined)).not.toThrow();
-		expect(string().optional().parse(undefined)).toEqual(undefined);
+		expect(string().optional().parse(undefined)).toBeUndefined();
 		expect(() => string().optional().parse(null)).toThrow();
 		expectType<string | undefined>(string().optional().parse('hello-world'));
 	});
@@ -72,9 +72,9 @@ describe(string.name, () => {
 		expect(() => string().optional().nullable().parse({})).toThrow();
 		expect(() => string().optional().nullable().parse([])).toThrow();
 		expect(() => string().optional().nullable().parse(undefined)).not.toThrow();
-		expect(string().optional().nullable().parse(undefined)).toEqual(undefined);
+		expect(string().optional().nullable().parse(undefined)).toBeUndefined();
 		expect(() => string().optional().nullable().parse(null)).not.toThrow();
-		expect(string().optional().nullable().parse(null)).toEqual(null);
+		expect(string().optional().nullable().parse(null)).toBeNull();
 		expectType<string | undefined | null>(string().optional().nullable().parse('hello-world'));
 	});
 
@@ -86,9 +86,9 @@ describe(string.name, () => {
 		expect(() => string().nullable().optional().parse({})).toThrow();
 		expect(() => string().nullable().optional().parse([])).toThrow();
 		expect(() => string().nullable().optional().parse(undefined)).not.toThrow();
-		expect(string().nullable().optional().parse(undefined)).toEqual(undefined);
+		expect(string().nullable().optional().parse(undefined)).toBeUndefined();
 		expect(() => string().nullable().optional().parse(null)).not.toThrow();
-		expect(string().nullable().optional().parse(null)).toEqual(null);
+		expect(string().nullable().optional().parse(null)).toBeNull();
 		expectType<string | undefined | null>(string().nullable().optional().parse('hello-world'));
 	});
 });

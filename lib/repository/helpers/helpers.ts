@@ -11,7 +11,7 @@ export const orderBy = <T extends IdEntity, S extends keyof T>(
 
 export const whereOne = <T extends IdEntity, S extends keyof T>(
 	where: FindOneOptions<T, S>['where'],
-): string[] | undefined => {
+): (string | number | boolean | null)[] | undefined => {
 	if (where) {
 		if (Array.isArray(where) && where.length) {
 			return where
@@ -32,7 +32,7 @@ export const whereOne = <T extends IdEntity, S extends keyof T>(
 
 export const whereMany = <T extends IdEntity, S extends keyof T>(
 	where?: FindOptions<T, S>['where'],
-): string[] | undefined => {
+): (string | number | boolean | null)[] | undefined => {
 	if (where) {
 		if (Array.isArray(where) && where.length) {
 			return where

@@ -155,7 +155,7 @@ describe(object.name, () => {
 				id: 1,
 				name: 'simylein',
 			}),
-		).toEqual({ id: 1, name: 'simylein', active: false });
+		).toEqual({ id: 1, age: undefined, name: 'simylein', active: false });
 		expectType<{
 			id: number;
 			name: string;

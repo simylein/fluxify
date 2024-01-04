@@ -46,7 +46,7 @@ describe(selectOne.name, () => {
 	});
 
 	test('should select nothing given an invalid id', () => {
-		expect(selectOne('select * from database_user where id = ?', ['non-existing-id'])).toEqual(null);
+		expect(selectOne('select * from database_user where id = ?', ['non-existing-id'])).toBeNull();
 	});
 
 	expectType<IdEntity | null>(selectOne('pragma testing_purpose'));

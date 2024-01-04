@@ -46,7 +46,7 @@ describe(boolean.name, () => {
 		expect(() => boolean().optional().parse({})).toThrow();
 		expect(() => boolean().optional().parse([])).toThrow();
 		expect(() => boolean().optional().parse(undefined)).not.toThrow();
-		expect(boolean().optional().parse(undefined)).toEqual(undefined);
+		expect(boolean().optional().parse(undefined)).toBeUndefined();
 		expect(() => boolean().optional().parse(null)).toThrow();
 		expectType<boolean | undefined>(boolean().optional().parse(true));
 	});
@@ -72,9 +72,9 @@ describe(boolean.name, () => {
 		expect(() => boolean().optional().nullable().parse({})).toThrow();
 		expect(() => boolean().optional().nullable().parse([])).toThrow();
 		expect(() => boolean().optional().nullable().parse(undefined)).not.toThrow();
-		expect(boolean().optional().nullable().parse(undefined)).toEqual(undefined);
+		expect(boolean().optional().nullable().parse(undefined)).toBeUndefined();
 		expect(() => boolean().optional().nullable().parse(null)).not.toThrow();
-		expect(boolean().optional().nullable().parse(null)).toEqual(null);
+		expect(boolean().optional().nullable().parse(null)).toBeNull();
 		expectType<boolean | undefined | null>(boolean().optional().nullable().parse(true));
 	});
 
@@ -86,9 +86,9 @@ describe(boolean.name, () => {
 		expect(() => boolean().nullable().optional().parse({})).toThrow();
 		expect(() => boolean().nullable().optional().parse([])).toThrow();
 		expect(() => boolean().nullable().optional().parse(undefined)).not.toThrow();
-		expect(boolean().nullable().optional().parse(undefined)).toEqual(undefined);
+		expect(boolean().nullable().optional().parse(undefined)).toBeUndefined();
 		expect(() => boolean().nullable().optional().parse(null)).not.toThrow();
-		expect(boolean().nullable().optional().parse(null)).toEqual(null);
+		expect(boolean().nullable().optional().parse(null)).toBeNull();
 		expectType<boolean | undefined | null>(boolean().nullable().optional().parse(true));
 	});
 });

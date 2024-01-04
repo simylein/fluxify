@@ -19,9 +19,9 @@
 		"schema:setup": "bun schema:init && bun schema:drop && bun schema:sync && bun schema:seed"
 	},
 	"devDependencies": {
+		"@types/bun": "1.0.0",
 		"@typescript-eslint/eslint-plugin": "6.16.0",
 		"@typescript-eslint/parser": "6.16.0",
-		"bun-types": "1.0.4",
 		"eslint": "8.56.0",
 		"eslint-config-prettier": "9.1.0",
 		"eslint-plugin-more": "1.0.5",
