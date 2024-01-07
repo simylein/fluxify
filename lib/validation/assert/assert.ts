@@ -6,6 +6,10 @@ export const isNot = (value: unknown, type: Type): ValidationError => {
 	return new ValidationError(`${inspect(value)} is not of type ${type}`);
 };
 
+export const isNotRegex = (value: unknown, regex: RegExp): ValidationError => {
+	return new ValidationError(`${inspect(value)} does not match ${regex}`);
+};
+
 export const isNotUnion = <T>(value: unknown, values: T[]): ValidationError => {
 	return new ValidationError(`${inspect(value)} is not one of ${values.join(' | ')}`);
 };
@@ -28,6 +32,7 @@ export const isNotMaxLength = (value: string, max: number): ValidationError => {
 
 export function isString(value: unknown, constraints: Constraints): asserts value is string {
 	if (typeof value !== 'string') throw isNot(value, 'string');
+	if (constraints.regex && !value.match(constraints.regex)) throw isNotRegex(value, constraints.regex);
 	if (constraints.min && value.length < constraints.min) throw isNotMinLength(value, constraints.min);
 	if (constraints.max && value.length > constraints.max) throw isNotMaxLength(value, constraints.max);
 }

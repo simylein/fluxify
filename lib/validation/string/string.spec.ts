@@ -24,6 +24,20 @@ describe(string.name, () => {
 		expectType<string>(string().parse('hello-world'));
 	});
 
+	test('should return a string if it matches the regex and else throw', () => {
+		const regex = /\d{4}-\d{2}-\d{2}/;
+		expect(() => string().matches(regex).parse('1970-01-01')).not.toThrow();
+		expect(string().matches(regex).parse('1970-01-01')).toEqual('1970-01-01');
+		expect(() => string().matches(regex).parse('42')).toThrow();
+		expect(() => string().matches(regex).parse(42)).toThrow();
+		expect(() => string().matches(regex).parse(true)).toThrow();
+		expect(() => string().matches(regex).parse({})).toThrow();
+		expect(() => string().matches(regex).parse([])).toThrow();
+		expect(() => string().matches(regex).parse(undefined)).toThrow();
+		expect(() => string().matches(regex).parse(null)).toThrow();
+		expectType<string>(string().matches(regex).parse('1970-01-01'));
+	});
+
 	test('should respect the minimum value and else throw', () => {
 		expect(() => string().min(4).parse('hello')).not.toThrow();
 		expect(() => string().min(5).parse('hello')).not.toThrow();

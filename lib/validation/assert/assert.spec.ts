@@ -7,6 +7,7 @@ import {
 	isNotMaxLength,
 	isNotMin,
 	isNotMinLength,
+	isNotRegex,
 	isNotUnion,
 	isNumber,
 	isObject,
@@ -30,18 +31,29 @@ describe(isNot.name, () => {
 	});
 });
 
-describe(isNotUnion.name, () => {
-	test('should not throw given a registered union', () => {
-		expect(() => isUnion('dark', ['light', 'dark'])).not.toThrow();
+describe(isNotRegex.name, () => {
+	const regex = /\d{4}-\d{2}-\d{2}/;
+
+	test('should be an instance of validation error', () => {
+		expect(isNotRegex('42', regex)).toBeInstanceOf(ValidationError);
 	});
 
-	test('should throw given an unregistered union', () => {
-		expect(() => isUnion(42, ['light', 'dark'])).toThrow(Error('42 is not one of light | dark'));
-		expect(() => isUnion(true, ['light', 'dark'])).toThrow(Error('true is not one of light | dark'));
-		expect(() => isUnion({}, ['light', 'dark'])).toThrow(Error('{} is not one of light | dark'));
-		expect(() => isUnion([], ['light', 'dark'])).toThrow(Error('[] is not one of light | dark'));
-		expect(() => isUnion(undefined, ['light', 'dark'])).toThrow(Error('undefined is not one of light | dark'));
-		expect(() => isUnion(null, ['light', 'dark'])).toThrow(Error('null is not one of light | dark'));
+	test('should throw that value does not match expected regex', () => {
+		expect(() => isNotRegex(null, regex)).toThrow(Error(`null does not match ${regex}`));
+		expect(() => isNotRegex('hello', regex)).toThrow(Error(`"hello" does not match ${regex}`));
+		expect(() => isNotRegex(42, regex)).toThrow(Error(`42 does not match ${regex}`));
+		expect(() => isNotRegex(true, regex)).toThrow(Error(`true does not match ${regex}`));
+		expect(() => isNotRegex({}, regex)).toThrow(Error(`{} does not match ${regex}`));
+		expect(() => isNotRegex([], regex)).toThrow(Error(`[] does not match ${regex}`));
+		expect(() => isNotRegex(undefined, regex)).toThrow(Error(`undefined does not match ${regex}`));
+	});
+});
+
+describe(isNotUnion.name, () => {
+	test('should throw that value is not one of the registered ones', () => {
+		expect(() => isNotUnion('hello-world', ['light', 'dark', 'auto'])).toThrow(
+			Error('"hello-world" is not one of light | dark | auto'),
+		);
 	});
 });
 
@@ -126,5 +138,20 @@ describe(isObject.name, () => {
 		expect(() => isObject([])).toThrow(Error('[] is not of type object'));
 		expect(() => isObject(undefined)).toThrow(Error('undefined is not of type object'));
 		expect(() => isObject(null)).toThrow(Error('null is not of type object'));
+	});
+});
+
+describe(isUnion.name, () => {
+	test('should not throw given a registered union', () => {
+		expect(() => isUnion('dark', ['light', 'dark'])).not.toThrow();
+	});
+
+	test('should throw given an unregistered union', () => {
+		expect(() => isUnion(42, ['light', 'dark'])).toThrow(Error('42 is not one of light | dark'));
+		expect(() => isUnion(true, ['light', 'dark'])).toThrow(Error('true is not one of light | dark'));
+		expect(() => isUnion({}, ['light', 'dark'])).toThrow(Error('{} is not one of light | dark'));
+		expect(() => isUnion([], ['light', 'dark'])).toThrow(Error('[] is not one of light | dark'));
+		expect(() => isUnion(undefined, ['light', 'dark'])).toThrow(Error('undefined is not one of light | dark'));
+		expect(() => isUnion(null, ['light', 'dark'])).toThrow(Error('null is not one of light | dark'));
 	});
 });
