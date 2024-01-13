@@ -227,8 +227,12 @@ describe(bootstrap.name, () => {
 		expect(data).toEqual({ status: 500, message: 'internal server error', detail: 'something went very wrong' });
 	});
 
-	test('should throw up because the code in the handler does so', () => {
-		expect(() => server.fetch(`http://${server.hostname}:${server.port}/throw`)).toThrow('up');
+	test('should return internal server error because the handler throws up', async () => {
+		const response = await server.fetch(`http://${server.hostname}:${server.port}/throw`);
+		const data = await response.json();
+
+		expect(response.status).toEqual(500);
+		expect(data).toEqual({ status: 500, message: 'internal server error' });
 	});
 
 	test('should return a custom response body because a response was returned directly', async () => {

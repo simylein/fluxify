@@ -170,13 +170,17 @@ export const bootstrap = (): FluxifyServer => {
 						const status = err.status;
 						return createResponse({ status, message: err.message, detail: err.detail }, status, request);
 					}
-					throw {
-						name: (err as { name?: string })?.name,
-						message: (err as { message?: string })?.message,
-						cause: (err as { cause?: string })?.cause,
-						stack: (err as { stack?: string })?.stack,
+					error((err as Error)?.message, config.logLevel === 'trace' ? err : '');
+					const status = 500;
+					return createResponse(
+						{
+							status,
+							message: 'internal server error',
+							detail: config.stage === 'dev' ? (err as Error)?.message : undefined,
+						},
+						status,
 						request,
-					};
+					);
 				}
 			} else if (matchingRoutes.length > 0) {
 				const status = 405;
@@ -185,15 +189,6 @@ export const bootstrap = (): FluxifyServer => {
 				const status = 404;
 				return createResponse({ status, message: 'not found' }, status, request);
 			}
-		},
-		error(err: Error): Response {
-			error(err?.message, config.logLevel === 'trace' ? err : '');
-			const status = 500;
-			return createResponse(
-				{ status, message: 'internal server error', detail: config.stage === 'dev' ? err?.message : undefined },
-				status,
-				(err as Error & { request: FluxifyRequest }).request,
-			);
 		},
 	};
 
