@@ -6,6 +6,7 @@ import { insertMany, insertOne, runQuery, selectMany, selectOne } from '../datab
 import { Entity } from '../database/entity/entity.type';
 import { debug } from '../logger/logger';
 import { orderBy, paginate, whereMany, whereOne } from './helpers/helpers';
+import { migrate } from './migrate/migrate';
 import { determineOperator } from './operators/operators';
 import { Criteria, FindOneOptions, FindOptions, IdEntity, InsertData, UpdateData } from './repository.type';
 import { transformData, transformEntity } from './transform/transform';
@@ -28,6 +29,17 @@ export const repository = <T extends IdEntity>(table: Entity<T>): Repository<T> 
 	if (config.databasePath === ':memory:' || config.stage === 'test') {
 		debug(`creating schema for table '${table.name}'`);
 		runQuery(table.schema);
+	}
+
+	if (config.stage === 'dev') {
+		const schema = selectOne(`select sql from sqlite_master where type = 'table' and name = '${table.name}'`);
+		if (schema && 'sql' in schema && typeof schema.sql === 'string') {
+			const before = schema.sql.replace(`${'create table'.toUpperCase()} ${table.name} `, '');
+			const after = table.schema.replace(`create table if not exists ${table.name} `, '');
+			if (before !== after) {
+				migrate(table.name, before, after);
+			}
+		}
 	}
 
 	const selectKeys = <S extends keyof T>(select?: FindOptions<T, S>['select']): string => {
