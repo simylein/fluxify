@@ -8,7 +8,7 @@ import { debug } from '../logger/logger';
 import { orderBy, paginate, whereMany, whereOne } from './helpers/helpers';
 import { migrate } from './migrate/migrate';
 import { determineOperator } from './operators/operators';
-import { Criteria, FindOneOptions, FindOptions, IdEntity, InsertData, UpdateData } from './repository.type';
+import { FindOneOptions, FindOptions, IdEntity, InsertData, UpdateData, WhereOptions } from './repository.type';
 import { transformData, transformEntity } from './transform/transform';
 
 type Repository<T extends IdEntity> = {
@@ -17,10 +17,10 @@ type Repository<T extends IdEntity> = {
 	findOne: <S extends keyof T>(options: T['id'] | FindOneOptions<T, S>) => Promise<Pick<T, S> | null>;
 	insert: (data: InsertData<T>) => Promise<{ id: T['id'] }>;
 	insertMany: (data: InsertData<T>[]) => Promise<{ id: T['id'] }[]>;
-	update: (criteria: Criteria<T>, data: UpdateData<T>) => Promise<void>;
-	delete: (criteria: Criteria<T>) => Promise<void>;
-	softDelete: (criteria: Criteria<T>) => Promise<void>;
-	restore: (criteria: Criteria<T>) => Promise<void>;
+	update: (criteria: T['id'] | WhereOptions<T>, data: UpdateData<T>) => Promise<void>;
+	delete: (criteria: T['id'] | WhereOptions<T>) => Promise<void>;
+	softDelete: (criteria: T['id'] | WhereOptions<T>) => Promise<void>;
+	restore: (criteria: T['id'] | WhereOptions<T>) => Promise<void>;
 	wipe: () => Promise<void>;
 	drop: () => Promise<void>;
 };
@@ -243,7 +243,7 @@ export const repository = <T extends IdEntity>(table: Entity<T>): Repository<T> 
 			});
 		},
 
-		update(criteria: Criteria<T>, data: UpdateData<T>): Promise<void> {
+		update(criteria: T['id'] | WhereOptions<T>, data: UpdateData<T>): Promise<void> {
 			return new Promise((resolve) => {
 				const keys = Object.keys(data)
 					.filter((key) => data[key as keyof UpdateData<T>] !== undefined)
@@ -260,7 +260,7 @@ export const repository = <T extends IdEntity>(table: Entity<T>): Repository<T> 
 					keys.push(`${(table.columns[updatedColumn] as ColumnOptions).name ?? updatedColumn} = (datetime('now'))`);
 				}
 
-				let where: Partial<T> = {};
+				let where: WhereOptions<T> = {};
 				typeof criteria !== 'object' ? (where.id = criteria) : (where = criteria);
 
 				runQuery(`update ${table.name} set ${keys} ${whereKeys(where)}`, [
@@ -271,9 +271,9 @@ export const repository = <T extends IdEntity>(table: Entity<T>): Repository<T> 
 			});
 		},
 
-		delete(criteria: Criteria<T>): Promise<void> {
+		delete(criteria: T['id'] | WhereOptions<T>): Promise<void> {
 			return new Promise((resolve) => {
-				let where: Partial<T> = {};
+				let where: WhereOptions<T> = {};
 				typeof criteria !== 'object' ? (where.id = criteria) : (where = criteria);
 
 				runQuery(`delete from ${table.name} ${whereKeys(where)}`, whereOne<T, keyof T>(where));
@@ -281,7 +281,7 @@ export const repository = <T extends IdEntity>(table: Entity<T>): Repository<T> 
 			});
 		},
 
-		softDelete(criteria: Criteria<T>): Promise<void> {
+		softDelete(criteria: T['id'] | WhereOptions<T>): Promise<void> {
 			return new Promise((resolve) => {
 				const columns = Object.keys(table.columns).filter((key) => !('references' in table.columns[key]));
 				const deletedColumn = columns.find(
@@ -289,7 +289,7 @@ export const repository = <T extends IdEntity>(table: Entity<T>): Repository<T> 
 				);
 
 				if (deletedColumn) {
-					let where: Partial<T> = {};
+					let where: WhereOptions<T> = {};
 					typeof criteria !== 'object' ? (where.id = criteria) : (where = criteria);
 
 					const key = (table.columns[deletedColumn] as ColumnOptions).name ?? deletedColumn;
@@ -304,7 +304,7 @@ export const repository = <T extends IdEntity>(table: Entity<T>): Repository<T> 
 			});
 		},
 
-		restore(criteria: Criteria<T>): Promise<void> {
+		restore(criteria: T['id'] | WhereOptions<T>): Promise<void> {
 			return new Promise((resolve) => {
 				const columns = Object.keys(table.columns).filter((key) => !('references' in table.columns[key]));
 				const deletedColumn = columns.find(
@@ -312,7 +312,7 @@ export const repository = <T extends IdEntity>(table: Entity<T>): Repository<T> 
 				);
 
 				if (deletedColumn) {
-					let where: Partial<T> = {};
+					let where: WhereOptions<T> = {};
 					typeof criteria !== 'object' ? (where.id = criteria) : (where = criteria);
 
 					const key = (table.columns[deletedColumn] as ColumnOptions).name ?? deletedColumn;
