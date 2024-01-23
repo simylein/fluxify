@@ -4,9 +4,10 @@ import { FluxifyRequest, Method } from '../router/router.type';
 import {
 	blue,
 	bold,
-	coloredMethod,
-	coloredStatus,
-	coloredTime,
+	colorBytes,
+	colorMethod,
+	colorStatus,
+	colorTime,
 	cyan,
 	green,
 	purple,
@@ -112,7 +113,7 @@ export const req = (request: FluxifyRequest, method: Method, endpoint: string): 
 	if (config.logRequests) {
 		const timestamp = Date.now();
 		const masked = endpoint.replace(uuidRegex, (uuid) => mask(uuid));
-		console.log(`${makeBase(timestamp, 'req')} ${coloredMethod(method)} ${masked} from ${mask(request.ip)}`);
+		console.log(`${makeBase(timestamp, 'req')} ${colorMethod(method)} ${masked} from ${mask(request.ip)}`);
 		if (customLogger.req) {
 			void customLogger.req({ id: request.id, timestamp, ip: request.ip, method, endpoint });
 		}
@@ -122,7 +123,7 @@ export const req = (request: FluxifyRequest, method: Method, endpoint: string): 
 export const res = (id: FluxifyRequest['id'], status: number, time: number, bytes: number | null): void => {
 	if (config.logResponses) {
 		const timestamp = Date.now();
-		console.log(`${makeBase(timestamp, 'res')} ${coloredStatus(status)} took ${coloredTime(time)} ${bytes} bytes`);
+		console.log(`${makeBase(timestamp, 'res')} ${colorStatus(status)} took ${colorTime(time)} ${colorBytes(bytes)}`);
 		if (customLogger.res) {
 			void customLogger.res({ id, timestamp, status, time, bytes });
 		}

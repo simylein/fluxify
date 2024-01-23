@@ -2,10 +2,11 @@ import { describe, expect, test } from 'bun:test';
 import {
 	blue,
 	bold,
-	coloredMethod,
-	coloredStatus,
-	coloredTerminal,
-	coloredTime,
+	colorBytes,
+	colorMethod,
+	colorStatus,
+	colorTerminal,
+	colorTime,
 	cyan,
 	green,
 	red,
@@ -13,56 +14,72 @@ import {
 	yellow,
 } from './color';
 
-describe(coloredTerminal.name, () => {
+describe(colorTerminal.name, () => {
 	test('should return if the terminal supports color given env vars', () => {
-		expect(coloredTerminal({ NODE_ENV: 'test' })).toEqual(false);
-		expect(coloredTerminal({ NODE_ENV: 'test', TERM: 'color' })).toEqual(true);
-		expect(coloredTerminal({ NODE_ENV: 'test', TERM: 'color', NO_COLOR: 'true' })).toEqual(false);
-		expect(coloredTerminal({ NODE_ENV: 'test', TERM: 'color', NO_COLOR: 'true', FORCE_COLOR: 'true' })).toEqual(true);
-		expect(coloredTerminal({ NODE_ENV: 'test', NO_COLOR: 'true' })).toEqual(false);
-		expect(coloredTerminal({ NODE_ENV: 'test', FORCE_COLOR: 'true' })).toEqual(true);
+		expect(colorTerminal({ NODE_ENV: 'test' })).toEqual(false);
+		expect(colorTerminal({ NODE_ENV: 'test', TERM: 'color' })).toEqual(true);
+		expect(colorTerminal({ NODE_ENV: 'test', TERM: 'color', NO_COLOR: 'true' })).toEqual(false);
+		expect(colorTerminal({ NODE_ENV: 'test', TERM: 'color', NO_COLOR: 'true', FORCE_COLOR: 'true' })).toEqual(true);
+		expect(colorTerminal({ NODE_ENV: 'test', NO_COLOR: 'true' })).toEqual(false);
+		expect(colorTerminal({ NODE_ENV: 'test', FORCE_COLOR: 'true' })).toEqual(true);
 	});
 });
 
-describe(coloredMethod.name, () => {
+describe(colorMethod.name, () => {
 	test('should return the method with the corresponding color', () => {
-		expect(coloredMethod('options')).toEqual(`${bold}${cyan}${'options'}${reset}`);
-		expect(coloredMethod('get')).toEqual(`${bold}${blue}${'get'}${reset}`);
-		expect(coloredMethod('post')).toEqual(`${bold}${green}${'post'}${reset}`);
-		expect(coloredMethod('put')).toEqual(`${bold}${yellow}${'put'}${reset}`);
-		expect(coloredMethod('patch')).toEqual(`${bold}${yellow}${'patch'}${reset}`);
-		expect(coloredMethod('delete')).toEqual(`${bold}${red}${'delete'}${reset}`);
+		expect(colorMethod('options')).toEqual(`${bold}${cyan}${'options'}${reset}`);
+		expect(colorMethod('get')).toEqual(`${bold}${blue}${'get'}${reset}`);
+		expect(colorMethod('post')).toEqual(`${bold}${green}${'post'}${reset}`);
+		expect(colorMethod('put')).toEqual(`${bold}${yellow}${'put'}${reset}`);
+		expect(colorMethod('patch')).toEqual(`${bold}${yellow}${'patch'}${reset}`);
+		expect(colorMethod('delete')).toEqual(`${bold}${red}${'delete'}${reset}`);
 	});
 });
 
-describe(coloredStatus.name, () => {
+describe(colorStatus.name, () => {
 	test('should return the status with the corresponding color', () => {
-		expect(coloredStatus(601)).toEqual('601');
-		expect(coloredStatus(600)).toEqual('600');
-		expect(coloredStatus(501)).toEqual(`${bold}${red}501${reset}`);
-		expect(coloredStatus(500)).toEqual(`${bold}${red}500${reset}`);
-		expect(coloredStatus(401)).toEqual(`${bold}${yellow}401${reset}`);
-		expect(coloredStatus(400)).toEqual(`${bold}${yellow}400${reset}`);
-		expect(coloredStatus(301)).toEqual(`${bold}${blue}301${reset}`);
-		expect(coloredStatus(300)).toEqual(`${bold}${blue}300${reset}`);
-		expect(coloredStatus(201)).toEqual(`${bold}${green}201${reset}`);
-		expect(coloredStatus(200)).toEqual(`${bold}${green}200${reset}`);
-		expect(coloredStatus(101)).toEqual(`${bold}${cyan}101${reset}`);
-		expect(coloredStatus(100)).toEqual(`${bold}${cyan}100${reset}`);
-		expect(coloredStatus(99)).toEqual(`99`);
-		expect(coloredStatus(0)).toEqual(`0`);
+		expect(colorStatus(601)).toEqual('601');
+		expect(colorStatus(600)).toEqual('600');
+		expect(colorStatus(501)).toEqual(`${bold}${red}501${reset}`);
+		expect(colorStatus(500)).toEqual(`${bold}${red}500${reset}`);
+		expect(colorStatus(401)).toEqual(`${bold}${yellow}401${reset}`);
+		expect(colorStatus(400)).toEqual(`${bold}${yellow}400${reset}`);
+		expect(colorStatus(301)).toEqual(`${bold}${blue}301${reset}`);
+		expect(colorStatus(300)).toEqual(`${bold}${blue}300${reset}`);
+		expect(colorStatus(201)).toEqual(`${bold}${green}201${reset}`);
+		expect(colorStatus(200)).toEqual(`${bold}${green}200${reset}`);
+		expect(colorStatus(101)).toEqual(`${bold}${cyan}101${reset}`);
+		expect(colorStatus(100)).toEqual(`${bold}${cyan}100${reset}`);
+		expect(colorStatus(99)).toEqual(`99`);
+		expect(colorStatus(0)).toEqual(`0`);
 	});
 });
 
-describe(coloredTime.name, () => {
+describe(colorTime.name, () => {
 	test('should return the time with the corresponding color', () => {
-		expect(coloredTime(80.1)).toEqual(`${bold}${red}80.10${reset} ms`);
-		expect(coloredTime(80)).toEqual(`${bold}${yellow}80.00${reset} ms`);
-		expect(coloredTime(40.1)).toEqual(`${bold}${yellow}40.10${reset} ms`);
-		expect(coloredTime(40)).toEqual(`${bold}${green}40.00${reset} ms`);
-		expect(coloredTime(20.1)).toEqual(`${bold}${green}20.10${reset} ms`);
-		expect(coloredTime(20)).toEqual(`${bold}${cyan}20.00${reset} ms`);
-		expect(coloredTime(0)).toEqual(`${bold}${cyan}0.00${reset} ms`);
-		expect(coloredTime(-1)).toEqual(`${bold}${cyan}-1.00${reset} ms`);
+		expect(colorTime(2000)).toEqual(`${bold}${red}2.00${reset} s`);
+		expect(colorTime(500)).toEqual(`${bold}${red}500.00${reset} ms`);
+		expect(colorTime(80.1)).toEqual(`${bold}${red}80.10${reset} ms`);
+		expect(colorTime(80)).toEqual(`${bold}${yellow}80.00${reset} ms`);
+		expect(colorTime(40.1)).toEqual(`${bold}${yellow}40.10${reset} ms`);
+		expect(colorTime(40)).toEqual(`${bold}${green}40.00${reset} ms`);
+		expect(colorTime(20.1)).toEqual(`${bold}${green}20.10${reset} ms`);
+		expect(colorTime(20)).toEqual(`${bold}${cyan}20.00${reset} ms`);
+		expect(colorTime(1)).toEqual(`${bold}${cyan}1000${reset} µs`);
+		expect(colorTime(0.2)).toEqual(`${bold}${cyan}200${reset} µs`);
+		expect(colorTime(0)).toEqual(`${bold}${cyan}0${reset} µs`);
+	});
+});
+
+describe(colorBytes.name, () => {
+	test('should return the bytes with the corresponding color', () => {
+		expect(colorBytes(16777216)).toEqual(`${bold}${red}16.00${reset} mb`);
+		expect(colorBytes(1048576)).toEqual(`${bold}${red}1.00${reset} mb`);
+		expect(colorBytes(262144)).toEqual(`${bold}${yellow}256.00${reset} kb`);
+		expect(colorBytes(65536)).toEqual(`${bold}${green}64.00${reset} kb`);
+		expect(colorBytes(4096)).toEqual(`${bold}${green}4.00${reset} kb`);
+		expect(colorBytes(512)).toEqual(`${bold}${cyan}512${reset} b`);
+		expect(colorBytes(32)).toEqual(`${bold}${cyan}32${reset} b`);
+		expect(colorBytes(0)).toEqual(`${bold}${cyan}0${reset} b`);
 	});
 });

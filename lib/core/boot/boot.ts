@@ -4,7 +4,7 @@ import pack from '../../../package.json';
 import { verifyJwt } from '../../auth/jwt';
 import { config } from '../../config/config';
 import { HttpException, Locked, Unauthorized } from '../../exception/exception';
-import { coloredMethod } from '../../logger/color';
+import { colorMethod } from '../../logger/color';
 import { debug, error, info, logger, req, res, warn } from '../../logger/logger';
 import { routes } from '../../router/router';
 import { FluxifyRequest, Param, Query } from '../../router/router.type';
@@ -238,8 +238,8 @@ export const bootstrap = (): FluxifyServer => {
 
 	routes.map((route, _index, array) =>
 		array.filter((rout) => rout.endpoint === route.endpoint && rout.method === route.method).length > 1
-			? warn(`ambiguous route ${coloredMethod(route.method)} ${route.endpoint}`)
-			: debug(`mapped route ${coloredMethod(route.method)} ${route.endpoint}`),
+			? warn(`ambiguous route ${colorMethod(route.method)} ${route.endpoint}`)
+			: debug(`mapped route ${colorMethod(route.method)} ${route.endpoint}`),
 	);
 	info(`mapped ${routes.length} routes of which ${routes.filter((route) => route.schema?.jwt).length} have auth`);
 	info(`listening for requests on localhost:${config.port}`);
