@@ -5,7 +5,6 @@ export const emitter = new EventEmitter();
 emitter.setMaxListeners(2048);
 
 export const subscribe = (req: Request, channel: string): Response => {
-	info(`subscribing to channel '${channel}'`);
 	return new Response(
 		new ReadableStream({
 			type: 'direct',
@@ -16,11 +15,11 @@ export const subscribe = (req: Request, channel: string): Response => {
 					await controller.flush();
 					id++;
 				};
+				info(`subscribing to channel '${channel}'`);
 				emitter.on(channel, handler);
 				req.signal.onabort = () => {
 					info(`unsubscribing from channel '${channel}'`);
 					emitter.off(channel, handler);
-					controller.close();
 				};
 				return new Promise(() => void 0);
 			},
