@@ -26,6 +26,6 @@ export const createResponse = (
 ): Response => {
 	const data = body ? serializer.res(body) : null;
 	const diff = performance.now() - request.time;
-	res(request.id, status, diff);
+	res(request.id, status, diff, data ? data.length : null);
 	return new Response(data, { status, headers: { ...defaultHeaders, ...customHeaders, ...headers } });
 };

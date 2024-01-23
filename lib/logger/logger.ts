@@ -119,12 +119,12 @@ export const req = (request: FluxifyRequest, method: Method, endpoint: string): 
 	}
 };
 
-export const res = (id: FluxifyRequest['id'], status: number, time: number): void => {
+export const res = (id: FluxifyRequest['id'], status: number, time: number, bytes: number | null): void => {
 	if (config.logResponses) {
 		const timestamp = Date.now();
-		console.log(`${makeBase(timestamp, 'res')} status ${coloredStatus(status)} took ${coloredTime(time)}`);
+		console.log(`${makeBase(timestamp, 'res')} ${coloredStatus(status)} took ${coloredTime(time)} ${bytes} bytes`);
 		if (customLogger.res) {
-			void customLogger.res({ id, timestamp, status, time });
+			void customLogger.res({ id, timestamp, status, time, bytes });
 		}
 	}
 };
