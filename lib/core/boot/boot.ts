@@ -190,6 +190,18 @@ export const bootstrap = (): FluxifyServer => {
 				return createResponse({ status, message: 'not found' }, status, request);
 			}
 		},
+		error(request: Error): Response {
+			error(request.message, config.logLevel === 'trace' ? request : '');
+			const status = 500;
+			return new Response(
+				JSON.stringify({
+					status,
+					message: 'internal server error',
+					detail: config.stage === 'dev' ? request.message : undefined,
+				}),
+				{ status },
+			);
+		},
 	};
 
 	info(`starting http server...`);
