@@ -67,7 +67,7 @@ describe(app.all.name, () => {
 		const method: Route['method'] = 'all';
 		const endpoint: Route['endpoint'] = '/all';
 		const schema: Route['schema'] = null;
-		const handler: Route['handler'] = () => void 0;
+		const handler: Route['handler'] = () => null;
 
 		app.all(endpoint, schema, handler);
 
@@ -82,7 +82,7 @@ describe(app.get.name, () => {
 		const method: Route['method'] = 'get';
 		const endpoint: Route['endpoint'] = '/user';
 		const schema: Route['schema'] = null;
-		const handler: Route['handler'] = () => void 0;
+		const handler: Route['handler'] = () => null;
 
 		app.get(endpoint, schema, handler);
 
@@ -97,7 +97,7 @@ describe(app.post.name, () => {
 		const method: Route['method'] = 'post';
 		const endpoint: Route['endpoint'] = '/user';
 		const schema: Route['schema'] = null;
-		const handler: Route['handler'] = () => void 0;
+		const handler: Route['handler'] = () => null;
 
 		app.post(endpoint, schema, handler);
 
@@ -112,7 +112,7 @@ describe(app.put.name, () => {
 		const method: Route['method'] = 'put';
 		const endpoint: Route['endpoint'] = '/user';
 		const schema: Route['schema'] = null;
-		const handler: Route['handler'] = () => void 0;
+		const handler: Route['handler'] = () => null;
 
 		app.put(endpoint, schema, handler);
 
@@ -127,7 +127,7 @@ describe(app.patch.name, () => {
 		const method: Route['method'] = 'patch';
 		const endpoint: Route['endpoint'] = `${config.globalPrefix}/user`;
 		const schema: Route['schema'] = null;
-		const handler: Route['handler'] = () => void 0;
+		const handler: Route['handler'] = () => null;
 
 		app.patch(endpoint, schema, handler);
 
@@ -142,7 +142,7 @@ describe(app.delete.name, () => {
 		const method: Route['method'] = 'delete';
 		const endpoint: Route['endpoint'] = '/user';
 		const schema: Route['schema'] = null;
-		const handler: Route['handler'] = () => void 0;
+		const handler: Route['handler'] = () => null;
 
 		app.delete(endpoint, schema, handler);
 

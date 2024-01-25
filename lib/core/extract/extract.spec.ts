@@ -3,7 +3,7 @@ import { Route } from '../../router/router.type';
 import { extractMethod, extractParam } from './extract';
 
 const makeEndpoint = (endpoint: Route['endpoint']): Route => {
-	return { method: 'get', endpoint, schema: null, handler: () => void 0 };
+	return { method: 'get', endpoint, schema: null, handler: () => null };
 };
 
 describe(extractMethod.name, () => {

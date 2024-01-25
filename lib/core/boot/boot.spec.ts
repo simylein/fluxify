@@ -7,6 +7,7 @@ import { router } from '../../router/router';
 import { expectType } from '../../test/expect-type';
 import { number } from '../../validation/number/number';
 import { object } from '../../validation/object/object';
+import { string } from '../../validation/string/string';
 import { defaultHeaders } from '../response/response';
 import { bootstrap } from './boot';
 import { FluxifyServer } from './boot.type';
@@ -27,22 +28,22 @@ beforeAll(() => {
 	console.info = mock(() => void 0);
 	const app = router();
 	app.get('/methods', null, () => {
-		return void 0;
+		return null;
 	});
 	app.post('/methods', null, () => {
-		return void 0;
+		return null;
 	});
 	app.patch('/methods', null, () => {
-		return void 0;
+		return null;
 	});
 	app.get('/auth/methods', null, () => {
-		return void 0;
+		return null;
 	});
 	app.post('/auth/methods', { jwt: jwtDto }, () => {
-		return void 0;
+		return null;
 	});
 	app.patch('/auth/methods', { jwt: jwtDto }, () => {
-		return void 0;
+		return null;
 	});
 	app.get('/hello', null, () => {
 		return { hello: 'world' };
@@ -51,10 +52,10 @@ beforeAll(() => {
 		return { void: null };
 	});
 	app.get('/bad-request', { param: object({ id: number() }) }, () => {
-		return void 0;
+		return null;
 	});
 	app.get('/unauthorized', { jwt: jwtDto }, () => {
-		return void 0;
+		return null;
 	});
 	app.get('/forbidden', null, () => {
 		throw Forbidden();
@@ -74,23 +75,23 @@ beforeAll(() => {
 	app.get('/custom', null, () => {
 		return new Response('custom response body', { status: 240 });
 	});
-	app.get('/param/:id', null, ({ param }) => {
+	app.get('/param/:id', { param: object({ id: number().transform() }) }, ({ param }) => {
 		return param;
 	});
-	app.get('/param/:uuid/and/:id', null, ({ param }) => {
+	app.get('/param/:uuid/and/:id', { param: object({ id: number().transform(), uuid: string() }) }, ({ param }) => {
 		return param;
 	});
-	app.get('/query', null, ({ query }) => {
+	app.get('/query', { query: object({ hello: string(), lorem: string().optional() }) }, ({ query }) => {
 		return query;
 	});
-	app.post('/body', null, ({ body }) => {
+	app.post('/body', { body: object({ ping: string(), hello: string() }) }, ({ body }) => {
 		return body;
 	});
 	app.get('/cache', null, () => {
 		return { value: Math.random() };
 	});
 	app.get('/throttle', null, () => {
-		return void 0;
+		return null;
 	});
 	server = bootstrap();
 });
@@ -249,7 +250,7 @@ describe(bootstrap.name, () => {
 		const data = await response.json();
 
 		expect(response.status).toEqual(200);
-		expect(data).toEqual({ id: id.toString() });
+		expect(data).toEqual({ id });
 	});
 
 	test('should return the uuid and id parameters', async () => {
@@ -259,7 +260,7 @@ describe(bootstrap.name, () => {
 		const data = await response.json();
 
 		expect(response.status).toEqual(200);
-		expect(data).toEqual({ uuid, id: id.toString() });
+		expect(data).toEqual({ uuid, id });
 	});
 
 	test('should return the hello query parameter', async () => {

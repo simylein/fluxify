@@ -15,7 +15,8 @@ export type FluxifyRequest = Request & {
 	time: number;
 };
 
-export type FluxifyResponse = unknown | IdEntity | IdEntity[] | Promise<unknown | IdEntity | IdEntity[]>;
+type Responses = object | unknown[] | IdEntity | IdEntity[] | Response | null;
+export type FluxifyResponse = Responses | Promise<Responses>;
 
 export type Route = {
 	method: Method;

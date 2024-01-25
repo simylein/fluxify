@@ -3,11 +3,11 @@ import { Route } from '../../router/router.type';
 import { compareEndpoint, compareMethod } from './compare';
 
 const makeMethod = (method: Route['method']): Route => {
-	return { method, endpoint: '/auth', schema: null, handler: () => void 0 };
+	return { method, endpoint: '/auth', schema: null, handler: () => null };
 };
 
 const makeEndpoint = (endpoint: Route['endpoint']): Route => {
-	return { method: 'get', endpoint, schema: null, handler: () => void 0 };
+	return { method: 'get', endpoint, schema: null, handler: () => null };
 };
 
 describe(compareMethod.name, () => {
