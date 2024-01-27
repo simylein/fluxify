@@ -8,6 +8,7 @@ import { colorMethod } from '../../logger/color';
 import { debug, error, info, logger, req, res, warn } from '../../logger/logger';
 import { routes } from '../../router/router';
 import { FluxifyRequest, Param, Query } from '../../router/router.type';
+import { start, stop } from '../../timing/timing';
 import { ValidationError } from '../../validation/error';
 import { compareEndpoint, compareMethod } from '../compare/compare';
 import { extractMethod, extractParam } from '../extract/extract';
@@ -27,22 +28,26 @@ export const bootstrap = (): FluxifyServer => {
 		development: config.stage === 'dev',
 		async fetch(request: FluxifyRequest, server: Server): Promise<Response> {
 			request.time = performance.now();
+			request.id = randomUUID();
 			// FIXME: remove testing shenanigans when bun fixes request ip undefined in testing
 			request.ip = config.stage === 'test' ? '' : server.requestIP(request)?.address ?? '';
-			request.id = randomUUID();
-
 			if (request.ip === '::1' || request.ip === '127.0.0.1') {
 				request.ip = request.headers.get('x-forwarded-for') ?? request.ip;
 			}
+			if (config.stage === 'dev') request.times = [];
 
+			start(request, 'url');
 			const url = new URL(request.url);
 			const method = extractMethod(request.method);
 			const endpoint = url.pathname;
+			stop(request, 'url');
 
 			req(request, method, endpoint);
 
+			start(request, 'routing');
 			const matchingRoutes = global.server.routes.filter((route) => compareEndpoint(route, endpoint));
 			const targetRoute = matchingRoutes.find((route) => compareMethod(route, method));
+			stop(request, 'routing');
 
 			const useCache =
 				method === 'get' &&
@@ -70,6 +75,7 @@ export const bootstrap = (): FluxifyServer => {
 			if (targetRoute) {
 				try {
 					if (useThrottle) {
+						start(request, 'throttle');
 						const entry = global.server.throttle[request.ip]?.[endpoint];
 						if (entry) {
 							if (entry.exp < Date.now()) {
@@ -80,6 +86,7 @@ export const bootstrap = (): FluxifyServer => {
 							if (entry.hits > config.throttleLimit) {
 								debug(`throttle limit on route ${endpoint}`);
 								const status = 429;
+								stop(request, 'throttle');
 								return createResponse({ status, message: 'too many requests' }, status, request, {
 									'retry-after': `${Math.ceil((entry.exp - Date.now()) / 1000)}`,
 								});
@@ -94,18 +101,22 @@ export const bootstrap = (): FluxifyServer => {
 								path: endpoint,
 							};
 						}
+						stop(request, 'throttle');
 					}
 
 					if (config.databaseMode === 'readonly' && method !== 'get') {
 						throw Locked();
 					}
 
+					start(request, 'request');
 					let param: Param | unknown = extractParam(targetRoute, endpoint);
 					let query: Query | unknown = Object.fromEntries(url.searchParams);
 					let body = await parseBody(request);
 					let jwt: unknown | null = null;
+					stop(request, 'request');
 
 					if (targetRoute.schema) {
+						start(request, 'schema');
 						if (targetRoute.schema.jwt) {
 							const token = request.headers.get('authorization');
 							const cookie = request.headers.get('cookie');
@@ -113,6 +124,7 @@ export const bootstrap = (): FluxifyServer => {
 								(!token || !token.toLowerCase().startsWith('bearer ')) &&
 								(!cookie || !cookie.toLowerCase().startsWith('bearer='))
 							) {
+								stop(request, 'schema');
 								throw Unauthorized();
 							}
 							jwt = targetRoute.schema.jwt.parse(
@@ -122,9 +134,11 @@ export const bootstrap = (): FluxifyServer => {
 						if (targetRoute.schema.param) param = targetRoute.schema.param.parse(param);
 						if (targetRoute.schema.query) query = targetRoute.schema.query.parse(query);
 						if (targetRoute.schema.body) body = targetRoute.schema.body.parse(body);
+						stop(request, 'schema');
 					}
 
 					if (useCache) {
+						start(request, 'cache');
 						if (global.server.cache.length > config.cacheLimit) {
 							global.server.cache.shift();
 						}
@@ -137,17 +151,22 @@ export const bootstrap = (): FluxifyServer => {
 						);
 						if (hit) {
 							debug(`cache hit on route ${endpoint}`);
+							stop(request, 'cache');
 							return createResponse(hit.data, hit.status, request, {
 								expires: new Date(hit.exp).toUTCString(),
 							});
 						}
+						stop(request, 'cache');
 					}
 
+					start(request, 'handler');
 					const data = await targetRoute.handler({ param, query, body, jwt, req: request });
 					if (data instanceof Response) {
 						res(request.id, data.status, performance.now() - request.time, null);
+						stop(request, 'handler');
 						return data;
 					}
+					stop(request, 'handler');
 
 					const status = targetRoute.method === 'post' ? 201 : data ? 200 : 204;
 					if (useCache) {

@@ -1,4 +1,5 @@
 import { IdEntity } from '../repository/repository.type';
+import { Timing } from '../timing/timing.type';
 import { Parser } from '../validation/parser.type';
 
 export type Path = string | { path: string; version: number };
@@ -13,6 +14,7 @@ export type FluxifyRequest = Request & {
 	id: string;
 	ip: string;
 	time: number;
+	times: { name: Timing; start: number; stop?: number }[];
 };
 
 type Responses = object | unknown[] | IdEntity | IdEntity[] | Response | null;

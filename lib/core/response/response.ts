@@ -1,6 +1,7 @@
 import { config } from '../../config/config';
 import { debug, res } from '../../logger/logger';
 import { FluxifyRequest } from '../../router/router.type';
+import { start, stop, timing } from '../../timing/timing';
 import { serializer } from '../serialize/serialize';
 
 let customHeaders: HeadersInit = {};
@@ -24,8 +25,16 @@ export const createResponse = (
 	request: FluxifyRequest,
 	headers?: HeadersInit,
 ): Response => {
+	start(request, 'response');
 	const data = body ? serializer.res(body) : null;
-	const diff = performance.now() - request.time;
+	stop(request, 'response');
+	const end = performance.now();
+	const diff = end - request.time;
+	start(request, 'total', request.time);
+	stop(request, 'total', end);
 	res(request.id, status, diff, data ? data.length : null);
-	return new Response(data, { status, headers: { ...defaultHeaders, ...customHeaders, ...headers } });
+	return new Response(data, {
+		status,
+		headers: { ...defaultHeaders, ...customHeaders, ...timing(request), ...headers },
+	});
 };
