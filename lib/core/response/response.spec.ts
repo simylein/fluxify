@@ -16,6 +16,7 @@ describe(createResponse.name, () => {
 		const request = new Request('http://example.com') as FluxifyRequest;
 		request.id = randomUUID();
 		request.time = performance.now();
+		request.times = [];
 		const status = 200;
 		const input = null;
 		expect(createResponse(input, status, request)).toBeInstanceOf(Response);
@@ -27,6 +28,7 @@ describe(createResponse.name, () => {
 		const request = new Request('http://example.com') as FluxifyRequest;
 		request.id = randomUUID();
 		request.time = performance.now();
+		request.times = [];
 		const status = 200;
 		const input = { ping: 'pong' };
 		expect(createResponse(input, status, request)).toBeInstanceOf(Response);
@@ -40,8 +42,10 @@ describe(createResponse.name, () => {
 		const request = new Request('http://example.com') as FluxifyRequest;
 		request.id = randomUUID();
 		request.time = performance.now();
+		request.times = [];
 		expect(Object.fromEntries(createResponse(null, 200, request).headers.entries())).toEqual({
 			...defaultHeaders,
+			'server-timing': expect.any(String),
 			'cache-control': 'no-cache',
 		});
 	});

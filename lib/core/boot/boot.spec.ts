@@ -124,7 +124,11 @@ describe(bootstrap.name, () => {
 		const response = await server.fetch(new Request(`http://${server.hostname}:${server.port}`, { method: 'options' }));
 		const data = await response.text();
 
-		expect(Object.fromEntries(response.headers.entries())).toEqual({ allow: '', ...defaultHeaders });
+		expect(Object.fromEntries(response.headers.entries())).toEqual({
+			allow: '',
+			'server-timing': expect.any(String),
+			...defaultHeaders,
+		});
 		expect(data).toEqual('');
 	});
 
@@ -136,6 +140,7 @@ describe(bootstrap.name, () => {
 
 		expect(Object.fromEntries(response.headers.entries())).toEqual({
 			allow: 'get, post, patch'.toUpperCase(),
+			'server-timing': expect.any(String),
 			...defaultHeaders,
 		});
 		expect(data).toEqual('');
@@ -149,6 +154,7 @@ describe(bootstrap.name, () => {
 
 		expect(Object.fromEntries(response.headers.entries())).toEqual({
 			...defaultHeaders,
+			'server-timing': expect.any(String),
 			'access-control-allow-headers': 'authorization,content-type',
 			'access-control-allow-methods': 'post, patch'.toUpperCase(),
 			'access-control-allow-credentials': 'true',

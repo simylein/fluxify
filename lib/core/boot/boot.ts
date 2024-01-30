@@ -34,7 +34,7 @@ export const bootstrap = (): FluxifyServer => {
 			if (request.ip === '::1' || request.ip === '127.0.0.1') {
 				request.ip = request.headers.get('x-forwarded-for') ?? request.ip;
 			}
-			if (config.stage === 'dev') request.times = [];
+			if (config.stage !== 'prod') request.times = [];
 
 			start(request, 'url');
 			const url = new URL(request.url);
