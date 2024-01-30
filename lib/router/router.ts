@@ -36,12 +36,16 @@ type Router = {
 	) => void;
 };
 
-export const fuseEndpoint = (endpoint: Path, prefix?: string, version?: number, base?: Path): string => {
+export const fuseEndpoint = (endpoint: Path, prefix: string, version?: number, base?: Path): string => {
 	const fragments: string[] = [
-		prefix ?? '',
-		typeof endpoint === 'object'
+		typeof endpoint === 'object' && endpoint.prefix !== undefined
+			? endpoint.prefix
+			: typeof base === 'object' && base.prefix !== undefined
+			? base.prefix
+			: prefix,
+		typeof endpoint === 'object' && endpoint.version
 			? `v${endpoint.version}`
-			: typeof base === 'object'
+			: typeof base === 'object' && base.version
 			? `v${base.version}`
 			: version
 			? `v${version}`

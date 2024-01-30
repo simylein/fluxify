@@ -19,8 +19,8 @@ describe(fuseEndpoint.name, () => {
 	});
 
 	test('should combine endpoint prefix and base and ignore undefined values', () => {
-		expect(fuseEndpoint('/me', undefined, undefined, undefined)).toEqual('/me');
-		expectType<string>(fuseEndpoint('/me', undefined, undefined, undefined));
+		expect(fuseEndpoint('/me', '', undefined, undefined)).toEqual('/me');
+		expectType<string>(fuseEndpoint('/me', '', undefined, undefined));
 	});
 
 	test('should remove trailing slashes from endpoint prefix and base', () => {
@@ -55,10 +55,22 @@ describe(fuseEndpoint.name, () => {
 		expect(fuseEndpoint({ path: 'me', version: 3 }, 'api/', 0, '/auth')).toEqual('/api/v3/auth/me');
 	});
 
-	test('should accept noth optional objects and prefer the endpoint', () => {
+	test('should accept both optional objects and prefer the endpoint', () => {
 		expect(fuseEndpoint({ path: '/me', version: 4 }, 'api', 0, { path: 'auth', version: 2 })).toEqual(
 			'/api/v4/auth/me',
 		);
+	});
+
+	test('should accept optional object as base and override global prefix', () => {
+		expect(fuseEndpoint('', 'api', 0, { path: '/home', prefix: '' })).toEqual('/home');
+	});
+
+	test('should accept optional object as endpoint and override global prefix', () => {
+		expect(fuseEndpoint({ path: '/home', prefix: '' }, 'api', 0, '')).toEqual('/home');
+	});
+
+	test('should accept both optional objects and prefer the endpoint', () => {
+		expect(fuseEndpoint({ path: '/home', prefix: '' }, 'api', 0, { path: '', prefix: 'api' })).toEqual('/home');
 	});
 });
 

@@ -2,7 +2,7 @@ import { IdEntity } from '../repository/repository.type';
 import { Timing } from '../timing/timing.type';
 import { Parser } from '../validation/parser.type';
 
-export type Path = string | { path: string; version: number };
+export type Path = string | { path: string; version?: number; prefix?: string };
 
 export type Method = 'all' | 'get' | 'post' | 'put' | 'patch' | 'delete' | 'options';
 
