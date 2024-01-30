@@ -16,7 +16,7 @@ export const stop = (request: FluxifyRequest, name: Timing, now?: number): void 
 };
 
 export const timing = (request: FluxifyRequest): object => {
-	if (config.stage !== 'prod') {
+	if (config.stage !== 'prod' && request.times.length) {
 		return {
 			'server-timing': request.times
 				.map((time) => (time.stop ? `${time.name};dur=${(time.stop - time.start).toFixed(6)}` : null))
