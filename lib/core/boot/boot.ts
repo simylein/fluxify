@@ -3,6 +3,7 @@ import { randomUUID } from 'crypto';
 import pack from '../../../package.json';
 import { verifyJwt } from '../../auth/jwt';
 import { config } from '../../config/config';
+import { crontab, tabs } from '../../cron/cron';
 import { HttpException, Locked, Unauthorized } from '../../exception/exception';
 import { colorMethod } from '../../logger/color';
 import { debug, error, info, logger, req, res, warn } from '../../logger/logger';
@@ -248,6 +249,8 @@ export const bootstrap = (): FluxifyServer => {
 	} else {
 		global.server.reload(options);
 	}
+	if (global.server.timer) clearInterval(global.server.timer);
+	if (tabs.length) global.server.timer = setInterval(() => crontab(Date.now()), 1000);
 	global.server.routes = routes;
 	global.server.cache = [];
 	global.server.throttle = {};
