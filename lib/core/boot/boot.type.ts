@@ -6,6 +6,7 @@ import { Throttle } from '../../throttle/throttle.type';
 import { Serializer } from '../serialize/serialize.type';
 
 export type FluxifyServer = Server & {
+	timer: Timer;
 	routes: Route[];
 	cache: Cache[];
 	throttle: Throttle;
