@@ -120,7 +120,7 @@ export const req = (request: FluxifyRequest, method: Method, endpoint: string): 
 	}
 };
 
-export const res = (id: FluxifyRequest['id'], status: number, time: number, bytes: number | null): void => {
+export const res = (id: FluxifyRequest['id'], status: number, time: number, bytes: number): void => {
 	if (config.logResponses) {
 		const timestamp = Date.now();
 		console.log(`${makeBase(timestamp, 'res')} ${colorStatus(status)} took ${colorTime(time)} ${colorBytes(bytes)}`);

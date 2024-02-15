@@ -1,7 +1,7 @@
 import { Method } from '../router/router.type';
 
 export type LoggerRequest = { id: string; timestamp: number; ip: string; method: Method; endpoint: string };
-export type LoggerResponse = { id: string; timestamp: number; status: number; time: number; bytes: number | null };
+export type LoggerResponse = { id: string; timestamp: number; status: number; time: number; bytes: number };
 export type LoggerTrace = { timestamp: number; context: string | null; message: string; stack?: unknown };
 export type LoggerDebug = { timestamp: number; context: string | null; message: string };
 export type LoggerInfo = { timestamp: number; context: string | null; message: string };

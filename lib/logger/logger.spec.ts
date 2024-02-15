@@ -121,7 +121,7 @@ describe(res.name, () => {
 	const id = randomUUID();
 	const status = 200;
 	const time = 16;
-	const result = res(id, status, time, null);
+	const result = res(id, status, time, 0);
 	expectType<void>(result);
 
 	test('should call the log function on console', () => {
@@ -132,7 +132,7 @@ describe(res.name, () => {
 
 	test('should call the custom logger response function', () => {
 		expect(customLogger.res).toHaveBeenCalledTimes(1);
-		expect(customLogger.res).toHaveBeenCalledWith({ id, timestamp: expect.any(Number), status, time, bytes: null });
+		expect(customLogger.res).toHaveBeenCalledWith({ id, timestamp: expect.any(Number), status, time, bytes: 0 });
 	});
 });
 

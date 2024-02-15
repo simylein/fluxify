@@ -32,7 +32,7 @@ export const createResponse = (
 	const diff = end - request.time;
 	start(request, 'total', request.time);
 	stop(request, 'total', end);
-	res(request.id, status, diff, data ? data.length : null);
+	res(request.id, status, diff, data ? data.length : 0);
 	return new Response(data, {
 		status,
 		headers: { ...defaultHeaders, ...customHeaders, ...timing(request), ...headers },
