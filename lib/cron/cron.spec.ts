@@ -3,6 +3,7 @@ import { cron, match, tabs } from './cron';
 
 beforeAll(() => {
 	tabs.push = mock(() => 0);
+	console.error = mock(() => void 0);
 });
 
 describe(cron.name, () => {
