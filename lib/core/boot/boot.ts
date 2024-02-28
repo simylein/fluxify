@@ -75,7 +75,7 @@ export const bootstrap = (): FluxifyServer => {
 				try {
 					if (throttle.use) {
 						start(request, 'throttle');
-						const entry = global.server.throttle[request.ip]?.[endpoint];
+						const entry = global.server.throttle[request.ip]?.[targetRoute.endpoint]?.[targetRoute.method];
 						if (entry) {
 							if (entry.exp < Date.now()) {
 								entry.exp = Date.now() + throttle.ttl * 1000;
@@ -94,10 +94,12 @@ export const bootstrap = (): FluxifyServer => {
 							if (!global.server.throttle[request.ip]) {
 								global.server.throttle[request.ip] = {};
 							}
-							global.server.throttle[request.ip][endpoint] = {
+							if (!global.server.throttle[request.ip][targetRoute.endpoint]) {
+								global.server.throttle[request.ip][targetRoute.endpoint] = {};
+							}
+							global.server.throttle[request.ip][targetRoute.endpoint][targetRoute.method] = {
 								exp: Date.now() + throttle.ttl * 1000,
 								hits: 1,
-								path: endpoint,
 							};
 						}
 						stop(request, 'throttle');
