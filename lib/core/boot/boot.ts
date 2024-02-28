@@ -2,6 +2,7 @@ import { serve, Serve, Server, version } from 'bun';
 import { randomUUID } from 'crypto';
 import pack from '../../../package.json';
 import { verifyJwt } from '../../auth/jwt';
+import { cacheOptions } from '../../cache/cache';
 import { config } from '../../config/config';
 import { crontab, tabs } from '../../cron/cron';
 import { HttpException, Locked, Unauthorized } from '../../exception/exception';
@@ -9,6 +10,7 @@ import { colorMethod } from '../../logger/color';
 import { debug, error, info, logger, req, res, warn } from '../../logger/logger';
 import { routes } from '../../router/router';
 import { FluxifyRequest, Param, Query } from '../../router/router.type';
+import { throttleOptions } from '../../throttle/throttle';
 import { start, stop } from '../../timing/timing';
 import { ValidationError } from '../../validation/error';
 import { compareEndpoint, compareMethod } from '../compare/compare';
@@ -50,12 +52,8 @@ export const bootstrap = (): FluxifyServer => {
 			const targetRoute = matchingRoutes.find((route) => compareMethod(route, method));
 			stop(request, 'routing');
 
-			const useCache =
-				method === 'get' &&
-				config.cacheTtl > 0 &&
-				config.cacheLimit > 0 &&
-				request.headers.get('cache-control')?.toLowerCase() !== 'no-cache';
-			const useThrottle = config.throttleTtl > 0 && config.throttleLimit > 0;
+			const cache = cacheOptions(request, targetRoute);
+			const throttle = throttleOptions(targetRoute);
 
 			if (method === 'options') {
 				const authRoutes = matchingRoutes.filter((route) => route.schema?.jwt);
@@ -75,16 +73,16 @@ export const bootstrap = (): FluxifyServer => {
 
 			if (targetRoute) {
 				try {
-					if (useThrottle) {
+					if (throttle.use) {
 						start(request, 'throttle');
 						const entry = global.server.throttle[request.ip]?.[endpoint];
 						if (entry) {
 							if (entry.exp < Date.now()) {
-								entry.exp = Date.now() + config.throttleTtl * 1000;
+								entry.exp = Date.now() + throttle.ttl * 1000;
 								entry.hits = 0;
 							}
 							entry.hits += 1;
-							if (entry.hits > config.throttleLimit) {
+							if (entry.hits > throttle.limit) {
 								debug(`throttle limit on route ${endpoint}`);
 								const status = 429;
 								stop(request, 'throttle');
@@ -97,7 +95,7 @@ export const bootstrap = (): FluxifyServer => {
 								global.server.throttle[request.ip] = {};
 							}
 							global.server.throttle[request.ip][endpoint] = {
-								exp: Date.now() + config.throttleTtl * 1000,
+								exp: Date.now() + throttle.ttl * 1000,
 								hits: 1,
 								path: endpoint,
 							};
@@ -138,9 +136,9 @@ export const bootstrap = (): FluxifyServer => {
 						stop(request, 'schema');
 					}
 
-					if (useCache) {
+					if (cache.use) {
 						start(request, 'cache');
-						if (global.server.cache.length > config.cacheLimit) {
+						if (global.server.cache.length > cache.limit) {
 							global.server.cache.shift();
 						}
 						global.server.cache = global.server.cache.filter((entry) => entry.exp > Date.now());
@@ -170,9 +168,9 @@ export const bootstrap = (): FluxifyServer => {
 					stop(request, 'handler');
 
 					const status = targetRoute.method === 'post' ? 201 : data ? 200 : 204;
-					if (useCache) {
+					if (cache.use) {
 						global.server.cache.push({
-							exp: config.cacheTtl * 1000 + Date.now(),
+							exp: cache.ttl * 1000 + Date.now(),
 							url: request.url,
 							jwt: (jwt as { id?: string })?.id,
 							lang: request.headers.get('accept-language')?.toLowerCase(),

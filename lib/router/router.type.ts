@@ -33,6 +33,8 @@ export type Schema<P, Q, B, J> = {
 	query?: Parser<Q>;
 	body?: Parser<B>;
 	jwt?: Parser<J>;
+	cache?: { ttl?: number };
+	throttle?: { ttl?: number; limit?: number };
 };
 
 export type HandlerSchema<P, Q, B, J> = {

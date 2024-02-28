@@ -6,3 +6,9 @@ export type Cache = {
 	data: unknown;
 	status: number;
 };
+
+export type CacheOptions = {
+	use: boolean;
+	ttl: number;
+	limit: number;
+};
