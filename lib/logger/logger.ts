@@ -130,9 +130,10 @@ export const res = (id: FluxifyRequest['id'], status: number, time: number, byte
 	}
 };
 
-export const trace = (message: string, stack?: unknown): void => {
+export const trace = (message: string | (() => string), stack?: unknown): void => {
 	const logLevels: Config['logLevel'][] = ['trace'];
 	if (logLevels.includes(config.logLevel)) {
+		message = message instanceof Function ? message() : message;
 		const timestamp = Date.now();
 		const context = getContext();
 		console.trace(`${makeBase(timestamp, 'trace')} ${message}`, stack ?? '');
@@ -142,9 +143,10 @@ export const trace = (message: string, stack?: unknown): void => {
 	}
 };
 
-export const debug = (message: string): void => {
+export const debug = (message: string | (() => string)): void => {
 	const logLevels: Config['logLevel'][] = ['trace', 'debug'];
 	if (logLevels.includes(config.logLevel)) {
+		message = message instanceof Function ? message() : message;
 		const timestamp = Date.now();
 		const context = getContext();
 		console.debug(`${makeBase(timestamp, 'debug')} ${message}`);
@@ -154,9 +156,10 @@ export const debug = (message: string): void => {
 	}
 };
 
-export const info = (message: string): void => {
+export const info = (message: string | (() => string)): void => {
 	const logLevels: Config['logLevel'][] = ['trace', 'debug', 'info'];
 	if (logLevels.includes(config.logLevel)) {
+		message = message instanceof Function ? message() : message;
 		const timestamp = Date.now();
 		const context = getContext();
 		console.info(`${makeBase(timestamp, 'info')} ${message}`);
@@ -166,9 +169,10 @@ export const info = (message: string): void => {
 	}
 };
 
-export const warn = (message: string): void => {
+export const warn = (message: string | (() => string)): void => {
 	const logLevels: Config['logLevel'][] = ['trace', 'debug', 'info', 'warn'];
 	if (logLevels.includes(config.logLevel)) {
+		message = message instanceof Function ? message() : message;
 		const timestamp = Date.now();
 		const context = getContext();
 		console.warn(`${makeBase(timestamp, 'warn')} ${message}`);
@@ -178,9 +182,10 @@ export const warn = (message: string): void => {
 	}
 };
 
-export const error = (message: string, stack?: unknown): void => {
+export const error = (message: string | (() => string), stack?: unknown): void => {
 	const logLevels: Config['logLevel'][] = ['trace', 'debug', 'info', 'warn', 'error'];
 	if (logLevels.includes(config.logLevel)) {
+		message = message instanceof Function ? message() : message;
 		const timestamp = Date.now();
 		const context = getContext();
 		console.error(`${makeBase(timestamp, 'error')} ${message}`, stack ?? '');
