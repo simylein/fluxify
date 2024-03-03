@@ -15,7 +15,7 @@ import { start, stop } from '../../timing/timing';
 import { ValidationError } from '../../validation/error';
 import { compareEndpoint, compareMethod } from '../compare/compare';
 import { extractMethod, extractParam } from '../extract/extract';
-import { parseBody } from '../request/request';
+import { parseBody, parseIp } from '../request/request';
 import { createResponse, header } from '../response/response';
 import { serialize } from '../serialize/serialize';
 import { FluxifyServer } from './boot.type';
@@ -32,11 +32,7 @@ export const bootstrap = (): FluxifyServer => {
 		async fetch(request: FluxifyRequest, server: Server): Promise<Response> {
 			request.time = performance.now();
 			request.id = randomUUID();
-			// FIXME: remove testing shenanigans when bun fixes request ip undefined in testing
-			request.ip = config.stage === 'test' ? '' : server.requestIP(request)?.address ?? '';
-			if (request.ip === '::1' || request.ip === '127.0.0.1') {
-				request.ip = request.headers.get('x-forwarded-for') ?? request.ip;
-			}
+			request.ip = parseIp(request, server);
 			if (config.stage !== 'prod') request.times = [];
 
 			start(request, 'url');
