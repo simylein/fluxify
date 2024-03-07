@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import {
 	Accepted,
+	BadRequest,
 	Conflict,
 	Forbidden,
 	Gone,
@@ -40,6 +41,20 @@ describe(NoContent.name, () => {
 
 	test('should return a http exception with more details', () => {
 		expect(NoContent('more details')).toEqual({ status: 204, message: 'no content', detail: 'more details' });
+	});
+});
+
+describe(BadRequest.name, () => {
+	test('should be an instance of http exception', () => {
+		expect(BadRequest()).toBeInstanceOf(HttpException);
+	});
+
+	test('should return a http exception with bad request', () => {
+		expect(BadRequest()).toEqual({ status: 400, message: 'bad request' });
+	});
+
+	test('should return a http exception with more details', () => {
+		expect(BadRequest('more details')).toEqual({ status: 400, message: 'bad request', detail: 'more details' });
 	});
 });
 
