@@ -65,9 +65,9 @@ describe(colorTime.name, () => {
 		expect(colorTime(40)).toEqual(`${bold}${green}40.00${reset} ms`);
 		expect(colorTime(20.1)).toEqual(`${bold}${green}20.10${reset} ms`);
 		expect(colorTime(20)).toEqual(`${bold}${cyan}20.00${reset} ms`);
-		expect(colorTime(1)).toEqual(`${bold}${cyan}1000${reset} µs`);
-		expect(colorTime(0.2)).toEqual(`${bold}${cyan}200${reset} µs`);
-		expect(colorTime(0)).toEqual(`${bold}${cyan}0${reset} µs`);
+		expect(colorTime(1)).toEqual(`${bold}${cyan}1000${reset} us`);
+		expect(colorTime(0.2)).toEqual(`${bold}${cyan}200${reset} us`);
+		expect(colorTime(0)).toEqual(`${bold}${cyan}0${reset} us`);
 	});
 });
 
