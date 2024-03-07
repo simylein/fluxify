@@ -64,7 +64,7 @@ export const colorStatus = (status: number): string => {
 export const colorTime = (time: number): string => {
 	switch (true) {
 		case time <= 1:
-			return `${bold}${cyan}${(time * 1000).toFixed(0)}${reset} µs`;
+			return `${bold}${cyan}${(time * 1000).toFixed(0)}${reset} us`;
 		case time <= 20:
 			return `${bold}${cyan}${time.toFixed(2)}${reset} ms`;
 		case time <= 40:
