@@ -71,32 +71,62 @@ export const bootstrap = (): FluxifyServer => {
 				try {
 					if (throttle.use) {
 						start(request, 'throttle');
-						const entry = global.server.throttle[request.ip]?.[endpoint]?.[method];
-						if (entry) {
-							if (entry.exp < Date.now()) {
-								entry.exp = Date.now() + throttle.ttl * 1000;
-								entry.hits = 0;
-							}
-							entry.hits += 1;
-							if (entry.hits > throttle.limit) {
-								debug(`throttle limit on route ${endpoint}`);
-								const status = 429;
-								stop(request, 'throttle');
-								return createResponse({ status, message: 'too many requests' }, status, request, {
-									'retry-after': `${Math.ceil((entry.exp - Date.now()) / 1000)}`,
-								});
+						if (config.throttleTtl === throttle.ttl && config.throttleLimit === throttle.limit) {
+							const globally = global.server.throttle[request.ip]?.['']?.[''];
+							if (globally) {
+								if (globally.exp < Date.now()) {
+									globally.exp = Date.now() + config.throttleTtl * 1000;
+									globally.hits = 0;
+								}
+								globally.hits += 1;
+								if (globally.hits > config.throttleLimit) {
+									debug(`throttle limit on route ${endpoint}`);
+									const status = 429;
+									stop(request, 'throttle');
+									return createResponse({ status, message: 'too many requests' }, status, request, {
+										'retry-after': `${Math.ceil((globally.exp - Date.now()) / 1000)}`,
+									});
+								}
+							} else {
+								if (!global.server.throttle[request.ip]) {
+									global.server.throttle[request.ip] = {};
+								}
+								if (!global.server.throttle[request.ip]['']) {
+									global.server.throttle[request.ip][''] = {};
+								}
+								global.server.throttle[request.ip][''][''] = {
+									exp: Date.now() + throttle.ttl * 1000,
+									hits: 1,
+								};
 							}
 						} else {
-							if (!global.server.throttle[request.ip]) {
-								global.server.throttle[request.ip] = {};
+							const locally = global.server.throttle[request.ip]?.[endpoint]?.[method];
+							if (locally) {
+								if (locally.exp < Date.now()) {
+									locally.exp = Date.now() + throttle.ttl * 1000;
+									locally.hits = 0;
+								}
+								locally.hits += 1;
+								if (locally.hits > throttle.limit) {
+									debug(`throttle limit on route ${endpoint}`);
+									const status = 429;
+									stop(request, 'throttle');
+									return createResponse({ status, message: 'too many requests' }, status, request, {
+										'retry-after': `${Math.ceil((locally.exp - Date.now()) / 1000)}`,
+									});
+								}
+							} else {
+								if (!global.server.throttle[request.ip]) {
+									global.server.throttle[request.ip] = {};
+								}
+								if (!global.server.throttle[request.ip][endpoint]) {
+									global.server.throttle[request.ip][endpoint] = {};
+								}
+								global.server.throttle[request.ip][endpoint][method] = {
+									exp: Date.now() + throttle.ttl * 1000,
+									hits: 1,
+								};
 							}
-							if (!global.server.throttle[request.ip][endpoint]) {
-								global.server.throttle[request.ip][endpoint] = {};
-							}
-							global.server.throttle[request.ip][endpoint][method] = {
-								exp: Date.now() + throttle.ttl * 1000,
-								hits: 1,
-							};
 						}
 						stop(request, 'throttle');
 					}
