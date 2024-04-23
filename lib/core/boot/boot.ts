@@ -30,45 +30,45 @@ export const bootstrap = (): FluxifyServer => {
 		port: config.stage === 'test' ? 0 : config.port,
 		development: config.stage === 'dev',
 		async fetch(request: FluxifyRequest, server: Server): Promise<Response> {
-			request.time = performance.now();
-			request.id = randomUUID();
-			request.ip = parseIp(request, server);
-			if (config.stage !== 'prod') request.times = [];
+			try {
+				request.time = performance.now();
+				request.id = randomUUID();
+				request.ip = parseIp(request, server);
+				if (config.stage !== 'prod') request.times = [];
 
-			start(request, 'url');
-			const url = new URL(request.url);
-			const method = extractMethod(request.method);
-			const endpoint = url.pathname;
-			stop(request, 'url');
+				start(request, 'url');
+				const url = new URL(request.url);
+				const method = extractMethod(request.method);
+				const endpoint = url.pathname;
+				stop(request, 'url');
 
-			req(request, method, endpoint);
+				req(request, method, endpoint);
 
-			start(request, 'routing');
-			const matchingRoutes = global.server.routes.filter((route) => compareEndpoint(route, endpoint));
-			const targetRoute = matchingRoutes.find((route) => compareMethod(route, method));
-			stop(request, 'routing');
+				start(request, 'routing');
+				const matchingRoutes = global.server.routes.filter((route) => compareEndpoint(route, endpoint));
+				const targetRoute = matchingRoutes.find((route) => compareMethod(route, method));
+				stop(request, 'routing');
 
-			const cache = cacheOptions(request, targetRoute);
-			const throttle = throttleOptions(targetRoute);
+				const cache = cacheOptions(request, targetRoute);
+				const throttle = throttleOptions(targetRoute);
 
-			if (method === 'options') {
-				const authRoutes = matchingRoutes.filter((route) => route.schema?.jwt);
-				if (authRoutes.length > 0) {
-					const methods = authRoutes.filter((route) => compareEndpoint(route, endpoint)).map((route) => route.method);
-					return createResponse(null, 200, request, {
-						'access-control-allow-origin': config.allowOrigin,
-						'access-control-allow-headers': 'authorization,content-type',
-						'access-control-allow-methods': methods.join(', ').toUpperCase(),
-						'access-control-allow-credentials': 'true',
-					});
-				} else {
-					const methods = matchingRoutes.map((route) => route.method);
-					return createResponse(null, 200, request, { allow: methods.join(', ').toUpperCase() });
+				if (method === 'options') {
+					const authRoutes = matchingRoutes.filter((route) => route.schema?.jwt);
+					if (authRoutes.length > 0) {
+						const methods = authRoutes.filter((route) => compareEndpoint(route, endpoint)).map((route) => route.method);
+						return createResponse(null, 200, request, {
+							'access-control-allow-origin': config.allowOrigin,
+							'access-control-allow-headers': 'authorization,content-type',
+							'access-control-allow-methods': methods.join(', ').toUpperCase(),
+							'access-control-allow-credentials': 'true',
+						});
+					} else {
+						const methods = matchingRoutes.map((route) => route.method);
+						return createResponse(null, 200, request, { allow: methods.join(', ').toUpperCase() });
+					}
 				}
-			}
 
-			if (targetRoute) {
-				try {
+				if (targetRoute) {
 					if (throttle.use) {
 						start(request, 'throttle');
 						if (config.throttleTtl === throttle.ttl && config.throttleLimit === throttle.limit) {
@@ -207,33 +207,33 @@ export const bootstrap = (): FluxifyServer => {
 						});
 					}
 					return createResponse(data, status, request);
-				} catch (err) {
-					if (err instanceof ValidationError) {
-						const status = 400;
-						return createResponse({ status, message: 'bad request', detail: err.message }, status, request);
-					}
-					if (err instanceof HttpException) {
-						const status = err.status;
-						return createResponse({ status, message: err.message, detail: err.detail }, status, request);
-					}
-					error((err as Error)?.message, config.logLevel === 'trace' ? err : '');
-					const status = 500;
-					return createResponse(
-						{
-							status,
-							message: 'internal server error',
-							detail: config.stage === 'dev' ? (err as Error)?.message : undefined,
-						},
-						status,
-						request,
-					);
+				} else if (matchingRoutes.length > 0) {
+					const status = 405;
+					return createResponse({ status, message: 'method not allowed' }, status, request);
+				} else {
+					const status = 404;
+					return createResponse({ status, message: 'not found' }, status, request);
 				}
-			} else if (matchingRoutes.length > 0) {
-				const status = 405;
-				return createResponse({ status, message: 'method not allowed' }, status, request);
-			} else {
-				const status = 404;
-				return createResponse({ status, message: 'not found' }, status, request);
+			} catch (err) {
+				if (err instanceof ValidationError) {
+					const status = 400;
+					return createResponse({ status, message: 'bad request', detail: err.message }, status, request);
+				}
+				if (err instanceof HttpException) {
+					const status = err.status;
+					return createResponse({ status, message: err.message, detail: err.detail }, status, request);
+				}
+				error((err as Error)?.message, config.logLevel === 'trace' ? err : '');
+				const status = 500;
+				return createResponse(
+					{
+						status,
+						message: 'internal server error',
+						detail: config.stage === 'dev' ? (err as Error)?.message : undefined,
+					},
+					status,
+					request,
+				);
 			}
 		},
 		error(request: Error): Response {
