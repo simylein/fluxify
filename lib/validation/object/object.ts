@@ -31,9 +31,7 @@ export const object = <T, S extends Record<string, Parser<T>>>(
 				try {
 					(argument as Record<string, unknown>)[key] = schema[key].parse(argument[key as keyof typeof argument]);
 				} catch (err) {
-					throw new ValidationError(
-						(err as ValidationError).message.replace(`"${argument[key as keyof typeof argument]}"`, key),
-					);
+					throw new ValidationError((err as ValidationError).message.replace(/.*? /, `${key} `));
 				}
 			} else {
 				if (argument[key as keyof typeof argument] === undefined && !schema[key].type.includes('undefined')) {
