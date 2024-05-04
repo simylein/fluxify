@@ -143,7 +143,7 @@ describe(trace.name, () => {
 
 	test('should call the trace function on console', () => {
 		expect(console.trace).toHaveBeenCalledTimes(1);
-		expect(console.trace).toHaveBeenCalledWith(expect.stringContaining(log), '');
+		expect(console.trace).toHaveBeenCalledWith(expect.stringContaining(log), '', '');
 	});
 
 	test('should call the custom logger trace function', () => {
@@ -227,7 +227,7 @@ describe(error.name, () => {
 
 	test('should call the error function on console', () => {
 		expect(console.error).toHaveBeenCalledTimes(1);
-		expect(console.error).toHaveBeenCalledWith(expect.stringContaining(log), '');
+		expect(console.error).toHaveBeenCalledWith(expect.stringContaining(log), '', '');
 	});
 
 	test('should call the custom logger error function', () => {

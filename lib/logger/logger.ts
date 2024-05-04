@@ -136,7 +136,7 @@ export const trace = (message: string | (() => string), stack?: unknown): void =
 		message = message instanceof Function ? message() : message;
 		const timestamp = Date.now();
 		const context = getContext();
-		console.trace(`${makeBase(timestamp, 'trace')} ${message}`, stack ?? '');
+		console.trace(`${makeBase(timestamp, 'trace')} ${message}`, stack ? '\n' : '', stack ?? '');
 		if (customLogger.trace) {
 			void customLogger.trace({ timestamp, context, message, stack });
 		}
@@ -188,7 +188,7 @@ export const error = (message: string | (() => string), stack?: unknown): void =
 		message = message instanceof Function ? message() : message;
 		const timestamp = Date.now();
 		const context = getContext();
-		console.error(`${makeBase(timestamp, 'error')} ${message}`, stack ?? '');
+		console.error(`${makeBase(timestamp, 'error')} ${message}`, stack ? '\n' : '', stack ?? '');
 		if (customLogger.error) {
 			void customLogger.error({ timestamp, context, message, stack });
 		}
