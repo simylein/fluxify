@@ -346,7 +346,7 @@ app.get('/docs', null, () => {
 
 `entity()` create entities by providing an table name and some columns. every entity needs at least an `id: primary()` column. pass the return to the `repository` for easy data manipulation
 
-`primary()` this marks your id column as the primary key. uses non nullable uuids version 4
+`primary()` this marks your id column as the primary key. uses non nullable uuids version 4 or auto incrementing integers
 
 `column()` create database columns inside the `entity` function
 
@@ -376,7 +376,7 @@ app.get('/docs', null, () => {
 
 ### exception
 
-`Accepted() NoContent() Unauthorized() Forbidden() NotFound() MethodNotAllowed() Conflict() Gone() IamTeapot() Locked() TooManyRequests() InternalServerError()` throw those for returning the corresponding http status codes. they accept an optional message which will override the default one
+`Accepted() NoContent() BadRequest() Unauthorized() Forbidden() NotFound() MethodNotAllowed() Conflict() Gone() IamTeapot() Locked() TooManyRequests() InternalServerError()` throw those for returning the corresponding http status codes. they accept an optional message which will override the default one
 
 ### fake
 
@@ -396,14 +396,18 @@ app.get('/docs', null, () => {
 
 `FindOptions FindOneOptions` the types used in `find` and `findOne` from repository. they require generics to work
 
+`InsertData` all keys of an entity which need to be present at insert. requires generics to work
+
+`UpdateData` all keys of an entity which need to be present at update. requires generics to work
+
 ### router
 
-`router()` returns access to `get` `post` `put` `patch` and `delete` route handlers. accepts an optional prefix which will affect all routes
+`router()` returns access to `get` `post` `put` `patch` `delete` and `all` route handlers. accepts an optional prefix which will affect all routes. you can also override the global prefix or version to be used by its routes
 
-`get() post() put() patch() delete()` route handlers used to map http routes in your application. they accept an endpoint and optional schema for validation and a handler which will be called when a request hits said endpoint
+`get() post() put() patch() delete() all()` route handlers used to map http routes in your application. they accept an endpoint and optional schema for validation and a handler which will be called when a request hits said endpoint
 
 ### validation
 
-`string() number() boolean() object() uuid() date() union() array()` they all validate types on the runtime while providing awesome intellisense in development
+`string() number() boolean() object() uuid() date() union() array() blob()` they all validate types on the runtime while providing awesome intellisense in development
 
 `Infer` provide any dto as the type argument for getting a inferred type which is bound to that dto. works like magic

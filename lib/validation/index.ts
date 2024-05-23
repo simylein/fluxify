@@ -1,4 +1,5 @@
 export { array } from './array/array';
+export { blob } from './blob/blob';
 export { boolean } from './boolean/boolean';
 export { date } from './date/date';
 export { number } from './number/number';
