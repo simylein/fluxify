@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { ValidationError } from '../error';
 import {
+	isBlob,
 	isBoolean,
 	isNot,
 	isNotMax,
@@ -127,11 +128,11 @@ describe(isBoolean.name, () => {
 });
 
 describe(isObject.name, () => {
-	test('should not throw given a object', () => {
+	test('should not throw given an object', () => {
 		expect(() => isObject({})).not.toThrow();
 	});
 
-	test('should throw given anything but a object', () => {
+	test('should throw given anything but an object', () => {
 		expect(() => isObject('hello-world')).toThrow(Error('"hello-world" is not of type object'));
 		expect(() => isObject(42)).toThrow(Error('42 is not of type object'));
 		expect(() => isObject(true)).toThrow(Error('true is not of type object'));
@@ -153,5 +154,21 @@ describe(isUnion.name, () => {
 		expect(() => isUnion([], ['light', 'dark'])).toThrow(Error('[] is not one of light | dark'));
 		expect(() => isUnion(undefined, ['light', 'dark'])).toThrow(Error('undefined is not one of light | dark'));
 		expect(() => isUnion(null, ['light', 'dark'])).toThrow(Error('null is not one of light | dark'));
+	});
+});
+
+describe(isBlob.name, () => {
+	test('should not throw given a blob', () => {
+		expect(() => isBlob(new Blob(), '', {})).not.toThrow();
+	});
+
+	test('should throw given anything but a blob', () => {
+		expect(() => isBlob('hello-world', '', {})).toThrow(Error('"hello-world" is not of type blob'));
+		expect(() => isBlob(42, '', {})).toThrow(Error('42 is not of type blob'));
+		expect(() => isBlob(true, '', {})).toThrow(Error('true is not of type blob'));
+		expect(() => isBlob({}, '', {})).toThrow(Error('{} is not of type blob'));
+		expect(() => isBlob([], '', {})).toThrow(Error('[] is not of type blob'));
+		expect(() => isBlob(undefined, '', {})).toThrow(Error('undefined is not of type blob'));
+		expect(() => isBlob(null, '', {})).toThrow(Error('null is not of type blob'));
 	});
 });

@@ -69,3 +69,14 @@ export function isObject(value: unknown): asserts value is object {
 export function isUnion<T>(value: unknown, values: T[]): asserts values is T[] {
 	if (!values.includes(value as T)) throw isNotUnion<T>(value, values);
 }
+
+export function isBlob(value: unknown, type: string, constraints: Constraints): asserts value is Blob {
+	if (!(value instanceof Blob)) throw isNot(value, 'blob');
+	if (value.type !== type) throw new ValidationError(`blob needs to be of type ${type}`);
+	if (constraints.min && value.size < constraints.min) {
+		throw new ValidationError(`blob must not be smaller than ${constraints.min} bytes`);
+	}
+	if (constraints.max && value.size > constraints.max) {
+		throw new ValidationError(`blob must not be larger than ${constraints.max} bytes`);
+	}
+}

@@ -7,6 +7,7 @@ export type Type =
 	| 'object'
 	| 'array'
 	| 'union'
+	| 'blob'
 	| 'undefined'
 	| 'null'
 	| 'transform';
