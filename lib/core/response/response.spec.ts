@@ -34,7 +34,7 @@ describe(createResponse.name, () => {
 		expect(createResponse(input, status, request)).toBeInstanceOf(Response);
 		expect(createResponse(input, status, request).bodyUsed).toEqual(false);
 		expect(createResponse(input, status, request).status).toEqual(status);
-		expect(await createResponse(input, status, request).json<typeof input>()).toEqual(input);
+		expect(await createResponse(input, status, request).json()).toEqual(input);
 	});
 
 	test('should register global headers and return them on every response', () => {

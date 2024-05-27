@@ -1,4 +1,3 @@
-import { Env } from 'bun';
 import { randomBytes } from 'crypto';
 import { readFileSync } from 'fs';
 import { boolean } from '../validation/boolean/boolean';
@@ -6,7 +5,7 @@ import { number } from '../validation/number/number';
 import { object } from '../validation/object/object';
 import { string } from '../validation/string/string';
 import { union } from '../validation/union/union';
-import { Config } from './config.type';
+import { Config, Env } from './config.type';
 import { determineStage } from './stage';
 
 // TODO: remove as not needed when using const

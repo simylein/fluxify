@@ -4,7 +4,7 @@ import { FluxifyRequest } from '../../router/router.type';
 import { start, stop, timing } from '../../timing/timing';
 import { serializer } from '../serialize/serialize';
 
-let customHeaders: HeadersInit = {};
+let customHeaders: Record<string, string> = {};
 
 export const defaultHeaders = {
 	server: 'bun',
@@ -14,7 +14,7 @@ export const defaultHeaders = {
 	'access-control-allow-origin': config.allowOrigin,
 };
 
-export const header = (custom: HeadersInit): void => {
+export const header = (custom: Record<string, string>): void => {
 	debug(`registered ${Object.keys(custom).length} custom header`);
 	customHeaders = custom;
 };
@@ -23,7 +23,7 @@ export const createResponse = (
 	body: unknown | null,
 	status: number,
 	request: FluxifyRequest,
-	headers?: HeadersInit,
+	headers?: Record<string, string>,
 ): Response => {
 	start(request, 'response');
 	const data = body ? serializer.res(body) : null;

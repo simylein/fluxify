@@ -21,12 +21,12 @@ describe(blob.name, () => {
 		expect(() => blob('image').parse(undefined)).toThrow();
 		expect(() => blob('image').parse(null)).toThrow();
 		expect(() => blob('image').parse(new Blob([], { type: 'image' }))).not.toThrow();
-		expect(blob('image').parse(new Blob([], { type: 'image' }))).toEqual(new Blob([], { type: 'image' }));
+		expect(blob('image').parse(new Blob([], { type: 'image' }))).toEqual(new Blob([], { type: 'image' }) as Blob);
 		expectType<Blob>(blob('image').parse(new Blob([], { type: 'image' })));
 	});
 
 	test('should return a blob when type matches and else throw', () => {
-		expect(() => blob('image').parse(new Blob())).toThrow();
+		expect(() => blob('image').parse(new Blob([]))).toThrow();
 		expect(() => blob('image').parse(new Blob([], { type: '' }))).toThrow();
 		expect(() => blob('image').parse(new Blob([], { type: 'non-image' }))).toThrow();
 		expect(() => blob('image').parse(new Blob([], { type: 'image' }))).not.toThrow();
@@ -59,7 +59,7 @@ describe(blob.name, () => {
 		expect(() => blob('image').optional().parse(undefined)).not.toThrow();
 		expect(blob('image').optional().parse(undefined)).toBeUndefined();
 		expect(() => blob('image').optional().parse(null)).toThrow();
-		expect(blob('image').optional().parse(image)).toEqual(image);
+		expect(blob('image').optional().parse(image)).toEqual(image as Blob);
 		expectType<Blob | undefined>(blob('image').optional().parse(image));
 	});
 
@@ -74,7 +74,7 @@ describe(blob.name, () => {
 		expect(blob('image').optional().nullable().parse(undefined)).toBeUndefined();
 		expect(() => blob('image').optional().nullable().parse(null)).not.toThrow();
 		expect(blob('image').optional().nullable().parse(null)).toBeNull();
-		expect(blob('image').optional().nullable().parse(image)).toEqual(image);
+		expect(blob('image').optional().nullable().parse(image)).toEqual(image as Blob);
 		expectType<Blob | undefined | null>(blob('image').optional().nullable().parse(image));
 	});
 
@@ -89,7 +89,7 @@ describe(blob.name, () => {
 		expect(blob('image').nullable().optional().parse(undefined)).toBeUndefined();
 		expect(() => blob('image').nullable().optional().parse(null)).not.toThrow();
 		expect(blob('image').nullable().optional().parse(null)).toBeNull();
-		expect(blob('image').nullable().optional().parse(image)).toEqual(image);
+		expect(blob('image').nullable().optional().parse(image)).toEqual(image as Blob);
 		expectType<Blob | undefined | null>(blob('image').nullable().optional().parse(image));
 	});
 });

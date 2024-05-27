@@ -159,7 +159,7 @@ describe(isUnion.name, () => {
 
 describe(isBlob.name, () => {
 	test('should not throw given a blob', () => {
-		expect(() => isBlob(new Blob(), '', {})).not.toThrow();
+		expect(() => isBlob(new Blob([]), '', {})).not.toThrow();
 	});
 
 	test('should throw given anything but a blob', () => {

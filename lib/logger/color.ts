@@ -1,4 +1,4 @@
-import { Env } from 'bun';
+import { Env } from '../config/config.type';
 import { Method } from '../router/router.type';
 
 export const colorTerminal = (env: Env): boolean => {

@@ -11,6 +11,6 @@ export type FluxifyServer = Server & {
 	cache: Cache[];
 	throttle: Throttle;
 	logger: (custom: Logger) => void;
-	header: (custom: HeadersInit) => void;
+	header: (custom: Record<string, string>) => void;
 	serialize: (custom: Partial<Serializer>) => void;
 };

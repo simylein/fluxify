@@ -1,3 +1,5 @@
+export type Env = Record<string, string | undefined>;
+
 export type Config = {
 	stage?: 'test' | 'stage' | 'dev' | 'prod';
 	port: number;
