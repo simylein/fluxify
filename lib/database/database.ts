@@ -9,32 +9,42 @@ const database = new Database(config.stage === 'test' ? ':memory:' : config.data
 });
 database.run('pragma foreign_keys = on;');
 
-export const runQuery = (query: string, params: SQLQueryBindings[] = []): void => {
-	const statement = database.prepare(`${query};`, params);
-	debug(statement.toString());
-	return statement.run();
+export const runQuery = (query: string, params: SQLQueryBindings[] = []): Promise<void> => {
+	return new Promise((resolve) => {
+		const statement = database.prepare(`${query};`, params);
+		debug(statement.toString());
+		resolve(statement.run());
+	});
 };
 
-export const selectOne = <T extends IdEntity>(query: string, params: SQLQueryBindings[] = []): T | null => {
-	const statement = database.prepare(`${query};`, params);
-	debug(statement.toString());
-	return statement.get() as T | null;
+export const selectOne = <T extends IdEntity>(query: string, params: SQLQueryBindings[] = []): Promise<T | null> => {
+	return new Promise((resolve) => {
+		const statement = database.prepare(`${query};`, params);
+		debug(statement.toString());
+		resolve(statement.get() as T | null);
+	});
 };
 
-export const selectMany = <T extends IdEntity>(query: string, params: SQLQueryBindings[] = []): T[] => {
-	const statement = database.prepare(`${query};`, params);
-	debug(statement.toString());
-	return statement.all() as T[];
+export const selectMany = <T extends IdEntity>(query: string, params: SQLQueryBindings[] = []): Promise<T[]> => {
+	return new Promise((resolve) => {
+		const statement = database.prepare(`${query};`, params);
+		debug(statement.toString());
+		resolve(statement.all() as T[]);
+	});
 };
 
-export const insertOne = (query: string, params: SQLQueryBindings[] = []): IdEntity => {
-	const statement = database.prepare(`${query} returning id;`, params);
-	debug(statement.toString());
-	return statement.get() as IdEntity;
+export const insertOne = <T extends IdEntity>(query: string, params: SQLQueryBindings[] = []): Promise<T> => {
+	return new Promise((resolve) => {
+		const statement = database.prepare(`${query};`, params);
+		debug(statement.toString());
+		resolve(statement.get() as T);
+	});
 };
 
-export const insertMany = (query: string, params: SQLQueryBindings[] = []): IdEntity[] => {
-	const statement = database.prepare(`${query} returning id;`, params);
-	debug(statement.toString());
-	return statement.all() as IdEntity[];
+export const insertMany = <T extends IdEntity>(query: string, params: SQLQueryBindings[] = []): Promise<T[]> => {
+	return new Promise((resolve) => {
+		const statement = database.prepare(`${query};`, params);
+		debug(statement.toString());
+		resolve(statement.all() as T[]);
+	});
 };

@@ -37,41 +37,43 @@ describe(runQuery.name, () => {
 		).not.toThrow();
 	});
 
-	expectType<void>(runQuery('pragma testing_purpose'));
+	expectType<Promise<void>>(runQuery('pragma testing_purpose'));
 });
 
 describe(selectOne.name, () => {
-	test('should select the create user by id', () => {
-		expect(selectOne('select * from database_user where id = ?', [user.id])).toEqual(user);
+	test('should select the create user by id', async () => {
+		expect(await selectOne('select * from database_user where id = ?', [user.id])).toEqual(user);
 	});
 
-	test('should select nothing given an invalid id', () => {
-		expect(selectOne('select * from database_user where id = ?', ['non-existing-id'])).toBeNull();
+	test('should select nothing given an invalid id', async () => {
+		expect(await selectOne('select * from database_user where id = ?', ['non-existing-id'])).toBeNull();
 	});
 
-	expectType<IdEntity | null>(selectOne('pragma testing_purpose'));
+	expectType<Promise<IdEntity | null>>(selectOne('pragma testing_purpose'));
 });
 
 describe(selectMany.name, () => {
-	test('should select the all created users', () => {
-		users.forEach((usr) => {
-			runQuery('insert into database_user (id, username, password) values (?, ?, ?)', [
-				usr.id,
-				usr.username,
-				usr.password,
-			]);
-		});
+	test('should select the all created users', async () => {
+		await Promise.all(
+			users.map((usr) =>
+				runQuery('insert into database_user (id, username, password) values (?, ?, ?)', [
+					usr.id,
+					usr.username,
+					usr.password,
+				]),
+			),
+		);
 
-		expect(selectMany('select * from database_user')).toEqual([user, ...users]);
+		expect(await selectMany('select * from database_user')).toEqual([user, ...users]);
 	});
 
-	test('should select the user simylein', () => {
-		expect(selectMany('select * from database_user where username = ?', [user.username])).toEqual([user]);
+	test('should select the user simylein', async () => {
+		expect(await selectMany('select * from database_user where username = ?', [user.username])).toEqual([user]);
 	});
 
-	test('should select all users with a password string', () => {
-		expect(selectMany(`select * from database_user where password like ?`, ['%password'])).toEqual(users);
+	test('should select all users with a password string', async () => {
+		expect(await selectMany(`select * from database_user where password like ?`, ['%password'])).toEqual(users);
 	});
 
-	expectType<IdEntity[]>(selectMany('pragma testing_purpose'));
+	expectType<Promise<IdEntity[]>>(selectMany('pragma testing_purpose'));
 });

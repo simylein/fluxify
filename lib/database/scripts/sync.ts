@@ -11,22 +11,24 @@ if (entities.length === 0) {
 	info(`found ${entities.length} entities to sync`);
 }
 
-runQuery('pragma foreign_keys = off');
+await runQuery('pragma foreign_keys = off');
 
-entities.forEach((entity) => {
-	if (
-		entity &&
-		typeof entity === 'object' &&
-		'name' in entity &&
-		'schema' in entity &&
-		typeof entity.name === 'string' &&
-		typeof entity.schema === 'string'
-	) {
-		info(`syncing table ${entity.name}...`);
-		try {
-			runQuery(entity.schema);
-		} catch (err) {
-			error(`failed to sync table ${entity.name}`, err);
+await (async (): Promise<void> => {
+	for (const entity of entities) {
+		if (
+			entity &&
+			typeof entity === 'object' &&
+			'name' in entity &&
+			'schema' in entity &&
+			typeof entity.name === 'string' &&
+			typeof entity.schema === 'string'
+		) {
+			info(`syncing table ${entity.name}...`);
+			try {
+				await runQuery(entity.schema);
+			} catch (err) {
+				error(`failed to sync table ${entity.name}`, err);
+			}
 		}
 	}
-});
+})();

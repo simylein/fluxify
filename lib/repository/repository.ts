@@ -28,7 +28,7 @@ type Repository<T extends IdEntity> = {
 export const repository = <T extends IdEntity>(table: Entity<T>): Repository<T> => {
 	if (config.databasePath === ':memory:' || config.stage === 'test') {
 		debug(`creating schema for table '${table.name}'`);
-		runQuery(table.schema);
+		void runQuery(table.schema);
 	}
 
 	if (config.stage === 'dev') {
@@ -37,7 +37,7 @@ export const repository = <T extends IdEntity>(table: Entity<T>): Repository<T> 
 			const before = schema.sql.replace(`${'create table'.toUpperCase()} ${table.name} `, '');
 			const after = table.schema.replace(`create table if not exists ${table.name} `, '');
 			if (before !== after) {
-				migrate(table.name, before, after);
+				void migrate(table.name, before, after);
 			}
 		}
 	}
@@ -92,250 +92,222 @@ export const repository = <T extends IdEntity>(table: Entity<T>): Repository<T> 
 
 	return {
 		init(): Promise<void> {
-			return new Promise((resolve) => {
-				runQuery(table.schema);
-				return resolve(void 0);
-			});
+			return runQuery(table.schema);
 		},
 
-		find<S extends keyof T>(options?: FindOptions<T, S>): Promise<Pick<T, S>[]> {
-			return new Promise((resolve) => {
-				const [where, select, order, skip, take, deleted] = [
-					options?.where,
-					options?.select,
-					options?.order,
-					options?.skip,
-					options?.take,
-					options?.deleted,
-				];
-				const constraints = [
-					selectKeys(select),
-					table.name,
-					whereKeys(where, deleted),
-					orderBy<T, S>(order),
-					paginate<T, S>(take, skip),
-				].filter((constraint) => !!constraint);
-				const entities = selectMany<T>(`${constraints.join(' ')}`, whereMany<T, S>(where));
-				const transformed = entities.map((entity) => transformEntity(table, entity));
-				return resolve(transformed);
-			});
+		async find<S extends keyof T>(options?: FindOptions<T, S>): Promise<Pick<T, S>[]> {
+			const [where, select, order, skip, take, deleted] = [
+				options?.where,
+				options?.select,
+				options?.order,
+				options?.skip,
+				options?.take,
+				options?.deleted,
+			];
+			const constraints = [
+				selectKeys(select),
+				table.name,
+				whereKeys(where, deleted),
+				orderBy<T, S>(order),
+				paginate<T, S>(take, skip),
+			].filter((constraint) => !!constraint);
+			const entities = await selectMany<T>(`${constraints.join(' ')}`, whereMany<T, S>(where));
+			const transformed = entities.map((entity) => transformEntity(table, entity));
+			return transformed;
 		},
 
-		findOne<S extends keyof T>(options: T['id'] | FindOneOptions<T, S>): Promise<Pick<T, S> | null> {
-			return new Promise((resolve) => {
-				let where: FindOneOptions<T, S>['where'] = {};
-				let select: FindOptions<T, S>['select'] = undefined;
-				let deleted: FindOptions<T, S>['deleted'] = false;
-				typeof options !== 'object'
-					? (where.id = options)
-					: ([where, select, deleted] = [options.where, options?.select, options?.deleted]);
+		async findOne<S extends keyof T>(options: T['id'] | FindOneOptions<T, S>): Promise<Pick<T, S> | null> {
+			let where: FindOneOptions<T, S>['where'] = {};
+			let select: FindOptions<T, S>['select'] = undefined;
+			let deleted: FindOptions<T, S>['deleted'] = false;
+			typeof options !== 'object'
+				? (where.id = options)
+				: ([where, select, deleted] = [options.where, options?.select, options?.deleted]);
 
-				if (!Object.keys(where).length) {
-					throw Error(`find one needs at least one where key`);
-				}
+			if (!Object.keys(where).length) {
+				throw Error(`find one needs at least one where key`);
+			}
 
-				const constraints = [selectKeys(select), table.name, whereKeys(where, deleted)].filter(
-					(constraint) => !!constraint,
-				);
-				const entity = selectOne<T>(`${constraints.join(' ')}`, whereOne<T, S>(where));
-				const transformed = entity === null ? null : transformEntity<T>(table, entity);
-				return resolve(transformed);
-			});
+			const constraints = [selectKeys(select), table.name, whereKeys(where, deleted)].filter(
+				(constraint) => !!constraint,
+			);
+			const entity = await selectOne<T>(`${constraints.join(' ')}`, whereOne<T, S>(where));
+			const transformed = entity === null ? null : transformEntity<T>(table, entity);
+			return transformed;
 		},
 
 		insert(data: InsertData<T>): Promise<{ id: T['id'] }> {
-			return new Promise((resolve) => {
-				const uuid = data.id ?? table.columns.id.type === 'integer' ? undefined : randomUUID();
-				const keys = Object.keys(data)
-					.filter((key) => data[key as keyof InsertData<T>] !== undefined)
-					.map((key) => table.columns[key].name ?? key);
-				const placeholders = Object.keys(data)
-					.filter((key) => data[key as keyof InsertData<T>] !== undefined)
-					.map(() => '?');
-				const values = transformData(data);
+			const uuid = data.id ?? table.columns.id.type === 'integer' ? undefined : randomUUID();
+			const keys = Object.keys(data)
+				.filter((key) => data[key as keyof InsertData<T>] !== undefined)
+				.map((key) => table.columns[key].name ?? key);
+			const placeholders = Object.keys(data)
+				.filter((key) => data[key as keyof InsertData<T>] !== undefined)
+				.map(() => '?');
+			const values = transformData(data);
 
-				const columnKeys = Object.keys(table.columns).filter((key) => !('references' in table.columns[key]));
-				const columns = table.columns as Record<string, ColumnOptions>;
+			const columnKeys = Object.keys(table.columns).filter((key) => !('references' in table.columns[key]));
+			const columns = table.columns as Record<string, ColumnOptions>;
 
-				const createdColumn = columnKeys.find((column) => columns[column].onInsert === `(datetime('now'))`);
-				const updatedColumn = columnKeys.find((column) => columns[column].onUpdate === `(datetime('now'))`);
-				const deletedColumn = columnKeys.find((column) => columns[column].onDelete === `(datetime('now'))`);
+			const createdColumn = columnKeys.find((column) => columns[column].onInsert === `(datetime('now'))`);
+			const updatedColumn = columnKeys.find((column) => columns[column].onUpdate === `(datetime('now'))`);
+			const deletedColumn = columnKeys.find((column) => columns[column].onDelete === `(datetime('now'))`);
 
-				if (createdColumn) {
-					keys.push(columns[createdColumn].name ?? createdColumn);
-					placeholders.push(`${columns[createdColumn].default}`);
-				}
-				if (updatedColumn) {
-					keys.push(columns[updatedColumn].name ?? updatedColumn);
-					placeholders.push(`${columns[updatedColumn].default}`);
-				}
-				if (deletedColumn) {
-					keys.push(columns[deletedColumn].name ?? deletedColumn);
-					placeholders.push(`${columns[deletedColumn].default}`);
-				}
+			if (createdColumn) {
+				keys.push(columns[createdColumn].name ?? createdColumn);
+				placeholders.push(`${columns[createdColumn].default}`);
+			}
+			if (updatedColumn) {
+				keys.push(columns[updatedColumn].name ?? updatedColumn);
+				placeholders.push(`${columns[updatedColumn].default}`);
+			}
+			if (deletedColumn) {
+				keys.push(columns[deletedColumn].name ?? deletedColumn);
+				placeholders.push(`${columns[deletedColumn].default}`);
+			}
 
-				if (uuid) {
-					keys.unshift('id');
-					values.unshift(uuid);
-					placeholders.unshift('?');
-				}
+			if (uuid) {
+				keys.unshift('id');
+				values.unshift(uuid);
+				placeholders.unshift('?');
+			}
 
-				const result = insertOne(
-					`insert into ${table.name} (${keys.join(',')}) values (${placeholders.join(',')})`,
-					values,
-				);
-				return resolve(result);
-			});
+			return insertOne<IdEntity>(
+				`insert into ${table.name} (${keys.join(',')}) values (${placeholders.join(',')}) returning id`,
+				values,
+			);
 		},
 
 		insertMany(data: InsertData<T>[]): Promise<{ id: T['id'] }[]> {
-			return new Promise((resolve) => {
-				const uuids = data.map((dat) => (dat.id ?? table.columns.id.type === 'integer' ? undefined : randomUUID()));
-				const keys = Object.keys(data[0])
-					.filter((key) => data[0][key as keyof InsertData<T>] !== undefined)
-					.map((key) => table.columns[key].name ?? key);
+			const uuids = data.map((dat) => (dat.id ?? table.columns.id.type === 'integer' ? undefined : randomUUID()));
+			const keys = Object.keys(data[0])
+				.filter((key) => data[0][key as keyof InsertData<T>] !== undefined)
+				.map((key) => table.columns[key].name ?? key);
 
-				const placeholders: string[][] = [];
-				const values: unknown[][] = [];
+			const placeholders: string[][] = [];
+			const values: unknown[][] = [];
 
-				const columnKeys = Object.keys(table.columns).filter((key) => !('references' in table.columns[key]));
-				const columns = table.columns as Record<string, ColumnOptions>;
+			const columnKeys = Object.keys(table.columns).filter((key) => !('references' in table.columns[key]));
+			const columns = table.columns as Record<string, ColumnOptions>;
 
-				const createdColumn = columnKeys.find((column) => columns[column].onInsert === `(datetime('now'))`);
-				const updatedColumn = columnKeys.find((column) => columns[column].onUpdate === `(datetime('now'))`);
-				const deletedColumn = columnKeys.find((column) => columns[column].onDelete === `(datetime('now'))`);
+			const createdColumn = columnKeys.find((column) => columns[column].onInsert === `(datetime('now'))`);
+			const updatedColumn = columnKeys.find((column) => columns[column].onUpdate === `(datetime('now'))`);
+			const deletedColumn = columnKeys.find((column) => columns[column].onDelete === `(datetime('now'))`);
 
-				uuids.forEach((uuid, ind) => {
-					values.push(transformData(data[ind]));
-					placeholders.push(
-						Object.keys(data[ind])
-							.filter((key) => data[ind][key as keyof InsertData<T>] !== undefined)
-							.map(() => '?'),
-					);
-
-					if (createdColumn) {
-						ind === 0 && keys.push(columns[createdColumn].name ?? createdColumn);
-						placeholders[ind].push(`${columns[createdColumn].default}`);
-					}
-					if (updatedColumn) {
-						ind === 0 && keys.push(columns[updatedColumn].name ?? updatedColumn);
-						placeholders[ind].push(`${columns[updatedColumn].default}`);
-					}
-					if (deletedColumn) {
-						ind === 0 && keys.push(columns[deletedColumn].name ?? deletedColumn);
-						placeholders[ind].push(`${columns[deletedColumn].default}`);
-					}
-
-					if (uuid) {
-						ind === 0 && keys.unshift('id');
-						values[ind].unshift(uuid);
-						placeholders[ind].unshift('?');
-					}
-				});
-
-				const result = insertMany(
-					`insert into ${table.name} (${keys.join(',')}) values ${placeholders
-						.map((places) => `(${places.join(',')})`)
-						.join(',')}`,
-					values.flat() as SQLQueryBindings[],
+			uuids.forEach((uuid, ind) => {
+				values.push(transformData(data[ind]));
+				placeholders.push(
+					Object.keys(data[ind])
+						.filter((key) => data[ind][key as keyof InsertData<T>] !== undefined)
+						.map(() => '?'),
 				);
-				return resolve(result);
+
+				if (createdColumn) {
+					ind === 0 && keys.push(columns[createdColumn].name ?? createdColumn);
+					placeholders[ind].push(`${columns[createdColumn].default}`);
+				}
+				if (updatedColumn) {
+					ind === 0 && keys.push(columns[updatedColumn].name ?? updatedColumn);
+					placeholders[ind].push(`${columns[updatedColumn].default}`);
+				}
+				if (deletedColumn) {
+					ind === 0 && keys.push(columns[deletedColumn].name ?? deletedColumn);
+					placeholders[ind].push(`${columns[deletedColumn].default}`);
+				}
+
+				if (uuid) {
+					ind === 0 && keys.unshift('id');
+					values[ind].unshift(uuid);
+					placeholders[ind].unshift('?');
+				}
 			});
+
+			return insertMany<IdEntity>(
+				`insert into ${table.name} (${keys.join(',')}) values ${placeholders
+					.map((places) => `(${places.join(',')})`)
+					.join(',')} returning id`,
+				values.flat() as SQLQueryBindings[],
+			);
 		},
 
 		update(criteria: T['id'] | WhereOptions<T>, data: UpdateData<T>): Promise<void> {
-			return new Promise((resolve) => {
-				const keys = Object.keys(data)
-					.filter((key) => data[key as keyof UpdateData<T>] !== undefined)
-					.map((key) => table.columns[key].name ?? key)
-					.map((key) => `${key} = ?`);
+			const keys = Object.keys(data)
+				.filter((key) => data[key as keyof UpdateData<T>] !== undefined)
+				.map((key) => table.columns[key].name ?? key)
+				.map((key) => `${key} = ?`);
 
-				const values = transformData(data);
-				const columns = Object.keys(table.columns).filter((key) => !('references' in table.columns[key]));
-				const updatedColumn = columns.find(
-					(column) => (table.columns as Record<string, ColumnOptions>)[column].onUpdate === `(datetime('now'))`,
-				);
+			const values = transformData(data);
+			const columns = Object.keys(table.columns).filter((key) => !('references' in table.columns[key]));
+			const updatedColumn = columns.find(
+				(column) => (table.columns as Record<string, ColumnOptions>)[column].onUpdate === `(datetime('now'))`,
+			);
 
-				if (updatedColumn && (table.columns[updatedColumn] as ColumnOptions).onUpdate === `(datetime('now'))`) {
-					keys.push(`${(table.columns[updatedColumn] as ColumnOptions).name ?? updatedColumn} = (datetime('now'))`);
-				}
+			if (updatedColumn && (table.columns[updatedColumn] as ColumnOptions).onUpdate === `(datetime('now'))`) {
+				keys.push(`${(table.columns[updatedColumn] as ColumnOptions).name ?? updatedColumn} = (datetime('now'))`);
+			}
 
-				let where: WhereOptions<T> = {};
-				typeof criteria !== 'object' ? (where.id = criteria) : (where = criteria);
+			let where: WhereOptions<T> = {};
+			typeof criteria !== 'object' ? (where.id = criteria) : (where = criteria);
 
-				runQuery(`update ${table.name} set ${keys} ${whereKeys(where)}`, [
-					...values,
-					...(whereOne<T, keyof T>(where) ?? []),
-				]);
-				return resolve(void 0);
-			});
+			return runQuery(`update ${table.name} set ${keys} ${whereKeys(where)}`, [
+				...values,
+				...(whereOne<T, keyof T>(where) ?? []),
+			]);
 		},
 
 		delete(criteria: T['id'] | WhereOptions<T>): Promise<void> {
-			return new Promise((resolve) => {
-				let where: WhereOptions<T> = {};
-				typeof criteria !== 'object' ? (where.id = criteria) : (where = criteria);
+			let where: WhereOptions<T> = {};
+			typeof criteria !== 'object' ? (where.id = criteria) : (where = criteria);
 
-				runQuery(`delete from ${table.name} ${whereKeys(where)}`, whereOne<T, keyof T>(where));
-				return resolve(void 0);
-			});
+			return runQuery(`delete from ${table.name} ${whereKeys(where)}`, whereOne<T, keyof T>(where));
 		},
 
 		softDelete(criteria: T['id'] | WhereOptions<T>): Promise<void> {
-			return new Promise((resolve) => {
-				const columns = Object.keys(table.columns).filter((key) => !('references' in table.columns[key]));
-				const deletedColumn = columns.find(
-					(column) => (table.columns as Record<string, ColumnOptions>)[column].onDelete === `(datetime('now'))`,
+			const columns = Object.keys(table.columns).filter((key) => !('references' in table.columns[key]));
+			const deletedColumn = columns.find(
+				(column) => (table.columns as Record<string, ColumnOptions>)[column].onDelete === `(datetime('now'))`,
+			);
+
+			if (deletedColumn) {
+				let where: WhereOptions<T> = {};
+				typeof criteria !== 'object' ? (where.id = criteria) : (where = criteria);
+
+				const key = (table.columns[deletedColumn] as ColumnOptions).name ?? deletedColumn;
+				return runQuery(
+					`update ${table.name} set ${key} = (datetime('now')) ${whereKeys(where)}`,
+					whereOne<T, keyof T>(where),
 				);
-
-				if (deletedColumn) {
-					let where: WhereOptions<T> = {};
-					typeof criteria !== 'object' ? (where.id = criteria) : (where = criteria);
-
-					const key = (table.columns[deletedColumn] as ColumnOptions).name ?? deletedColumn;
-					runQuery(
-						`update ${table.name} set ${key} = (datetime('now')) ${whereKeys(where)}`,
-						whereOne<T, keyof T>(where),
-					);
-					return resolve(void 0);
-				} else {
-					throw Error(`entity '${table.name}' has no deleted column`);
-				}
-			});
+			} else {
+				throw Error(`entity '${table.name}' has no deleted column`);
+			}
 		},
 
 		restore(criteria: T['id'] | WhereOptions<T>): Promise<void> {
-			return new Promise((resolve) => {
-				const columns = Object.keys(table.columns).filter((key) => !('references' in table.columns[key]));
-				const deletedColumn = columns.find(
-					(column) => (table.columns as Record<string, ColumnOptions>)[column].onDelete === `(datetime('now'))`,
+			const columns = Object.keys(table.columns).filter((key) => !('references' in table.columns[key]));
+			const deletedColumn = columns.find(
+				(column) => (table.columns as Record<string, ColumnOptions>)[column].onDelete === `(datetime('now'))`,
+			);
+
+			if (deletedColumn) {
+				let where: WhereOptions<T> = {};
+				typeof criteria !== 'object' ? (where.id = criteria) : (where = criteria);
+
+				const key = (table.columns[deletedColumn] as ColumnOptions).name ?? deletedColumn;
+				return runQuery(
+					`update ${table.name} set ${key} = null ${whereKeys(where, true)}`,
+					whereOne<T, keyof T>(where),
 				);
-
-				if (deletedColumn) {
-					let where: WhereOptions<T> = {};
-					typeof criteria !== 'object' ? (where.id = criteria) : (where = criteria);
-
-					const key = (table.columns[deletedColumn] as ColumnOptions).name ?? deletedColumn;
-					runQuery(`update ${table.name} set ${key} = null ${whereKeys(where, true)}`, whereOne<T, keyof T>(where));
-					return resolve(void 0);
-				} else {
-					throw Error(`entity '${table.name}' has no deleted column`);
-				}
-			});
+			} else {
+				throw Error(`entity '${table.name}' has no deleted column`);
+			}
 		},
 
 		wipe(): Promise<void> {
-			return new Promise((resolve) => {
-				runQuery(`delete from ${table.name}`);
-				return resolve(void 0);
-			});
+			return runQuery(`delete from ${table.name}`);
 		},
 
 		drop(): Promise<void> {
-			return new Promise((resolve) => {
-				runQuery(`drop table ${table.name}`);
-				return resolve(void 0);
-			});
+			return runQuery(`drop table ${table.name}`);
 		},
 	};
 };
