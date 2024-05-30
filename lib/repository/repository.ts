@@ -8,15 +8,23 @@ import { debug } from '../logger/logger';
 import { orderBy, paginate, whereMany, whereOne } from './helpers/helpers';
 import { migrate } from './migrate/migrate';
 import { determineOperator } from './operators/operators';
-import { FindOneOptions, FindOptions, IdEntity, InsertData, UpdateData, WhereOptions } from './repository.type';
+import {
+	FindOneOptions,
+	FindOptions,
+	IdEntity,
+	InsertData,
+	SelectOptions,
+	UpdateData,
+	WhereOptions,
+} from './repository.type';
 import { transformData, transformEntity } from './transform/transform';
 
 type Repository<T extends IdEntity> = {
 	init: () => Promise<void>;
 	find: <S extends keyof T>(options?: FindOptions<T, S>) => Promise<Pick<T, S>[]>;
 	findOne: <S extends keyof T>(options: T['id'] | FindOneOptions<T, S>) => Promise<Pick<T, S> | null>;
-	insert: (data: InsertData<T>) => Promise<{ id: T['id'] }>;
-	insertMany: (data: InsertData<T>[]) => Promise<{ id: T['id'] }[]>;
+	insert: <S extends keyof T>(data: InsertData<T>, returning?: SelectOptions<T, S>) => Promise<Pick<T, S>>;
+	insertMany: <S extends keyof T>(data: InsertData<T>[], returning?: SelectOptions<T, S>) => Promise<Pick<T, S>[]>;
 	update: (criteria: T['id'] | WhereOptions<T>, data: UpdateData<T>) => Promise<void>;
 	delete: (criteria: T['id'] | WhereOptions<T>) => Promise<void>;
 	softDelete: (criteria: T['id'] | WhereOptions<T>) => Promise<void>;
@@ -136,11 +144,15 @@ export const repository = <T extends IdEntity>(table: Entity<T>): Repository<T> 
 			return transformed;
 		},
 
-		insert(data: InsertData<T>): Promise<{ id: T['id'] }> {
+		async insert<S extends keyof T>(data: InsertData<T>, returning?: SelectOptions<T, S>): Promise<Pick<T, S>> {
 			const uuid = data.id ?? table.columns.id.type === 'integer' ? undefined : randomUUID();
 			const keys = Object.keys(data)
 				.filter((key) => data[key as keyof InsertData<T>] !== undefined)
 				.map((key) => table.columns[key].name ?? key);
+			const yielding = Object.keys(returning ?? table.columns).map((key) =>
+				table.columns[key].name ? `${table.columns[key].name} as ${key}` : key,
+			);
+
 			const placeholders = Object.keys(data)
 				.filter((key) => data[key as keyof InsertData<T>] !== undefined)
 				.map(() => '?');
@@ -172,20 +184,26 @@ export const repository = <T extends IdEntity>(table: Entity<T>): Repository<T> 
 				placeholders.unshift('?');
 			}
 
-			return insertOne<IdEntity>(
-				`insert into ${table.name} (${keys.join(',')}) values (${placeholders.join(',')}) returning id`,
+			const entity = await insertOne<Pick<T, S>>(
+				`insert into ${table.name} (${keys.join(',')})
+				values (${placeholders.join(',')})
+				returning ${yielding.join(',')}`,
 				values,
 			);
+			return transformEntity<T>(table, entity as T);
 		},
 
-		insertMany(data: InsertData<T>[]): Promise<{ id: T['id'] }[]> {
+		async insertMany<S extends keyof T>(data: InsertData<T>[], returning?: SelectOptions<T, S>): Promise<Pick<T, S>[]> {
 			const uuids = data.map((dat) => (dat.id ?? table.columns.id.type === 'integer' ? undefined : randomUUID()));
 			const keys = Object.keys(data[0])
 				.filter((key) => data[0][key as keyof InsertData<T>] !== undefined)
 				.map((key) => table.columns[key].name ?? key);
+			const yielding = Object.keys(returning ?? table.columns).map((key) =>
+				table.columns[key].name ? `${table.columns[key].name} as ${key}` : key,
+			);
 
 			const placeholders: string[][] = [];
-			const values: unknown[][] = [];
+			const values: SQLQueryBindings[][] = [];
 
 			const columnKeys = Object.keys(table.columns).filter((key) => !('references' in table.columns[key]));
 			const columns = table.columns as Record<string, ColumnOptions>;
@@ -222,12 +240,13 @@ export const repository = <T extends IdEntity>(table: Entity<T>): Repository<T> 
 				}
 			});
 
-			return insertMany<IdEntity>(
-				`insert into ${table.name} (${keys.join(',')}) values ${placeholders
-					.map((places) => `(${places.join(',')})`)
-					.join(',')} returning id`,
-				values.flat() as SQLQueryBindings[],
+			const entities = await insertMany<Pick<T, S>>(
+				`insert into ${table.name} (${keys.join(',')})
+				values ${placeholders.map((places) => `(${places.join(',')})`).join(',')}
+				returning ${yielding.join(',')}`,
+				values.flat(),
 			);
+			return entities.map((entity) => transformEntity(table, entity as T));
 		},
 
 		update(criteria: T['id'] | WhereOptions<T>, data: UpdateData<T>): Promise<void> {

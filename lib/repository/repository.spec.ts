@@ -341,6 +341,20 @@ describe(userRepository.insert.name, () => {
 		expect(userId).toEqual(uuid);
 		expect(todoId).toEqual(id);
 	});
+
+	test('should insert the entity and return all keys', async () => {
+		const data = await userRepository.insert(user1);
+
+		expect(data).toEqual({ id: expect.any(String), ...user1 });
+		expectType<User>(data);
+	});
+
+	test('should insert the entity and return only keys specified', async () => {
+		const data = await userRepository.insert(user1, { age: true, name: true });
+
+		expect(data).toEqual({ age: user1.age, name: user1.name });
+		expectType<Pick<User, 'age' | 'name'>>(data);
+	});
 });
 
 describe(userRepository.insertMany.name, () => {
@@ -383,6 +397,26 @@ describe(userRepository.insertMany.name, () => {
 		const [{ id: todoId }] = await todoRepository.insertMany([{ id, ...todo1 }]);
 		expect(userId).toEqual(uuid);
 		expect(todoId).toEqual(id);
+	});
+
+	test('should insert multiple entities and return all keys', async () => {
+		const data = await userRepository.insertMany([user1, user2]);
+
+		expect(data).toEqual([
+			{ id: expect.any(String), ...user1 },
+			{ id: expect.any(String), ...user2 },
+		]);
+		expectType<User[]>(data);
+	});
+
+	test('should insert multiple entities and return only keys specified', async () => {
+		const data = await userRepository.insertMany([user1, user2], { age: true, name: true });
+
+		expect(data).toEqual([
+			{ age: user1.age, name: user1.name },
+			{ age: user2.age, name: user2.name },
+		]);
+		expectType<Pick<User, 'age' | 'name'>[]>(data);
 	});
 });
 
