@@ -9,9 +9,9 @@ export const subscribe = (req: Request, channel: string, data?: unknown): Respon
 		new ReadableStream({
 			type: 'direct',
 			pull(controller: ReadableStreamDirectController) {
-				let id = +(req.headers.get('last-event-id') ?? 1);
-				const handler = async (dat: unknown): Promise<void> => {
-					await controller.write(`id:${id}\ndata:${dat !== undefined ? JSON.stringify(dat) : ''}\n\n`);
+				let id = +(req.headers.get('last-event-id') ?? 0);
+				const handler = async (ev: string, dat: unknown): Promise<void> => {
+					await controller.write(`id:${id}\nevent:${ev}\ndata:${dat !== undefined ? JSON.stringify(dat) : ''}\n\n`);
 					await controller.flush();
 					id++;
 				};
@@ -21,7 +21,7 @@ export const subscribe = (req: Request, channel: string, data?: unknown): Respon
 					info(`unsubscribing from channel '${channel}'`);
 					emitter.off(channel, handler);
 				};
-				if (data) void handler(data);
+				void handler('connect', data);
 				return new Promise(() => void 0);
 			},
 		}),
@@ -32,7 +32,7 @@ export const subscribe = (req: Request, channel: string, data?: unknown): Respon
 	);
 };
 
-export const emit = (channel: string, data?: unknown): void => {
+export const emit = (channel: string, event: string, data?: unknown): void => {
 	debug(`emitting to channel '${channel}'`);
-	emitter.emit(channel, data);
+	emitter.emit(channel, event, data);
 };

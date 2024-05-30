@@ -41,8 +41,8 @@ describe(subscribe.name, () => {
 
 describe(emit.name, () => {
 	test('should call the emit method from the emitter', () => {
-		emit('/test');
+		emit('/test', 'message');
 		expect(emitter.emit).toHaveBeenCalledTimes(1);
-		expectType<void>(emit('/test'));
+		expectType<void>(emit('/test', 'message'));
 	});
 });
