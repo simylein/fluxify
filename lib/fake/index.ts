@@ -1,6 +1,7 @@
 export { adjective, adjectives } from './adjective/adjective';
 export { color, colors } from './color/color';
 export { element, elements } from './element/element';
+export { email, emails } from './email/email';
 export { excuse, excuses } from './excuse/excuse';
 export { material, materials } from './material/material';
 export { product, products } from './product/product';
