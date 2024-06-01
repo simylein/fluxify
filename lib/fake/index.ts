@@ -5,4 +5,6 @@ export { email, emails } from './email/email';
 export { excuse, excuses } from './excuse/excuse';
 export { material, materials } from './material/material';
 export { product, products } from './product/product';
+export { quote, quotes } from './quote/quote';
+export { sentence, sentences } from './sentence/sentence';
 export { username, usernames } from './username/username';
