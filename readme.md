@@ -380,9 +380,25 @@ app.get('/docs', null, () => {
 
 ### fake
 
-`word()` returns a random word from lorem ipsum with the specified length
+`adjective() adjectives()` returns one or many random adjectives
 
-`words()` returns the amount of specified random words from lorem ipsum separated by spaces
+`color() colors()` returns one or many random colors
+
+`element() elements()` returns one or many random periodic elements
+
+`email() emails()` returns one or many random email addresses
+
+`excuse() excuses()` returns one or many random developer excuses
+
+`material() materials()` returns one or many random materials
+
+`product() products()` returns one or many random products
+
+`quote() quotes()` returns one or many random famous quotes
+
+`sentence() sentences()` returns one or many random conversational sentences
+
+`username() usernames()` returns one or many random usernames
 
 ### logger
 
