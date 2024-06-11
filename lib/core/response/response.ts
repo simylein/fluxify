@@ -4,7 +4,7 @@ import { FluxifyRequest } from '../../router/router.type';
 import { start, stop, timing } from '../../timing/timing';
 import { serializer } from '../serialize/serialize';
 
-let customHeaders: Record<string, string> = {};
+export let customHeaders: Record<string, string> = {};
 
 export const defaultHeaders = {
 	server: 'bun',

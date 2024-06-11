@@ -1,4 +1,5 @@
 import EventEmitter from 'events';
+import { customHeaders, defaultHeaders } from '../core/response/response';
 import { debug, info } from '../logger/logger';
 
 export const emitter = new EventEmitter();
@@ -27,7 +28,7 @@ export const subscribe = (req: Request, channel: string, data?: unknown): Respon
 		}),
 		{
 			status: 200,
-			headers: { 'content-type': 'text/event-stream;charset=utf-8' },
+			headers: { ...defaultHeaders, ...customHeaders, 'content-type': 'text/event-stream;charset=utf-8' },
 		},
 	);
 };
