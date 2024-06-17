@@ -54,16 +54,24 @@ describe(array.name, () => {
 		expectType<boolean[]>(array(boolean()).parse(sequence));
 	});
 
+	test('should respect the minimum value and else throw', () => {
+		expect(() => array(number()).min(3).parse([1, 2, 3, 4])).not.toThrow();
+		expect(() => array(number()).min(4).parse([1, 2, 3, 4])).not.toThrow();
+		expect(() => array(number()).min(5).parse([1, 2, 3, 4])).toThrow();
+		expectType<Array<number>>(array(number()).min(3).parse([1, 2, 3, 4]));
+	});
+
+	test('should respect the maximum value and else throw', () => {
+		expect(() => array(number()).max(7).parse([1, 2, 3, 4, 5, 6, 7, 8])).toThrow();
+		expect(() => array(number()).max(8).parse([1, 2, 3, 4, 5, 6, 7, 8])).not.toThrow();
+		expect(() => array(number()).max(9).parse([1, 2, 3, 4, 5, 6, 7, 8])).not.toThrow();
+		expectType<Array<number>>(array(number()).max(9).parse([1, 2, 3, 4, 5, 6, 7, 8]));
+	});
+
 	test('should validate an array of objects', () => {
 		const users = [
-			{
-				id: 1,
-				name: 'alice',
-			},
-			{
-				id: 2,
-				name: 'bob',
-			},
+			{ id: 1, name: 'alice' },
+			{ id: 2, name: 'bob' },
 		];
 		const schema = object({
 			id: number(),

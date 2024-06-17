@@ -5,8 +5,10 @@ import {
 	isBoolean,
 	isNot,
 	isNotMax,
+	isNotMaxElements,
 	isNotMaxLength,
 	isNotMin,
+	isNotMinElements,
 	isNotMinLength,
 	isNotRegex,
 	isNotUnion,
@@ -71,7 +73,7 @@ describe(isNotMax.name, () => {
 });
 
 describe(isNotMinLength.name, () => {
-	test('should throw that value is larger than the maximum', () => {
+	test('should throw that value is smaller than the minimum', () => {
 		expect(() => isNotMinLength('hello', 6)).toThrow(Error('hello must be at least 6 characters long'));
 	});
 });
@@ -79,6 +81,18 @@ describe(isNotMinLength.name, () => {
 describe(isNotMaxLength.name, () => {
 	test('should throw that value is larger than the maximum', () => {
 		expect(() => isNotMaxLength('hello-world', 8)).toThrow(Error('hello-world must not be longer than 8 characters'));
+	});
+});
+
+describe(isNotMinElements.name, () => {
+	test('should throw that array length is smaller than the minimum', () => {
+		expect(() => isNotMinElements([1, 2, 3, 4], 6)).toThrow(Error('4 must contain at least 6 elements'));
+	});
+});
+
+describe(isNotMaxElements.name, () => {
+	test('should throw that value is larger than the maximum', () => {
+		expect(() => isNotMaxElements([1, 2, 3, 4, 5, 6, 7, 8, 9], 8)).toThrow(Error('9 must contain at most 8 elements'));
 	});
 });
 

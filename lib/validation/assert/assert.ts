@@ -30,6 +30,14 @@ export const isNotMaxLength = (value: string, max: number): ValidationError => {
 	return new ValidationError(`${value} must not be longer than ${max} characters`);
 };
 
+export const isNotMinElements = (value: Array<unknown>, min: number): ValidationError => {
+	return new ValidationError(`${value.length} must contain at least ${min} elements`);
+};
+
+export const isNotMaxElements = (value: Array<unknown>, max: number): ValidationError => {
+	return new ValidationError(`${value.length} must contain at most ${max} elements`);
+};
+
 export function isString(value: unknown, constraints: Constraints): asserts value is string {
 	if (typeof value !== 'string') throw isNot(value, 'string');
 	if (constraints.regex && !value.match(constraints.regex)) throw isNotRegex(value, constraints.regex);
