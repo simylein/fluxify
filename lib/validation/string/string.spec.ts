@@ -52,6 +52,16 @@ describe(string.name, () => {
 		expectType<string>(string().max(12).parse('hello-world'));
 	});
 
+	test('should trim the value and not throw', () => {
+		expect(string().trim().parse('hello-world')).toEqual('hello-world');
+		expect(() => string().trim().parse('hello-world')).not.toThrow();
+		expect(string().trim().parse(' hello-world ')).toEqual('hello-world');
+		expect(() => string().trim().parse(' hello-world ')).not.toThrow();
+		expect(string().trim().parse('  ')).toEqual('');
+		expect(() => string().trim().parse('  ')).not.toThrow();
+		expectType<string>(string().trim().parse('hello-world'));
+	});
+
 	test('should return a string or undefined if passed a string or undefined and else throw', () => {
 		expect(() => string().optional().parse('hello-world')).not.toThrow();
 		expect(string().optional().parse('hello-world')).toEqual('hello-world');

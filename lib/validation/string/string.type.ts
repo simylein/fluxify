@@ -10,6 +10,7 @@ export type StringParser = RecursiveParser<
 		matches: Parser<string>;
 		min: Parser<string>;
 		max: Parser<string>;
+		trim: Parser<string>;
 		default: DefaultParser<string>;
 		parse: ParseFunction<string>;
 	},

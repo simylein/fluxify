@@ -30,6 +30,7 @@ export type Constraints = Partial<{
 	regex: RegExp;
 	min: number;
 	max: number;
+	trim: boolean;
 }>;
 
 export type RecursiveParser<T, P, D, Called extends keyof T = never> = {
