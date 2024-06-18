@@ -45,8 +45,10 @@ export const string = (): StringParser => {
 			if (options.type.includes('null') && argument === null) {
 				return argument;
 			}
+			if (options.constraints.trim && typeof argument === 'string') {
+				argument = argument.trim();
+			}
 			isString(argument, options.constraints);
-			if (options.constraints.trim) return argument.trim();
 			return argument;
 		},
 	};
