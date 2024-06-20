@@ -68,11 +68,24 @@ export const bootstrap = (): FluxifyServer => {
 					}
 				}
 
+				start(request, 'auth');
+				let jwt: unknown | null = null;
+				const token = request.headers.get('authorization');
+				const cookie = request.headers.get('cookie');
+				if (
+					(!!token && token.toLowerCase().startsWith('bearer ')) ||
+					(!!cookie && cookie.toLowerCase().startsWith('bearer='))
+				) {
+					jwt = verifyJwt(token ? token.split(' ')[1].trim() : cookie ? cookie.split('=')[1].trim() : '');
+				}
+				stop(request, 'auth');
+
 				if (targetRoute) {
 					if (throttle.use) {
 						start(request, 'throttle');
+						const criteria = (jwt as { id?: string })?.id ?? request.ip;
 						if (config.throttleTtl === throttle.ttl && config.throttleLimit === throttle.limit) {
-							const globally = global.server.throttle[request.ip]?.['']?.[''];
+							const globally = global.server.throttle[criteria]?.['']?.[''];
 							if (globally) {
 								if (globally.exp < Date.now()) {
 									globally.exp = Date.now() + config.throttleTtl * 1000;
@@ -88,19 +101,19 @@ export const bootstrap = (): FluxifyServer => {
 									});
 								}
 							} else {
-								if (!global.server.throttle[request.ip]) {
-									global.server.throttle[request.ip] = {};
+								if (!global.server.throttle[criteria]) {
+									global.server.throttle[criteria] = {};
 								}
-								if (!global.server.throttle[request.ip]['']) {
-									global.server.throttle[request.ip][''] = {};
+								if (!global.server.throttle[criteria]['']) {
+									global.server.throttle[criteria][''] = {};
 								}
-								global.server.throttle[request.ip][''][''] = {
+								global.server.throttle[criteria][''][''] = {
 									exp: Date.now() + throttle.ttl * 1000,
 									hits: 1,
 								};
 							}
 						} else {
-							const locally = global.server.throttle[request.ip]?.[endpoint]?.[method];
+							const locally = global.server.throttle[criteria]?.[endpoint]?.[method];
 							if (locally) {
 								if (locally.exp < Date.now()) {
 									locally.exp = Date.now() + throttle.ttl * 1000;
@@ -116,13 +129,13 @@ export const bootstrap = (): FluxifyServer => {
 									});
 								}
 							} else {
-								if (!global.server.throttle[request.ip]) {
-									global.server.throttle[request.ip] = {};
+								if (!global.server.throttle[criteria]) {
+									global.server.throttle[criteria] = {};
 								}
-								if (!global.server.throttle[request.ip][endpoint]) {
-									global.server.throttle[request.ip][endpoint] = {};
+								if (!global.server.throttle[criteria][endpoint]) {
+									global.server.throttle[criteria][endpoint] = {};
 								}
-								global.server.throttle[request.ip][endpoint][method] = {
+								global.server.throttle[criteria][endpoint][method] = {
 									exp: Date.now() + throttle.ttl * 1000,
 									hits: 1,
 								};
@@ -139,24 +152,16 @@ export const bootstrap = (): FluxifyServer => {
 					let param: Param | unknown = extractParam(targetRoute, endpoint);
 					let query: Query | unknown = Object.fromEntries(url.searchParams);
 					let body = await parseBody(request);
-					let jwt: unknown | null = null;
 					stop(request, 'request');
 
 					if (targetRoute.schema) {
 						start(request, 'schema');
 						if (targetRoute.schema.jwt) {
-							const token = request.headers.get('authorization');
-							const cookie = request.headers.get('cookie');
-							if (
-								(!token || !token.toLowerCase().startsWith('bearer ')) &&
-								(!cookie || !cookie.toLowerCase().startsWith('bearer='))
-							) {
+							if (!jwt) {
 								stop(request, 'schema');
 								throw Unauthorized();
 							}
-							jwt = targetRoute.schema.jwt.parse(
-								verifyJwt(token ? token.split(' ')[1].trim() : cookie ? cookie.split('=')[1].trim() : ''),
-							);
+							jwt = targetRoute.schema.jwt.parse(jwt);
 						}
 						if (targetRoute.schema.param) param = targetRoute.schema.param.parse(param);
 						if (targetRoute.schema.query) query = targetRoute.schema.query.parse(query);

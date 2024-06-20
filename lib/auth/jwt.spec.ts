@@ -46,30 +46,30 @@ describe(verifyJwt.name, () => {
 		});
 	});
 
-	test('should throw an error for an invalid token format', () => {
-		expect(() => verifyJwt('invalid-token')).toThrow(Error('unauthorized'));
-		expect(() => verifyJwt('header.payload.signature.extra')).toThrow(Error('unauthorized'));
-		expect(() => verifyJwt('header.payload')).toThrow(Error('unauthorized'));
+	test('should return null for an invalid token format', () => {
+		expect(verifyJwt('invalid-token')).toEqual(null);
+		expect(verifyJwt('header.payload.signature.extra')).toEqual(null);
+		expect(verifyJwt('header.payload')).toEqual(null);
 	});
 
-	test('should throw an error for an invalid header', () => {
+	test('should return null for an invalid header', () => {
 		const jwt = signJwt({ id });
 		const invalidToken = manipulateToken(jwt, 0, { alg: 'RS256' });
-		expect(() => verifyJwt(invalidToken)).toThrow(Error('unauthorized'));
+		expect(verifyJwt(invalidToken)).toEqual(null);
 	});
 
-	test('should throw an error for an expired token', () => {
+	test('should return null for an expired token', () => {
 		const jwt = signJwt({ id });
 		const expiredToken = manipulateToken(jwt, 1, {
 			iat: Math.floor(Date.now() / 1000) - 3600,
 			exp: Math.floor(Date.now() / 1000) - 1800,
 		});
-		expect(() => verifyJwt(expiredToken)).toThrow(Error('unauthorized'));
+		expect(verifyJwt(expiredToken)).toEqual(null);
 	});
 
-	test('should throw an error for an invalid signature', () => {
+	test('should return null for an invalid signature', () => {
 		const jwt = signJwt({ id });
 		const invalidToken = jwt.replace(jwt.split('.')[2], 'invalid-signature');
-		expect(() => verifyJwt(invalidToken)).toThrow(Error('unauthorized'));
+		expect(verifyJwt(invalidToken)).toEqual(null);
 	});
 });

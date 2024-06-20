@@ -1,6 +1,5 @@
 import { createHmac } from 'crypto';
 import { config } from '../config/config';
-import { Unauthorized } from '../exception/exception';
 import { HeadDto, JwtDto, headDto, jwtDto } from './jwt.dto';
 
 export const signJwt = (data: { id: string }): string => {
@@ -38,21 +37,21 @@ const decodeFragment = (fragment: string): Record<string, unknown> => {
 	return JSON.parse(jsonPayload);
 };
 
-export const verifyJwt = (token: string): JwtDto => {
+export const verifyJwt = (token: string): JwtDto | null => {
 	if (!token.includes('.') || token.split('.').length !== 3) {
-		throw Unauthorized();
+		return null;
 	}
 
 	const [header, payload, signature] = token.split('.');
 
 	const head = headDto.parse(decodeFragment(header));
 	if (head.alg !== 'HS256' || head.typ !== 'JWT') {
-		throw Unauthorized();
+		return null;
 	}
 
 	const data = jwtDto.parse(decodeFragment(payload));
 	if (data.iat + config.jwtExpiry < data.exp) {
-		throw Unauthorized();
+		return null;
 	}
 
 	const computedSignature = createHmac('sha256', config.jwtSecret)
@@ -63,7 +62,7 @@ export const verifyJwt = (token: string): JwtDto => {
 		.replace(/\//g, '_');
 
 	if (computedSignature !== signature) {
-		throw Unauthorized();
+		return null;
 	}
 
 	return data;
