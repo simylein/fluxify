@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, mock, test } from 'bun:test';
 import { randomUUID } from 'crypto';
+import { signJwt } from '../../auth/jwt';
 import { jwtDto } from '../../auth/jwt.dto';
 import { config } from '../../config/config';
 import { Conflict, Forbidden, Gone, InternalServerError } from '../../exception/exception';
@@ -327,9 +328,19 @@ describe(bootstrap.name, () => {
 	});
 
 	test('should throttle after configured amount of requests', async () => {
-		const responses = await Promise.all(
-			new Array(5).fill(null).map(() => server.fetch(`http://${server.hostname}:${server.port}/throttle`)),
-		);
+		const request = new Request(`http://${server.hostname}:${server.port}/throttle`);
+		const responses = await Promise.all(new Array(5).fill(null).map(() => server.fetch(request)));
+
+		responses.map((response, index) => {
+			expect(response.status).toEqual(index === 4 ? 429 : 204);
+			expect(response.headers.get('retry-after')).toEqual(index === 4 ? `${config.throttleTtl}` : null);
+		});
+	});
+
+	test('should throttle separately when authenticated after configured amount of requests', async () => {
+		const headers = { authorization: `bearer ${signJwt({ id: randomUUID() })}` };
+		const request = new Request(`http://${server.hostname}:${server.port}/throttle`, { headers });
+		const responses = await Promise.all(new Array(5).fill(null).map(() => server.fetch(request)));
 
 		responses.map((response, index) => {
 			expect(response.status).toEqual(index === 4 ? 429 : 204);
