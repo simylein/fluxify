@@ -104,22 +104,14 @@ export const repository = <T extends IdEntity>(table: Entity<T>): Repository<T> 
 		},
 
 		async find<S extends keyof T>(options?: FindOptions<T, S>): Promise<Pick<T, S>[]> {
-			const [where, select, order, skip, take, deleted] = [
-				options?.where,
-				options?.select,
-				options?.order,
-				options?.skip,
-				options?.take,
-				options?.deleted,
-			];
 			const constraints = [
-				selectKeys(select),
+				selectKeys(options?.select),
 				table.name,
-				whereKeys(where, deleted),
-				orderBy<T, S>(order),
-				paginate<T, S>(take, skip),
+				whereKeys(options?.where, options?.deleted),
+				orderBy<T, S>(options?.order),
+				paginate<T, S>(options?.take, options?.skip),
 			].filter((constraint) => !!constraint);
-			const entities = await selectMany<T>(`${constraints.join(' ')}`, whereMany<T, S>(where));
+			const entities = await selectMany<T>(`${constraints.join(' ')}`, whereMany<T, S>(options?.where));
 			const transformed = entities.map((entity) => transformEntity(table, entity));
 			return transformed;
 		},
