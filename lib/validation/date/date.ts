@@ -19,6 +19,9 @@ export const date = (): DateParser => {
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		parse: (argument: unknown): any => {
 			if (options.type.includes('transform') && typeof argument === 'string') {
+				if (argument.match(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/)) {
+					return new Date(`${argument.replace(' ', 'T')}.000Z`);
+				}
 				return new Date(argument);
 			}
 			if (options.type.includes('undefined') && argument === undefined) {
