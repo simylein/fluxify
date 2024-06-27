@@ -4,7 +4,7 @@ import pack from '../../../package.json';
 import { verifyJwt } from '../../auth/jwt';
 import { cacheOptions } from '../../cache/cache';
 import { config } from '../../config/config';
-import { crontab, tabs } from '../../cron/cron';
+import { plan, run, tabs } from '../../cron/cron';
 import { HttpException, Locked, Unauthorized } from '../../exception/exception';
 import { colorMethod } from '../../logger/color';
 import { debug, error, info, logger, req, res, warn } from '../../logger/logger';
@@ -279,15 +279,25 @@ export const bootstrap = (): FluxifyServer => {
 		global.server = serve(options) as FluxifyServer;
 	} else {
 		global.server.reload(options);
+		global.server.tabs.forEach((tab) => (tab.timer ? clearTimeout(tab.timer) : void 0));
 	}
-	if (global.server.timer) clearInterval(global.server.timer);
-	if (tabs.length) global.server.timer = setInterval(() => crontab(Date.now()), 1000);
 	global.server.routes = routes;
+	global.server.tabs = tabs;
 	global.server.cache = [];
 	global.server.throttle = {};
 	global.server.logger = logger;
 	global.server.header = header;
 	global.server.serialize = serialize;
+
+	global.server.tabs.forEach((tab, ind) => {
+		const init = (): void => {
+			global.server.tabs[ind].timer = setTimeout(async () => {
+				await run(tab);
+				init();
+			}, plan(tab));
+		};
+		init();
+	});
 
 	routes.map((route, _index, array) =>
 		array.filter((rout) => rout.endpoint === route.endpoint && rout.method === route.method).length > 1
