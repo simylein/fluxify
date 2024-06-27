@@ -1,6 +1,6 @@
 import EventEmitter from 'events';
 import { customHeaders, defaultHeaders } from '../core/response/response';
-import { debug, info } from '../logger/logger';
+import { debug, trace } from '../logger/logger';
 
 export const emitter = new EventEmitter();
 emitter.setMaxListeners(2048);
@@ -16,10 +16,10 @@ export const subscribe = (req: Request, channel: string, data?: unknown): Respon
 					await controller.flush();
 					id++;
 				};
-				info(`subscribing to channel '${channel}'`);
+				debug(`subscribing to channel '${channel}'`);
 				emitter.on(channel, handler);
 				req.signal.onabort = () => {
-					info(`unsubscribing from channel '${channel}'`);
+					debug(`unsubscribing from channel '${channel}'`);
 					emitter.off(channel, handler);
 				};
 				void handler('connect', data);
@@ -34,6 +34,6 @@ export const subscribe = (req: Request, channel: string, data?: unknown): Respon
 };
 
 export const emit = (channel: string, event: string, data?: unknown): void => {
-	debug(`emitting to channel '${channel}'`);
+	trace(`emitting to channel '${channel}'`);
 	emitter.emit(channel, event, data);
 };
