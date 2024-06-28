@@ -25,6 +25,7 @@ describe(subscribe.name, () => {
 			.text()
 			.catch(() => void 0);
 		expect(emitter.on).toHaveBeenCalledTimes(1);
+		expect(emitter.on).toHaveBeenLastCalledWith('/test', expect.any(Function));
 		expectType<Response>(subscribe(new Request('http://example.com'), '/test'));
 	});
 
@@ -35,6 +36,7 @@ describe(subscribe.name, () => {
 			.catch(() => void 0);
 		controller.abort();
 		expect(emitter.off).toHaveBeenCalledTimes(1);
+		expect(emitter.off).toHaveBeenLastCalledWith('/test', expect.any(Function));
 		expectType<Response>(subscribe(new Request('http://example.com'), '/test'));
 	});
 });
@@ -43,6 +45,7 @@ describe(emit.name, () => {
 	test('should call the emit method from the emitter', () => {
 		emit('/test', 'message');
 		expect(emitter.emit).toHaveBeenCalledTimes(1);
+		expect(emitter.emit).toHaveBeenLastCalledWith('/test', 'message', undefined);
 		expectType<void>(emit('/test', 'message'));
 	});
 });

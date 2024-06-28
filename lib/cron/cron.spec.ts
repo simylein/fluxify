@@ -12,7 +12,7 @@ describe(cron.name, () => {
 		const handler = (): void => void 0;
 		cron(schedule, handler);
 		expect(tabs.push).toHaveBeenCalledTimes(1);
-		expect(tabs.push).toHaveBeenCalledWith({ timer: null, schedule, handler });
+		expect(tabs.push).toHaveBeenLastCalledWith({ timer: null, schedule, handler });
 	});
 
 	test('should not push invalid cron schedules to tabs', () => {
