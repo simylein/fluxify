@@ -83,12 +83,12 @@ export const cacheLfu = (cache: Cache): string | null => {
 				lookups += entry.lookups;
 			});
 		});
-		if (lookups < lowest) {
+		if (lookups < lowest && lookups !== 0) {
 			lowest = lookups;
 			lfu = url;
 		}
 	});
-	if (lowest < Infinity && lowest !== 0) {
+	if (lowest < Infinity) {
 		return lfu;
 	}
 	return null;
