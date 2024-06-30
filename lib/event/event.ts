@@ -5,7 +5,7 @@ import { debug, trace } from '../logger/logger';
 export const emitter = new EventEmitter();
 emitter.setMaxListeners(2048);
 
-export const subscribe = (req: Request, channel: string, data?: unknown): Response => {
+export const subscribe = (req: Request, channel: string, event?: string, data?: unknown): Response => {
 	return new Response(
 		new ReadableStream({
 			type: 'direct',
@@ -22,7 +22,7 @@ export const subscribe = (req: Request, channel: string, data?: unknown): Respon
 					debug(`unsubscribing from channel '${channel}'`);
 					emitter.off(channel, handler);
 				};
-				void handler('connect', data);
+				void handler(event ?? 'connect', data);
 				return new Promise(() => void 0);
 			},
 		}),
