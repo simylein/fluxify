@@ -7,7 +7,7 @@ Date.now = mock(() => 42000);
 const id = '36e12dd6-4efb-16c7-97d4-80a58b193540';
 const jwt = { id };
 const lang = 'en';
-const entry = { exp: config.cacheTtl * 1000 + Date.now(), data: { hello: 'there' }, status: 200, lookups: 0 };
+const entry = { exp: config.cacheTtl * 1000 + Date.now(), data: { hello: 'there' }, status: 200, lookups: 1 };
 const request = new Request('http://example.com', { headers: { 'accept-language': lang } }) as FluxifyRequest;
 
 const mapObject = (map: Map<string, unknown>): Record<string, unknown> => {
