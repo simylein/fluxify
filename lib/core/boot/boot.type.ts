@@ -9,7 +9,7 @@ import { Serializer } from '../serialize/serialize.type';
 export type FluxifyServer = Server & {
 	routes: Route[];
 	tabs: Tab[];
-	cache: Cache[];
+	cache: Cache;
 	throttle: Throttle;
 	logger: (custom: Logger) => void;
 	header: (custom: Record<string, string>) => void;
