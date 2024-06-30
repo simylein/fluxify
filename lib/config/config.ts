@@ -15,28 +15,28 @@ export const validateConfig = (env: Env): Config => {
 	try {
 		const schema = object({
 			stage: union(['test', 'stage', 'dev', 'prod']).optional(),
-			port: number().optional().transform().min(0).max(65535).default(4000),
-			name: string().optional().max(12).default('fluxify'),
+			port: number().transform().min(0).max(65535).optional().default(4000),
+			name: string().min(2).max(12).optional().default('fluxify'),
 
-			allowOrigin: string().optional().default('*'),
-			globalPrefix: string().optional().max(12).default(''),
-			defaultVersion: number().optional().transform().min(1).default(0),
+			allowOrigin: string().min(8).max(128).optional().default('*'),
+			globalPrefix: string().min(1).max(12).optional().default(''),
+			defaultVersion: number().transform().min(1).max(9).optional().default(0),
 
-			jwtSecret: string().optional().default(randomBytes(32).toString('hex')),
-			jwtExpiry: number().optional().transform().min(0).default(1600),
+			jwtSecret: string().min(16).max(256).optional().default(randomBytes(32).toString('hex')),
+			jwtExpiry: number().transform().min(0).max(77760000).optional().default(1600),
 
-			cacheTtl: number().optional().transform().min(0).default(0),
-			cacheLimit: number().optional().transform().min(0).default(0),
+			cacheTtl: number().transform().min(0).max(3600).optional().default(0),
+			cacheLimit: number().transform().min(0).max(4096).optional().default(0),
 
-			throttleTtl: number().optional().transform().min(0).default(0),
-			throttleLimit: number().optional().transform().min(0).default(0),
+			throttleTtl: number().transform().min(0).max(3600).optional().default(0),
+			throttleLimit: number().transform().min(0).max(2048).optional().default(0),
 
 			databasePath: string().optional().default(':memory:'),
 			databaseMode: union(['readwrite', 'readonly']).optional().default('readwrite'),
 
 			logLevel: union(['trace', 'debug', 'info', 'warn', 'error']).optional().default('info'),
-			logRequests: boolean().optional().transform().default(false),
-			logResponses: boolean().optional().transform().default(false),
+			logRequests: boolean().transform().optional().default(false),
+			logResponses: boolean().transform().optional().default(false),
 		});
 		const config = schema.parse({
 			stage: determineStage(env.npm_lifecycle_event, env.NODE_ENV),

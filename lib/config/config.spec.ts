@@ -1,22 +1,22 @@
 import { describe, expect, test } from 'bun:test';
+import { randomBytes } from 'crypto';
 import { expectType } from '../test/expect-type';
 import { validateConfig } from './config';
 import { Config, Env } from './config.type';
 
 describe(validateConfig.name, () => {
 	test('should throw given empty environment', () => {
-		const env: Env = {
-			NODE_ENV: '',
-		};
+		const env: Env = { NODE_ENV: '' };
 		expect(() => validateConfig(env)).toThrow('config: lifecycle and node env is not defined');
 		expect(() => expectType<Config>(validateConfig(env))).toThrow();
 	});
 
 	test('should validate and return the default config', () => {
+		const secret = randomBytes(32).toString('hex');
 		const env: Env = {
 			NODE_ENV: '',
 			STAGE: 'test',
-			JWT_SECRET: 'secret',
+			JWT_SECRET: secret,
 			npm_lifecycle_event: 'test',
 		};
 		expect(validateConfig(env)).toEqual({
@@ -26,7 +26,7 @@ describe(validateConfig.name, () => {
 			allowOrigin: '*',
 			globalPrefix: '',
 			defaultVersion: 0,
-			jwtSecret: 'secret',
+			jwtSecret: secret,
 			jwtExpiry: 1600,
 			cacheTtl: 0,
 			cacheLimit: 0,
@@ -41,6 +41,7 @@ describe(validateConfig.name, () => {
 	});
 
 	test('should validate and return the custom config', () => {
+		const secret = randomBytes(32).toString('hex');
 		const env: Env = {
 			NODE_ENV: '',
 			PORT: '8000',
@@ -49,7 +50,7 @@ describe(validateConfig.name, () => {
 			ALLOW_ORIGIN: 'localhost',
 			GLOBAL_PREFIX: '/api',
 			DEFAULT_VERSION: '1',
-			JWT_SECRET: 'secret',
+			JWT_SECRET: secret,
 			JWT_EXPIRY: '1600',
 			CACHE_TTL: '4',
 			CACHE_LIMIT: '32',
@@ -69,7 +70,7 @@ describe(validateConfig.name, () => {
 			allowOrigin: 'localhost',
 			globalPrefix: '/api',
 			defaultVersion: 1,
-			jwtSecret: 'secret',
+			jwtSecret: secret,
 			jwtExpiry: 1600,
 			cacheTtl: 4,
 			cacheLimit: 32,
