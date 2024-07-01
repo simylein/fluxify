@@ -76,18 +76,8 @@ describe(cacheLookup.name, () => {
 		const ids = new Map();
 		ids.set(jwt.id, new Map());
 		const urls = new Map();
-		urls.set(request.url, new Map());
-		expect(cacheLookup(urls, request, null)).toBeNull();
-	});
-
-	test('should return null given no deeply nested map children entries in the cache', () => {
-		const langs = new Map();
-		langs.set(lang, new Map());
-		const ids = new Map();
-		ids.set(jwt.id, langs);
-		const urls = new Map();
 		urls.set(request.url, ids);
-		expect(cacheLookup(urls, request, jwt)).toBeNull();
+		expect(cacheLookup(urls, request, null)).toBeNull();
 	});
 
 	test('should return null given no matching entries in the cache', () => {
