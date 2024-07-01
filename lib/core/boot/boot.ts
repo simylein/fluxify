@@ -229,14 +229,14 @@ export const bootstrap = (): FluxifyServer => {
 	}
 	if (!global.server) {
 		global.server = serve(options) as FluxifyServer;
+		global.server.cache = new Map();
+		global.server.throttle = new Map();
 	} else {
 		global.server.reload(options);
 		global.server.tabs.forEach((tab) => (tab.timer ? clearTimeout(tab.timer) : void 0));
 	}
 	global.server.routes = routes;
 	global.server.tabs = tabs;
-	global.server.throttle = new Map();
-	global.server.cache = new Map();
 	global.server.logger = logger;
 	global.server.header = header;
 	global.server.serialize = serialize;
