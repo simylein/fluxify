@@ -87,7 +87,7 @@ export const bootstrap = (): FluxifyServer => {
 						if (config.throttleTtl === throttle.ttl && config.throttleLimit === throttle.limit) {
 							const globally = throttleLookup(global.server.throttle, criteria, 'globally', 'all', throttle.ttl);
 							if (globally.hits > config.throttleLimit) {
-								debug(`throttle limit on route ${endpoint}`);
+								debug(`throttle limit on route ${targetRoute.endpoint}`);
 								const status = 429;
 								stop(request, 'throttle');
 								return createResponse({ status, message: 'too many requests' }, status, request, {
@@ -97,7 +97,7 @@ export const bootstrap = (): FluxifyServer => {
 						} else {
 							const locally = throttleLookup(global.server.throttle, criteria, endpoint, method, throttle.ttl);
 							if (locally.hits > throttle.limit) {
-								debug(`throttle limit on route ${endpoint}`);
+								debug(`throttle limit on route ${targetRoute.endpoint}`);
 								const status = 429;
 								stop(request, 'throttle');
 								return createResponse({ status, message: 'too many requests' }, status, request, {
