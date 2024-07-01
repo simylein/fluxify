@@ -1,3 +1,4 @@
+// TODO: legacy file remove when functionality is fully ported
 import { Method, Route } from '../../router/router.type';
 
 export const compareEndpoint = (route: Route, endpoint: string): boolean => {

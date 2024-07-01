@@ -6,14 +6,13 @@ import { cacheExpiry, cacheInsert, cacheLfu, cacheLookup, cacheOptions } from '.
 import { config } from '../../config/config';
 import { plan, run, tabs } from '../../cron/cron';
 import { HttpException, Locked, Unauthorized } from '../../exception/exception';
-import { colorMethod } from '../../logger/color';
-import { debug, error, info, logger, req, res, warn } from '../../logger/logger';
-import { routes } from '../../router/router';
-import { FluxifyRequest, Param, Query } from '../../router/router.type';
+import { debug, error, info, logger, req, res } from '../../logger/logger';
+import { routes, traverse } from '../../router/router';
+import { FluxifyRequest, Param, Query, Route } from '../../router/router.type';
 import { throttleLookup, throttleOptions } from '../../throttle/throttle';
 import { start, stop } from '../../timing/timing';
 import { ValidationError } from '../../validation/error';
-import { compareEndpoint, compareMethod } from '../compare/compare';
+import { compareEndpoint } from '../compare/compare';
 import { extractMethod, extractParam } from '../extract/extract';
 import { parseBody, parseIp } from '../request/request';
 import { createResponse, header } from '../response/response';
@@ -45,8 +44,8 @@ export const bootstrap = (): FluxifyServer => {
 				req(request, method, endpoint);
 
 				start(request, 'routing');
-				const matchingRoutes = global.server.routes.filter((route) => compareEndpoint(route, endpoint));
-				const targetRoute = matchingRoutes.find((route) => compareMethod(route, method));
+				const matchingRoutes = traverse(global.server.routes, endpoint);
+				const targetRoute = matchingRoutes.get(method) as Route | undefined;
 				stop(request, 'routing');
 
 				const cache = cacheOptions(request, targetRoute);
@@ -164,7 +163,7 @@ export const bootstrap = (): FluxifyServer => {
 						}
 					}
 					return createResponse(data, status, request);
-				} else if (matchingRoutes.length > 0) {
+				} else if (matchingRoutes.size > 0) {
 					const status = 405;
 					return createResponse({ status, message: 'method not allowed' }, status, request);
 				} else {
@@ -251,12 +250,8 @@ export const bootstrap = (): FluxifyServer => {
 		init();
 	});
 
-	routes.map((route, _index, array) =>
-		array.filter((rout) => rout.endpoint === route.endpoint && rout.method === route.method).length > 1
-			? warn(`ambiguous route ${colorMethod(route.method)} ${route.endpoint}`)
-			: debug(`mapped route ${colorMethod(route.method)} ${route.endpoint}`),
-	);
-	info(`mapped ${routes.length} routes of which ${routes.filter((route) => route.schema?.jwt).length} have auth`);
+	// TODO: count total amount of routes and routes with auth
+	info(`mapped ${null} routes of which ${null} have auth`);
 	info(`listening for requests on localhost:${config.port}`);
 	debug(`request logging is ${config.logRequests ? 'active' : 'inactive'}`);
 	debug(`response logging is ${config.logResponses ? 'active' : 'inactive'}`);

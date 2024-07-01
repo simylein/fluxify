@@ -21,6 +21,8 @@ export type Responses = object | unknown[] | IdEntity | IdEntity[] | Response | 
 
 export type FluxifyResponse = Responses | Promise<Responses>;
 
+export type Routes = Map<string, Routes | Route>;
+
 export type Route = {
 	method: Method;
 	endpoint: string;

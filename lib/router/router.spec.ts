@@ -1,8 +1,7 @@
 import { beforeAll, describe, expect, test } from 'bun:test';
 import { config } from '../config/config';
-import { compareEndpoint, compareMethod } from '../core/compare/compare';
 import { expectType } from '../test/expect-type';
-import { fuseEndpoint, router, routes } from './router';
+import { fuse, router, routes, traverse } from './router';
 import { Route } from './router.type';
 
 const app = router();
@@ -12,65 +11,63 @@ beforeAll(() => {
 	config.defaultVersion = 0;
 });
 
-describe(fuseEndpoint.name, () => {
+describe(fuse.name, () => {
 	test('should combine endpoint prefix version and base', () => {
-		expect(fuseEndpoint('/me', '/api', 1, '/auth')).toEqual('/api/v1/auth/me');
-		expectType<string>(fuseEndpoint('/me', '/api', 1, '/auth'));
+		expect(fuse('/me', '/api', 1, '/auth')).toEqual('/api/v1/auth/me');
+		expectType<string>(fuse('/me', '/api', 1, '/auth'));
 	});
 
 	test('should combine endpoint prefix and base and ignore undefined values', () => {
-		expect(fuseEndpoint('/me', '', undefined, undefined)).toEqual('/me');
-		expectType<string>(fuseEndpoint('/me', '', undefined, undefined));
+		expect(fuse('/me', '', undefined, undefined)).toEqual('/me');
+		expectType<string>(fuse('/me', '', undefined, undefined));
 	});
 
 	test('should remove trailing slashes from endpoint prefix and base', () => {
-		expect(fuseEndpoint('/me/', '/api/', 0, '/auth/')).toEqual('/api/auth/me');
+		expect(fuse('/me/', '/api/', 0, '/auth/')).toEqual('/api/auth/me');
 	});
 
 	test('should add missing leading slashes from endpoint prefix and base', () => {
-		expect(fuseEndpoint('me', 'api', 0, 'auth')).toEqual('/api/auth/me');
+		expect(fuse('me', 'api', 0, 'auth')).toEqual('/api/auth/me');
 	});
 
 	test('should add missing leading slashes and remove trailing slashes from endpoint prefix and base', () => {
-		expect(fuseEndpoint('me/', 'api/', 0, 'auth/')).toEqual('/api/auth/me');
+		expect(fuse('me/', 'api/', 0, 'auth/')).toEqual('/api/auth/me');
 	});
 
 	test('should preserve standalone slashes', () => {
-		expect(fuseEndpoint('/', '/', 0, '/')).toEqual('/');
+		expect(fuse('/', '/', 0, '/')).toEqual('/');
 	});
 
 	test('should return a slash if the combined string is empty', () => {
-		expect(fuseEndpoint('', '', 0, '')).toEqual('/');
+		expect(fuse('', '', 0, '')).toEqual('/');
 	});
 
 	test('should return the default version when not provided in path', () => {
-		expect(fuseEndpoint('me/', 'api', 1, '/auth')).toEqual('/api/v1/auth/me');
+		expect(fuse('me/', 'api', 1, '/auth')).toEqual('/api/v1/auth/me');
 	});
 
 	test('should accept optional object as base with path and version', () => {
-		expect(fuseEndpoint('me/', 'api', 0, { path: '/auth', version: 2 })).toEqual('/api/v2/auth/me');
+		expect(fuse('me/', 'api', 0, { path: '/auth', version: 2 })).toEqual('/api/v2/auth/me');
 	});
 
 	test('should accept optional object as endpoint with path and version', () => {
-		expect(fuseEndpoint({ path: 'me', version: 3 }, 'api/', 0, '/auth')).toEqual('/api/v3/auth/me');
+		expect(fuse({ path: 'me', version: 3 }, 'api/', 0, '/auth')).toEqual('/api/v3/auth/me');
 	});
 
 	test('should accept both optional objects and prefer the endpoint', () => {
-		expect(fuseEndpoint({ path: '/me', version: 4 }, 'api', 0, { path: 'auth', version: 2 })).toEqual(
-			'/api/v4/auth/me',
-		);
+		expect(fuse({ path: '/me', version: 4 }, 'api', 0, { path: 'auth', version: 2 })).toEqual('/api/v4/auth/me');
 	});
 
 	test('should accept optional object as base and override global prefix', () => {
-		expect(fuseEndpoint('', 'api', 0, { path: '/home', prefix: '' })).toEqual('/home');
+		expect(fuse('', 'api', 0, { path: '/home', prefix: '' })).toEqual('/home');
 	});
 
 	test('should accept optional object as endpoint and override global prefix', () => {
-		expect(fuseEndpoint({ path: '/home', prefix: '' }, 'api', 0, '')).toEqual('/home');
+		expect(fuse({ path: '/home', prefix: '' }, 'api', 0, '')).toEqual('/home');
 	});
 
 	test('should accept both optional objects and prefer the endpoint', () => {
-		expect(fuseEndpoint({ path: '/home', prefix: '' }, 'api', 0, { path: '', prefix: 'api' })).toEqual('/home');
+		expect(fuse({ path: '/home', prefix: '' }, 'api', 0, { path: '', prefix: 'api' })).toEqual('/home');
 	});
 });
 
@@ -84,7 +81,7 @@ describe(app.all.name, () => {
 		app.all(endpoint, schema, handler);
 
 		const prefixedEndpoint = `${config.globalPrefix}${endpoint}`;
-		const target = routes.find((route) => compareEndpoint(route, prefixedEndpoint) && compareMethod(route, method));
+		const target = traverse(routes, prefixedEndpoint).get(method);
 		expect(target).toEqual({ method, schema, endpoint: prefixedEndpoint, handler });
 	});
 });
@@ -99,7 +96,7 @@ describe(app.get.name, () => {
 		app.get(endpoint, schema, handler);
 
 		const prefixedEndpoint = `${config.globalPrefix}${endpoint}`;
-		const target = routes.find((route) => compareEndpoint(route, prefixedEndpoint) && compareMethod(route, method));
+		const target = traverse(routes, prefixedEndpoint).get(method);
 		expect(target).toEqual({ method, schema, endpoint: prefixedEndpoint, handler });
 	});
 });
@@ -114,7 +111,7 @@ describe(app.post.name, () => {
 		app.post(endpoint, schema, handler);
 
 		const prefixedEndpoint = `${config.globalPrefix}${endpoint}`;
-		const target = routes.find((route) => compareEndpoint(route, prefixedEndpoint) && compareMethod(route, method));
+		const target = traverse(routes, prefixedEndpoint).get(method);
 		expect(target).toEqual({ method, schema, endpoint: prefixedEndpoint, handler });
 	});
 });
@@ -129,7 +126,7 @@ describe(app.put.name, () => {
 		app.put(endpoint, schema, handler);
 
 		const prefixedEndpoint = `${config.globalPrefix}${endpoint}`;
-		const target = routes.find((route) => compareEndpoint(route, prefixedEndpoint) && compareMethod(route, method));
+		const target = traverse(routes, prefixedEndpoint).get(method);
 		expect(target).toEqual({ method, schema, endpoint: prefixedEndpoint, handler });
 	});
 });
@@ -144,7 +141,7 @@ describe(app.patch.name, () => {
 		app.patch(endpoint, schema, handler);
 
 		const prefixedEndpoint = `${config.globalPrefix}${endpoint}`;
-		const target = routes.find((route) => compareEndpoint(route, prefixedEndpoint) && compareMethod(route, method));
+		const target = traverse(routes, prefixedEndpoint).get(method);
 		expect(target).toEqual({ method, schema, endpoint: prefixedEndpoint, handler });
 	});
 });
@@ -159,7 +156,7 @@ describe(app.delete.name, () => {
 		app.delete(endpoint, schema, handler);
 
 		const prefixedEndpoint = `${config.globalPrefix}${endpoint}`;
-		const target = routes.find((route) => compareEndpoint(route, prefixedEndpoint) && compareMethod(route, method));
+		const target = traverse(routes, prefixedEndpoint).get(method);
 		expect(target).toEqual({ method, schema, endpoint: prefixedEndpoint, handler });
 	});
 });

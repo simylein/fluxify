@@ -1,3 +1,4 @@
+// TODO: legacy file remove when all test cases are covered in new traverse functions
 import { describe, expect, test } from 'bun:test';
 import { Route } from '../../router/router.type';
 import { compareEndpoint, compareMethod } from './compare';

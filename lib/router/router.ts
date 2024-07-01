@@ -1,7 +1,9 @@
 import { config } from '../config/config';
-import { FluxifyResponse, HandlerSchema, Path, Route, Schema } from './router.type';
+import { colorMethod } from '../logger/color';
+import { debug, warn } from '../logger/logger';
+import { FluxifyResponse, HandlerSchema, Path, Route, Routes, Schema } from './router.type';
 
-export const routes: Route[] = [];
+export const routes: Routes = new Map();
 
 type Router = {
 	all: <P, Q, B, J>(
@@ -36,7 +38,7 @@ type Router = {
 	) => void;
 };
 
-export const fuseEndpoint = (endpoint: Path, prefix: string, version?: number, base?: Path): string => {
+export const fuse = (endpoint: Path, prefix: string, version?: number, base?: Path): string => {
 	const fragments: string[] = [
 		typeof endpoint === 'object' && endpoint.prefix !== undefined
 			? endpoint.prefix
@@ -62,6 +64,43 @@ export const fuseEndpoint = (endpoint: Path, prefix: string, version?: number, b
 	);
 };
 
+export const register = (route: Route): void => {
+	const frags = route.endpoint.split('/').filter((frag) => !!frag);
+	const walk = (parent: Routes, ind: number): void => {
+		if (ind >= frags.length) {
+			if (parent.has(route.method)) {
+				return warn(`ambiguous route ${colorMethod(route.method)} ${route.endpoint}`);
+			}
+			parent.set(route.method, route);
+			return debug(`mapped route ${colorMethod(route.method)} ${route.endpoint}`);
+		}
+		if (!parent.has(frags[ind])) {
+			parent.set(frags[ind], new Map());
+		}
+		const child = parent.get(frags[ind])! as Routes;
+		walk(child, ind + 1);
+	};
+	walk(routes, 0);
+};
+
+// TODO: this has edge cases and does not behave currently
+export const traverse = (router: Routes, endpoint: string): Routes => {
+	const frags = endpoint.split('/').filter((frag) => !!frag);
+	const walk = (parent: Routes, ind: number): Routes => {
+		const child = parent.get(frags[ind]) as Routes | undefined;
+		if (!child) {
+			for (const [key] of parent.entries()) {
+				if (key.startsWith(':')) {
+					return walk(parent.get(key)! as Routes, ind + 1);
+				}
+			}
+			return parent;
+		}
+		return walk(child, ind + 1);
+	};
+	return walk(router, 0);
+};
+
 export const router = (base?: Path): Router => {
 	return {
 		all<P, Q, B, J>(
@@ -69,10 +108,10 @@ export const router = (base?: Path): Router => {
 			schema: Schema<P, Q, B, J> | null,
 			handler: ({ param, query, body, jwt }: HandlerSchema<P, Q, B, J>) => FluxifyResponse,
 		): void {
-			routes.push({
+			register({
 				method: 'all',
 				schema,
-				endpoint: fuseEndpoint(endpoint, config.globalPrefix, config.defaultVersion, base),
+				endpoint: fuse(endpoint, config.globalPrefix, config.defaultVersion, base),
 				handler,
 			});
 		},
@@ -82,10 +121,10 @@ export const router = (base?: Path): Router => {
 			schema: Schema<P, Q, B, J> | null,
 			handler: ({ param, query, body, jwt }: HandlerSchema<P, Q, B, J>) => FluxifyResponse,
 		): void {
-			routes.push({
+			register({
 				method: 'get',
 				schema,
-				endpoint: fuseEndpoint(endpoint, config.globalPrefix, config.defaultVersion, base),
+				endpoint: fuse(endpoint, config.globalPrefix, config.defaultVersion, base),
 				handler,
 			});
 		},
@@ -95,10 +134,10 @@ export const router = (base?: Path): Router => {
 			schema: Schema<P, Q, B, J> | null,
 			handler: ({ param, query, body, jwt }: HandlerSchema<P, Q, B, J>) => FluxifyResponse,
 		): void {
-			routes.push({
+			register({
 				method: 'post',
 				schema,
-				endpoint: fuseEndpoint(endpoint, config.globalPrefix, config.defaultVersion, base),
+				endpoint: fuse(endpoint, config.globalPrefix, config.defaultVersion, base),
 				handler,
 			});
 		},
@@ -108,10 +147,10 @@ export const router = (base?: Path): Router => {
 			schema: Schema<P, Q, B, J> | null,
 			handler: ({ param, query, body, jwt }: HandlerSchema<P, Q, B, J>) => FluxifyResponse,
 		): void {
-			routes.push({
+			register({
 				method: 'put',
 				schema,
-				endpoint: fuseEndpoint(endpoint, config.globalPrefix, config.defaultVersion, base),
+				endpoint: fuse(endpoint, config.globalPrefix, config.defaultVersion, base),
 				handler,
 			});
 		},
@@ -121,10 +160,10 @@ export const router = (base?: Path): Router => {
 			schema: Schema<P, Q, B, J> | null,
 			handler: ({ param, query, body, jwt }: HandlerSchema<P, Q, B, J>) => FluxifyResponse,
 		): void {
-			routes.push({
+			register({
 				method: 'patch',
 				schema,
-				endpoint: fuseEndpoint(endpoint, config.globalPrefix, config.defaultVersion, base),
+				endpoint: fuse(endpoint, config.globalPrefix, config.defaultVersion, base),
 				handler,
 			});
 		},
@@ -134,10 +173,10 @@ export const router = (base?: Path): Router => {
 			schema: Schema<P, Q, B, J> | null,
 			handler: ({ param, query, body, jwt }: HandlerSchema<P, Q, B, J>) => FluxifyResponse,
 		): void {
-			routes.push({
+			register({
 				method: 'delete',
 				schema,
-				endpoint: fuseEndpoint(endpoint, config.globalPrefix, config.defaultVersion, base),
+				endpoint: fuse(endpoint, config.globalPrefix, config.defaultVersion, base),
 				handler,
 			});
 		},
