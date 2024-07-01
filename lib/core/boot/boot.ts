@@ -2,7 +2,7 @@ import { serve, Serve, Server, version } from 'bun';
 import { randomUUID } from 'crypto';
 import pack from '../../../package.json';
 import { verifyJwt } from '../../auth/jwt';
-import { cacheOptions } from '../../cache/cache';
+import { cacheExpiry, cacheInsert, cacheLfu, cacheLookup, cacheOptions } from '../../cache/cache';
 import { config } from '../../config/config';
 import { plan, run, tabs } from '../../cron/cron';
 import { HttpException, Locked, Unauthorized } from '../../exception/exception';
@@ -135,22 +135,11 @@ export const bootstrap = (): FluxifyServer => {
 
 					if (cache.use) {
 						start(request, 'cache');
-						if (global.server.cache.length > cache.limit) {
-							global.server.cache.shift();
-						}
-						global.server.cache = global.server.cache.filter((entry) => entry.exp > Date.now());
-						const hit = global.server.cache.find(
-							(entry) =>
-								entry.url === request.url &&
-								entry.jwt === (jwt as { id?: string })?.id &&
-								entry.lang === request.headers.get('accept-language')?.toLowerCase(),
-						);
+						const hit = cacheLookup(global.server.cache, request, jwt);
 						if (hit) {
-							debug(`cache hit on route ${endpoint}`);
+							debug(`cache hit on route ${targetRoute.endpoint}`);
 							stop(request, 'cache');
-							return createResponse(hit.data, hit.status, request, {
-								expires: new Date(hit.exp).toUTCString(),
-							});
+							return createResponse(hit.data, hit.status, request, { expires: new Date(hit.exp).toUTCString() });
 						}
 						stop(request, 'cache');
 					}
@@ -166,14 +155,13 @@ export const bootstrap = (): FluxifyServer => {
 
 					const status = targetRoute.method === 'post' ? 201 : data ? 200 : 204;
 					if (cache.use) {
-						global.server.cache.push({
-							exp: cache.ttl * 1000 + Date.now(),
-							url: request.url,
-							jwt: (jwt as { id?: string })?.id,
-							lang: request.headers.get('accept-language')?.toLowerCase(),
-							data,
-							status,
-						});
+						cacheInsert(global.server.cache, request, jwt, cache.ttl, data, status);
+						if (global.server.cache.size > config.cacheLimit) {
+							const expiry = cacheExpiry(global.server.cache);
+							const lfu = expiry ? null : cacheLfu(global.server.cache);
+							debug(`cache limit reached purging ${expiry ? 'expired' : lfu ? 'lfu' : 'oldest'}`);
+							global.server.cache.delete(expiry ?? lfu ?? global.server.cache.keys().next().value);
+						}
 					}
 					return createResponse(data, status, request);
 				} else if (matchingRoutes.length > 0) {
@@ -247,8 +235,8 @@ export const bootstrap = (): FluxifyServer => {
 	}
 	global.server.routes = routes;
 	global.server.tabs = tabs;
-	global.server.cache = [];
 	global.server.throttle = new Map();
+	global.server.cache = new Map();
 	global.server.logger = logger;
 	global.server.header = header;
 	global.server.serialize = serialize;
