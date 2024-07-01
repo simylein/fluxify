@@ -1,5 +1,5 @@
-import { runQuery } from 'lib/database';
-import { debug, error } from 'lib/logger';
+import { runQuery } from '../../database/database';
+import { debug, error } from '../../logger/logger';
 
 const keys = (input: string): string[] => {
 	return input
