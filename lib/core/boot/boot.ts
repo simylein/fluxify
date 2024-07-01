@@ -2,7 +2,7 @@ import { serve, Serve, Server, version } from 'bun';
 import { randomUUID } from 'crypto';
 import pack from '../../../package.json';
 import { verifyJwt } from '../../auth/jwt';
-import { cacheInsert, cacheLfu, cacheLookup, cacheOptions } from '../../cache/cache';
+import { cacheExpiry, cacheInsert, cacheLfu, cacheLookup, cacheOptions } from '../../cache/cache';
 import { config } from '../../config/config';
 import { plan, run, tabs } from '../../cron/cron';
 import { HttpException, Locked, Unauthorized } from '../../exception/exception';
@@ -173,7 +173,7 @@ export const bootstrap = (): FluxifyServer => {
 						start(request, 'cache');
 						const hit = cacheLookup(global.server.cache, request, jwt);
 						if (hit) {
-							debug(`cache hit on route ${endpoint}`);
+							debug(`cache hit on route ${targetRoute.endpoint}`);
 							stop(request, 'cache');
 							return createResponse(hit.data, hit.status, request, { expires: new Date(hit.exp).toUTCString() });
 						}
@@ -193,8 +193,10 @@ export const bootstrap = (): FluxifyServer => {
 					if (cache.use) {
 						cacheInsert(global.server.cache, request, jwt, cache.ttl, data, status);
 						if (global.server.cache.size > config.cacheLimit) {
-							const lfu = cacheLfu(global.server.cache);
-							global.server.cache.delete(lfu ?? global.server.cache.keys().next().value);
+							const expiry = cacheExpiry(global.server.cache);
+							const lfu = expiry ? null : cacheLfu(global.server.cache);
+							debug(`cache limit reached purging ${expiry ? 'expired' : lfu ? 'lfu' : 'oldest'}`);
+							global.server.cache.delete(expiry ?? lfu ?? global.server.cache.keys().next().value);
 						}
 					}
 					return createResponse(data, status, request);

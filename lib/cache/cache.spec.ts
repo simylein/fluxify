@@ -1,7 +1,7 @@
 import { describe, expect, mock, test } from 'bun:test';
 import { config } from '../config/config';
 import { FluxifyRequest, Route } from '../router/router.type';
-import { cacheId, cacheInsert, cacheLang, cacheLfu, cacheLookup, cacheOptions } from './cache';
+import { cacheExpiry, cacheId, cacheInsert, cacheLang, cacheLfu, cacheLookup, cacheOptions } from './cache';
 
 config.cacheTtl = 4;
 config.cacheLimit = 8;
@@ -170,6 +170,66 @@ describe(cacheInsert.name, () => {
 	});
 });
 
+describe(cacheExpiry.name, () => {
+	test('should return null given no cache entries', () => {
+		const urls = new Map();
+		expect(cacheExpiry(urls)).toBeNull();
+	});
+
+	test('should return null given only nested cache entries', () => {
+		const ids = new Map();
+		const urls = new Map();
+		urls.set(request.url, ids);
+		expect(cacheExpiry(urls)).toBeNull();
+	});
+
+	test('should return request url given deeply nested cache entries with zero entries', () => {
+		const langs = new Map();
+		const ids = new Map();
+		ids.set(jwt.id, langs);
+		const urls = new Map();
+		urls.set(request.url, ids);
+		expect(cacheExpiry(urls)).toEqual(request.url);
+	});
+
+	test('should return null given only entries which have not expired', () => {
+		const langs = new Map();
+		langs.set(lang, entry);
+		const ids = new Map();
+		ids.set(jwt.id, langs);
+		const urls = new Map();
+		urls.set(request.url, ids);
+		expect(cacheExpiry(urls)).toBeNull();
+	});
+
+	test('should return the todo endpoint given it has expired', () => {
+		const high = '/todo';
+		const medium = '/todo/uuid';
+		const low = '/auth/me';
+
+		const highLangs = new Map();
+		highLangs.set(lang, { ...entry, exp: Date.now(), lookups: 7 });
+		const mediumLangs = new Map();
+		mediumLangs.set(lang, { ...entry, lookups: 4 });
+		const lowLangs = new Map();
+		lowLangs.set(lang, { ...entry, lookups: 2 });
+
+		const highIds = new Map();
+		highIds.set(jwt.id, highLangs);
+		const mediumIds = new Map();
+		mediumIds.set(jwt.id, mediumLangs);
+		const lowIds = new Map();
+		lowIds.set(jwt.id, lowLangs);
+
+		const urls = new Map();
+		urls.set(high, highIds);
+		urls.set(medium, mediumIds);
+		urls.set(low, lowIds);
+
+		expect(cacheExpiry(urls)).toEqual(high);
+	});
+});
+
 describe(cacheLfu.name, () => {
 	test('should return null given no cache entries', () => {
 		const urls = new Map();
@@ -194,7 +254,7 @@ describe(cacheLfu.name, () => {
 
 	test('should return null given only entries with zero lookups', () => {
 		const langs = new Map();
-		langs.set('en', { lookups: 0 });
+		langs.set(lang, { lookups: 0 });
 		const ids = new Map();
 		ids.set(jwt.id, langs);
 		const urls = new Map();
@@ -208,11 +268,11 @@ describe(cacheLfu.name, () => {
 		const low = '/auth/me';
 
 		const highLangs = new Map();
-		highLangs.set('en', { lookups: 7 });
+		highLangs.set(lang, { ...entry, lookups: 7 });
 		const mediumLangs = new Map();
-		mediumLangs.set('en', { lookups: 4 });
+		mediumLangs.set(lang, { ...entry, lookups: 4 });
 		const lowLangs = new Map();
-		lowLangs.set('en', { lookups: 2 });
+		lowLangs.set(lang, { ...entry, lookups: 2 });
 
 		const highIds = new Map();
 		highIds.set(jwt.id, highLangs);

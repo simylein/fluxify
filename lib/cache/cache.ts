@@ -73,21 +73,37 @@ export const cacheInsert = (
 	return cache;
 };
 
+export const cacheExpiry = (cache: Cache): string | null => {
+	for (const [url, urls] of cache.entries()) {
+		for (const [, ids] of urls.entries()) {
+			for (const [key, lang] of ids.entries()) {
+				if (lang.exp <= Date.now()) {
+					ids.delete(key);
+				}
+			}
+			if (ids.size === 0) {
+				return url;
+			}
+		}
+	}
+	return null;
+};
+
 export const cacheLfu = (cache: Cache): string | null => {
 	let lfu: string | null = null;
 	let lowest = Infinity;
-	cache.forEach((urls, url) => {
+	for (const [url, urls] of cache.entries()) {
 		let lookups = 0;
-		urls.forEach((ids) => {
-			ids.forEach((entry) => {
-				lookups += entry.lookups;
-			});
-		});
+		for (const [, ids] of urls.entries()) {
+			for (const [, lang] of ids.entries()) {
+				lookups += lang.lookups;
+			}
+		}
 		if (lookups < lowest && lookups !== 0) {
 			lowest = lookups;
 			lfu = url;
 		}
-	});
+	}
 	if (lowest < Infinity) {
 		return lfu;
 	}
