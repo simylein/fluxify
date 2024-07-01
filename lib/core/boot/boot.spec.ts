@@ -110,6 +110,7 @@ describe(bootstrap.name, () => {
 		expect(server.pendingWebSockets).toEqual(0);
 		expect(server.routes).toBeArray();
 		expect(server.cache).toBeInstanceOf(Map);
+		expect(server.throttle).toBeInstanceOf(Map);
 		expect(server.fetch).toBeInstanceOf(Function);
 		expect(server.upgrade).toBeInstanceOf(Function);
 		expect(server.publish).toBeInstanceOf(Function);
