@@ -10,7 +10,7 @@ import { colorMethod } from '../../logger/color';
 import { debug, error, info, logger, req, res, warn } from '../../logger/logger';
 import { routes } from '../../router/router';
 import { FluxifyRequest, Param, Query } from '../../router/router.type';
-import { throttleOptions } from '../../throttle/throttle';
+import { throttleLookup, throttleOptions } from '../../throttle/throttle';
 import { start, stop } from '../../timing/timing';
 import { ValidationError } from '../../validation/error';
 import { compareEndpoint, compareMethod } from '../compare/compare';
@@ -85,60 +85,24 @@ export const bootstrap = (): FluxifyServer => {
 						start(request, 'throttle');
 						const criteria = (jwt as { id?: string })?.id ?? request.ip;
 						if (config.throttleTtl === throttle.ttl && config.throttleLimit === throttle.limit) {
-							const globally = global.server.throttle[criteria]?.['']?.[''];
-							if (globally) {
-								if (globally.exp < Date.now()) {
-									globally.exp = Date.now() + config.throttleTtl * 1000;
-									globally.hits = 0;
-								}
-								globally.hits += 1;
-								if (globally.hits > config.throttleLimit) {
-									debug(`throttle limit on route ${endpoint}`);
-									const status = 429;
-									stop(request, 'throttle');
-									return createResponse({ status, message: 'too many requests' }, status, request, {
-										'retry-after': `${Math.ceil((globally.exp - Date.now()) / 1000)}`,
-									});
-								}
-							} else {
-								if (!global.server.throttle[criteria]) {
-									global.server.throttle[criteria] = {};
-								}
-								if (!global.server.throttle[criteria]['']) {
-									global.server.throttle[criteria][''] = {};
-								}
-								global.server.throttle[criteria][''][''] = {
-									exp: Date.now() + throttle.ttl * 1000,
-									hits: 1,
-								};
+							const globally = throttleLookup(global.server.throttle, criteria, 'globally', 'all', throttle.ttl);
+							if (globally.hits > config.throttleLimit) {
+								debug(`throttle limit on route ${endpoint}`);
+								const status = 429;
+								stop(request, 'throttle');
+								return createResponse({ status, message: 'too many requests' }, status, request, {
+									'retry-after': `${Math.ceil((globally.exp - Date.now()) / 1000)}`,
+								});
 							}
 						} else {
-							const locally = global.server.throttle[criteria]?.[endpoint]?.[method];
-							if (locally) {
-								if (locally.exp < Date.now()) {
-									locally.exp = Date.now() + throttle.ttl * 1000;
-									locally.hits = 0;
-								}
-								locally.hits += 1;
-								if (locally.hits > throttle.limit) {
-									debug(`throttle limit on route ${endpoint}`);
-									const status = 429;
-									stop(request, 'throttle');
-									return createResponse({ status, message: 'too many requests' }, status, request, {
-										'retry-after': `${Math.ceil((locally.exp - Date.now()) / 1000)}`,
-									});
-								}
-							} else {
-								if (!global.server.throttle[criteria]) {
-									global.server.throttle[criteria] = {};
-								}
-								if (!global.server.throttle[criteria][endpoint]) {
-									global.server.throttle[criteria][endpoint] = {};
-								}
-								global.server.throttle[criteria][endpoint][method] = {
-									exp: Date.now() + throttle.ttl * 1000,
-									hits: 1,
-								};
+							const locally = throttleLookup(global.server.throttle, criteria, endpoint, method, throttle.ttl);
+							if (locally.hits > throttle.limit) {
+								debug(`throttle limit on route ${endpoint}`);
+								const status = 429;
+								stop(request, 'throttle');
+								return createResponse({ status, message: 'too many requests' }, status, request, {
+									'retry-after': `${Math.ceil((locally.exp - Date.now()) / 1000)}`,
+								});
 							}
 						}
 						stop(request, 'throttle');
@@ -284,7 +248,7 @@ export const bootstrap = (): FluxifyServer => {
 	global.server.routes = routes;
 	global.server.tabs = tabs;
 	global.server.cache = [];
-	global.server.throttle = {};
+	global.server.throttle = new Map();
 	global.server.logger = logger;
 	global.server.header = header;
 	global.server.serialize = serialize;
