@@ -83,12 +83,11 @@ export const register = (route: Route): void => {
 	walk(routes, 0);
 };
 
-// TODO: this has edge cases and does not behave currently
 export const traverse = (router: Routes, endpoint: string): Routes | null => {
 	const frags = endpoint.split('/').filter((frag) => !!frag);
 	const walk = (parent: Routes, ind: number): Routes | null => {
 		if (ind >= frags.length) {
-			if (parent.values().next().value instanceof Map) {
+			if ([...parent.values()].every((value) => value instanceof Map)) {
 				return null;
 			}
 			return parent;
