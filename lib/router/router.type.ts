@@ -4,7 +4,7 @@ import { Parser } from '../validation/parser.type';
 
 export type Path = string | { path: string; version?: number; prefix?: string };
 
-export type Method = 'all' | 'get' | 'post' | 'put' | 'patch' | 'delete' | 'options';
+export type Method = 'all' | 'get' | 'post' | 'put' | 'patch' | 'delete' | 'options' | 'head';
 
 export type Param = Record<string, unknown>;
 

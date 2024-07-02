@@ -3,7 +3,7 @@ import { Method, Param, Route } from '../../router/router.type';
 import { compareEndpoint } from '../compare/compare';
 
 export const extractMethod = (method: string): Method => {
-	const methods: Method[] = ['get', 'post', 'put', 'patch', 'delete', 'options'];
+	const methods: Method[] = ['get', 'post', 'put', 'patch', 'delete', 'options', 'head'];
 	if (methods.includes(method.toLowerCase() as Method)) {
 		return method.toLowerCase() as Method;
 	}

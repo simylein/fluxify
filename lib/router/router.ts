@@ -110,7 +110,7 @@ export const traverse = (router: Routes, endpoint: string): Routes | null => {
 };
 
 export const pick = (matching: Routes | null, method: Method): Route | undefined => {
-	const route = matching?.get(method) as Route | undefined;
+	const route = matching?.get(method === 'head' ? 'get' : method) as Route | undefined;
 	if (!route) {
 		return matching?.get('all') as Route | undefined;
 	}

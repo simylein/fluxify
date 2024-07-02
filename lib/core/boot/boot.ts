@@ -143,6 +143,10 @@ export const bootstrap = (): FluxifyServer => {
 						stop(request, 'cache');
 					}
 
+					if (method === 'head') {
+						return createResponse(null, 200, request);
+					}
+
 					start(request, 'handler');
 					const data = await targetRoute.handler({ param, query, body, jwt, req: request });
 					if (data instanceof Response) {
