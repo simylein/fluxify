@@ -95,9 +95,12 @@ export const traverse = (router: Routes, endpoint: string): Routes | null => {
 		}
 		const child = parent.get(frags[ind]) as Routes | undefined;
 		if (!child) {
-			for (const [key] of parent.entries()) {
+			for (const [key, value] of parent.entries()) {
 				if (key.startsWith(':')) {
-					return walk(parent.get(key)! as Routes, ind + 1);
+					const result = walk(value as Routes, ind + 1);
+					if (result) {
+						return result;
+					}
 				}
 			}
 			return null;
