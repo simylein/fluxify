@@ -1,7 +1,7 @@
 import { config } from '../config/config';
 import { colorMethod } from '../logger/color';
 import { debug, warn } from '../logger/logger';
-import { FluxifyResponse, HandlerSchema, Path, Route, Routes, Schema } from './router.type';
+import { FluxifyResponse, HandlerSchema, Method, Path, Route, Routes, Schema } from './router.type';
 
 export const routes: Routes = new Map();
 
@@ -107,6 +107,14 @@ export const traverse = (router: Routes, endpoint: string): Routes | null => {
 		return walk(child, ind + 1);
 	};
 	return walk(router, 0);
+};
+
+export const pick = (matching: Routes | null, method: Method): Route | undefined => {
+	const route = matching?.get(method) as Route | undefined;
+	if (!route) {
+		return matching?.get('all') as Route | undefined;
+	}
+	return route;
 };
 
 export const router = (base?: Path): Router => {

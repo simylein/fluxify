@@ -7,7 +7,7 @@ import { config } from '../../config/config';
 import { plan, run, tabs } from '../../cron/cron';
 import { HttpException, Locked, Unauthorized } from '../../exception/exception';
 import { debug, error, info, logger, req, res } from '../../logger/logger';
-import { routes, traverse } from '../../router/router';
+import { pick, routes, traverse } from '../../router/router';
 import { FluxifyRequest, Param, Query, Route } from '../../router/router.type';
 import { throttleLookup, throttleOptions } from '../../throttle/throttle';
 import { start, stop } from '../../timing/timing';
@@ -44,7 +44,7 @@ export const bootstrap = (): FluxifyServer => {
 
 				start(request, 'routing');
 				const matchingRoutes = traverse(global.server.routes, endpoint);
-				const targetRoute = matchingRoutes?.get(method) as Route | undefined;
+				const targetRoute = pick(matchingRoutes, method);
 				stop(request, 'routing');
 
 				const cache = cacheOptions(request, targetRoute);
