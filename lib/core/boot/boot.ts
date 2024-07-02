@@ -12,7 +12,6 @@ import { FluxifyRequest, Param, Query, Route } from '../../router/router.type';
 import { throttleLookup, throttleOptions } from '../../throttle/throttle';
 import { start, stop } from '../../timing/timing';
 import { ValidationError } from '../../validation/error';
-import { compareEndpoint } from '../compare/compare';
 import { extractMethod, extractParam } from '../extract/extract';
 import { parseBody, parseIp } from '../request/request';
 import { createResponse, header } from '../response/response';
@@ -45,16 +44,17 @@ export const bootstrap = (): FluxifyServer => {
 
 				start(request, 'routing');
 				const matchingRoutes = traverse(global.server.routes, endpoint);
-				const targetRoute = matchingRoutes.get(method) as Route | undefined;
+				const targetRoute = matchingRoutes?.get(method) as Route | undefined;
 				stop(request, 'routing');
 
 				const cache = cacheOptions(request, targetRoute);
 				const throttle = throttleOptions(targetRoute);
 
 				if (method === 'options') {
-					const authRoutes = matchingRoutes.filter((route) => route.schema?.jwt);
-					if (authRoutes.length > 0) {
-						const methods = authRoutes.filter((route) => compareEndpoint(route, endpoint)).map((route) => route.method);
+					const matching = Array.from(matchingRoutes?.values() ?? []).flat() as Route[];
+					const auth = matching.filter((route) => route.schema?.jwt);
+					if (auth.length > 0) {
+						const methods = auth.map((route) => route.method);
 						return createResponse(null, 200, request, {
 							'access-control-allow-origin': config.allowOrigin,
 							'access-control-allow-headers': 'authorization,content-type',
@@ -62,7 +62,7 @@ export const bootstrap = (): FluxifyServer => {
 							'access-control-allow-credentials': 'true',
 						});
 					} else {
-						const methods = matchingRoutes.map((route) => route.method);
+						const methods = matching.map((route) => route.method);
 						return createResponse(null, 200, request, { allow: methods.join(', ').toUpperCase() });
 					}
 				}
@@ -163,7 +163,7 @@ export const bootstrap = (): FluxifyServer => {
 						}
 					}
 					return createResponse(data, status, request);
-				} else if (matchingRoutes.size > 0) {
+				} else if (matchingRoutes && matchingRoutes.size > 0) {
 					const status = 405;
 					return createResponse({ status, message: 'method not allowed' }, status, request);
 				} else {

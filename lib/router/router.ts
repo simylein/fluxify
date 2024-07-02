@@ -84,9 +84,12 @@ export const register = (route: Route): void => {
 };
 
 // TODO: this has edge cases and does not behave currently
-export const traverse = (router: Routes, endpoint: string): Routes => {
+export const traverse = (router: Routes, endpoint: string): Routes | null => {
 	const frags = endpoint.split('/').filter((frag) => !!frag);
-	const walk = (parent: Routes, ind: number): Routes => {
+	const walk = (parent: Routes, ind: number): Routes | null => {
+		if (ind >= frags.length) {
+			return parent;
+		}
 		const child = parent.get(frags[ind]) as Routes | undefined;
 		if (!child) {
 			for (const [key] of parent.entries()) {
@@ -94,7 +97,7 @@ export const traverse = (router: Routes, endpoint: string): Routes => {
 					return walk(parent.get(key)! as Routes, ind + 1);
 				}
 			}
-			return parent;
+			return null;
 		}
 		return walk(child, ind + 1);
 	};

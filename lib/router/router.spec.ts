@@ -81,7 +81,7 @@ describe(app.all.name, () => {
 		app.all(endpoint, schema, handler);
 
 		const prefixedEndpoint = `${config.globalPrefix}${endpoint}`;
-		const target = traverse(routes, prefixedEndpoint).get(method);
+		const target = traverse(routes, prefixedEndpoint)?.get(method);
 		expect(target).toEqual({ method, schema, endpoint: prefixedEndpoint, handler });
 	});
 });
@@ -96,7 +96,7 @@ describe(app.get.name, () => {
 		app.get(endpoint, schema, handler);
 
 		const prefixedEndpoint = `${config.globalPrefix}${endpoint}`;
-		const target = traverse(routes, prefixedEndpoint).get(method);
+		const target = traverse(routes, prefixedEndpoint)?.get(method);
 		expect(target).toEqual({ method, schema, endpoint: prefixedEndpoint, handler });
 	});
 });
@@ -111,7 +111,7 @@ describe(app.post.name, () => {
 		app.post(endpoint, schema, handler);
 
 		const prefixedEndpoint = `${config.globalPrefix}${endpoint}`;
-		const target = traverse(routes, prefixedEndpoint).get(method);
+		const target = traverse(routes, prefixedEndpoint)?.get(method);
 		expect(target).toEqual({ method, schema, endpoint: prefixedEndpoint, handler });
 	});
 });
@@ -126,7 +126,7 @@ describe(app.put.name, () => {
 		app.put(endpoint, schema, handler);
 
 		const prefixedEndpoint = `${config.globalPrefix}${endpoint}`;
-		const target = traverse(routes, prefixedEndpoint).get(method);
+		const target = traverse(routes, prefixedEndpoint)?.get(method);
 		expect(target).toEqual({ method, schema, endpoint: prefixedEndpoint, handler });
 	});
 });
@@ -141,7 +141,7 @@ describe(app.patch.name, () => {
 		app.patch(endpoint, schema, handler);
 
 		const prefixedEndpoint = `${config.globalPrefix}${endpoint}`;
-		const target = traverse(routes, prefixedEndpoint).get(method);
+		const target = traverse(routes, prefixedEndpoint)?.get(method);
 		expect(target).toEqual({ method, schema, endpoint: prefixedEndpoint, handler });
 	});
 });
@@ -156,7 +156,7 @@ describe(app.delete.name, () => {
 		app.delete(endpoint, schema, handler);
 
 		const prefixedEndpoint = `${config.globalPrefix}${endpoint}`;
-		const target = traverse(routes, prefixedEndpoint).get(method);
+		const target = traverse(routes, prefixedEndpoint)?.get(method);
 		expect(target).toEqual({ method, schema, endpoint: prefixedEndpoint, handler });
 	});
 });
