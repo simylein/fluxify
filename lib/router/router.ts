@@ -88,6 +88,9 @@ export const traverse = (router: Routes, endpoint: string): Routes | null => {
 	const frags = endpoint.split('/').filter((frag) => !!frag);
 	const walk = (parent: Routes, ind: number): Routes | null => {
 		if (ind >= frags.length) {
+			if (parent.values().next().value instanceof Map) {
+				return null;
+			}
 			return parent;
 		}
 		const child = parent.get(frags[ind]) as Routes | undefined;
