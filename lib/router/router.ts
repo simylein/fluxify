@@ -64,6 +64,21 @@ export const fuse = (endpoint: Path, prefix: string, version?: number, base?: Pa
 	);
 };
 
+export const collect = (tree: Routes): Route[] => {
+	const stash: Route[] = [];
+	const walk = (parent: Routes): void => {
+		for (const value of parent.values()) {
+			if (value instanceof Map) {
+				walk(value);
+			} else {
+				stash.push(value);
+			}
+		}
+	};
+	walk(tree);
+	return stash;
+};
+
 export const register = (route: Route): void => {
 	const frags = route.endpoint.split('/').filter((frag) => !!frag);
 	const walk = (parent: Routes, ind: number): void => {

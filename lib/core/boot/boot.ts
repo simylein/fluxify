@@ -7,7 +7,7 @@ import { config } from '../../config/config';
 import { plan, run, tabs } from '../../cron/cron';
 import { HttpException, Locked, Unauthorized } from '../../exception/exception';
 import { debug, error, info, logger, req, res } from '../../logger/logger';
-import { pick, routes, traverse } from '../../router/router';
+import { collect, pick, routes, traverse } from '../../router/router';
 import { FluxifyRequest, Param, Query, Route } from '../../router/router.type';
 import { throttleLookup, throttleOptions } from '../../throttle/throttle';
 import { start, stop } from '../../timing/timing';
@@ -254,8 +254,9 @@ export const bootstrap = (): FluxifyServer => {
 		init();
 	});
 
-	// TODO: count total amount of routes and routes with auth
-	info(`mapped ${null} routes of which ${null} have auth`);
+	const stash = collect(global.server.routes);
+	const auth = stash.filter((route) => route.schema?.jwt);
+	info(`mapped ${stash.length} routes of which ${auth.length} have auth`);
 	info(`listening for requests on localhost:${config.port}`);
 	debug(`request logging is ${config.logRequests ? 'active' : 'inactive'}`);
 	debug(`response logging is ${config.logResponses ? 'active' : 'inactive'}`);
