@@ -16,6 +16,7 @@ const mapObject = (map: Map<string, unknown>): Record<string, unknown> => {
 };
 
 beforeAll(() => {
+	config.logLevel = 'debug';
 	config.globalPrefix = '';
 	config.defaultVersion = 0;
 	console.debug = mock(() => void 0);
