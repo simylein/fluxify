@@ -99,6 +99,9 @@ export const register = (route: Route): void => {
 };
 
 export const traverse = (router: Routes, endpoint: string): Routes | null => {
+	if (endpoint.endsWith('/') && endpoint !== '/') {
+		return null;
+	}
 	const frags = endpoint.split('/').filter((frag) => !!frag);
 	const walk = (parent: Routes, ind: number): Routes | null => {
 		if (ind >= frags.length) {

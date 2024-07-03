@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, mock, test } from 'bun:test';
+import { afterEach, beforeAll, describe, expect, mock, test } from 'bun:test';
 import { config } from '../config/config';
 import { colorMethod } from '../logger/color';
 import { expectType } from '../test/expect-type';
@@ -21,6 +21,10 @@ beforeAll(() => {
 	config.defaultVersion = 0;
 	console.debug = mock(() => void 0);
 	console.warn = mock(() => void 0);
+});
+
+afterEach(() => {
+	routes.clear();
 });
 
 describe(fuse.name, () => {
@@ -97,6 +101,7 @@ describe(register.name, () => {
 	});
 
 	test('should not override an existing route', () => {
+		register(route);
 		const conflicting: Route = { method: 'get', endpoint: '/hello', schema: null, handler: () => null };
 		register(conflicting);
 		expect(mapObject(routes)).toEqual({ hello: { get: route } });
@@ -127,63 +132,100 @@ describe(register.name, () => {
 });
 
 describe(traverse.name, () => {
-	const exactRoute: Route = { method: 'get', endpoint: '/api/73', schema: null, handler: () => null };
-	const getRoute: Route = { method: 'get', endpoint: '/api/hello', schema: null, handler: () => null };
-	const postRoute: Route = { method: 'post', endpoint: '/api/hello', schema: null, handler: () => null };
-	const getDynamicRoute: Route = { method: 'get', endpoint: '/api/:id', schema: null, handler: () => null };
-	const nestedRoute: Route = { method: 'get', endpoint: '/api/nested/route', schema: null, handler: () => null };
+	const handler = (): null => null;
+	const rootRoute: Route = { method: 'get', endpoint: '/', schema: null, handler };
+	const idRoute: Route = { method: 'get', endpoint: '/:id', schema: null, handler };
+	const authRoute: Route = { method: 'get', endpoint: '/auth', schema: null, handler };
+	const authIdRoute: Route = { method: 'get', endpoint: '/auth/:id', schema: null, handler };
+	const authMeRoute: Route = { method: 'get', endpoint: '/auth/me', schema: null, handler };
+	const authSignInRoute: Route = { method: 'get', endpoint: '/auth/sign-in', schema: null, handler };
+	const authSignUpRoute: Route = { method: 'get', endpoint: '/auth/sign-up', schema: null, handler };
+	const userRoute: Route = { method: 'get', endpoint: '/user', schema: null, handler };
+	const userIdRoute: Route = { method: 'get', endpoint: '/user/:id', schema: null, handler };
+	const userIdProfileRoute: Route = { method: 'get', endpoint: '/user/:id/profile', schema: null, handler };
+	const topicRoute: Route = { method: 'get', endpoint: '/topic', schema: null, handler };
+	const topicIdRoute: Route = { method: 'get', endpoint: '/topic/:id', schema: null, handler };
+	const topicIdQuestionRoute: Route = { method: 'get', endpoint: '/topic/:id/question', schema: null, handler };
+	const topicIdQuestionIdRoute: Route = { method: 'get', endpoint: '/topic/:id/question/:id', schema: null, handler };
 
-	test('should register some different routes', () => {
-		register(exactRoute);
-		register(getRoute);
-		register(postRoute);
-		register(getDynamicRoute);
-		register(nestedRoute);
+	test('should match simple endpoints', () => {
+		register(rootRoute);
+		register(authRoute);
+		register(userRoute);
+		register(topicRoute);
+		expect(mapObject(traverse(routes, '/')!).get).toEqual(rootRoute);
+		expect(mapObject(traverse(routes, '/auth')!).get).toEqual(authRoute);
+		expect(mapObject(traverse(routes, '/user')!).get).toEqual(userRoute);
+		expect(mapObject(traverse(routes, '/topic')!).get).toEqual(topicRoute);
 	});
 
-	test('should return a route for an exact match', () => {
-		const result = traverse(routes, '/api/hello')!;
-		expect(mapObject(result)).toEqual({ get: getRoute, post: postRoute });
+	test('should not match endpoints with missing params', () => {
+		register(idRoute);
+		register(authIdRoute);
+		expect(traverse(routes, '/')).toBeNull();
+		expect(traverse(routes, '/')).toBeNull();
 	});
 
-	test('should return null for a non existent route', () => {
-		const result = traverse(routes, '/non-existent');
-		expect(result).toBeNull();
+	test('should match nested endpoints', () => {
+		register(authSignInRoute);
+		register(authSignUpRoute);
+		expect(mapObject(traverse(routes, '/auth/sign-in')!).get).toEqual(authSignInRoute);
+		expect(mapObject(traverse(routes, '/auth/sign-up')!).get).toEqual(authSignUpRoute);
 	});
 
-	test('should return a route with dynamic parameter', () => {
-		const result = traverse(routes, '/api/42')!;
-		expect(mapObject(result)).toEqual({ get: getDynamicRoute });
+	test('should not match endpoints with missing slashes', () => {
+		register(authRoute);
+		expect(traverse(routes, '/auth/')).toBeNull();
 	});
 
-	test('should return null for partial matches', () => {
-		const result = traverse(routes, '/api');
-		expect(result).toBeNull();
+	test('should not match nested endpoints with missing slashes', () => {
+		register(authMeRoute);
+		expect(traverse(routes, '/auth/me/')).toBeNull();
 	});
 
-	test('should return null for unmatched dynamic segments', () => {
-		const result = traverse(routes, '/non-existent/42');
-		expect(result).toBeNull();
+	test('should not match miss spelled endpoints', () => {
+		register(userRoute);
+		register(authSignInRoute);
+		register(authSignUpRoute);
+		expect(traverse(routes, '/users')).toBeNull();
+		expect(traverse(routes, '/auth/signin')).toBeNull();
+		expect(traverse(routes, '/auth/signup')).toBeNull();
 	});
 
-	test('should prioritize exact matches over dynamic matches', () => {
-		const result = traverse(routes, '/api/73')!;
-		expect(mapObject(result)).toHaveProperty('get', exactRoute);
+	test('should match nested endpoints with params', () => {
+		register(userIdRoute);
+		register(topicIdRoute);
+		register(userIdProfileRoute);
+		expect(mapObject(traverse(routes, '/user/42')!).get).toEqual(userIdRoute);
+		expect(mapObject(traverse(routes, '/topic/:id')!).get).toEqual(topicIdRoute);
+		expect(mapObject(traverse(routes, '/user/42/profile')!).get).toEqual(userIdProfileRoute);
 	});
 
-	test('should handle deeply nested routes', () => {
-		const result = traverse(routes, '/api/nested/route')!;
-		expect(mapObject(result)).toHaveProperty('get', nestedRoute);
+	test('should not match nested endpoints with missing params', () => {
+		register(topicRoute);
+		register(userIdRoute);
+		register(userIdProfileRoute);
+		expect(traverse(routes, '/topic/42')).toBeNull();
+		expect(traverse(routes, '/user/')).toBeNull();
 	});
 
-	test('should return null if route has only parameterized parts', () => {
-		const result = traverse(routes, '/:id/:uuid');
-		expect(result).toBeNull();
+	test('should match deeply nested endpoints with params', () => {
+		register(topicIdQuestionRoute);
+		register(topicIdQuestionIdRoute);
+		expect(mapObject(traverse(routes, '/topic/42/question')!).get).toEqual(topicIdQuestionRoute);
+		expect(mapObject(traverse(routes, '/topic/42/question/73')!).get).toEqual(topicIdQuestionIdRoute);
 	});
 
-	test('should return null for the root path', () => {
-		const result = traverse(routes, '/');
-		expect(result).toBeNull();
+	test('should not match deeply nested endpoints with extra params', () => {
+		register(topicIdRoute);
+		register(topicIdQuestionRoute);
+		expect(traverse(routes, '/topic/42/question/73')).toBeNull();
+	});
+
+	test('should not match deeply nested endpoints with missing params', () => {
+		register(topicIdRoute);
+		register(topicIdQuestionIdRoute);
+		expect(traverse(routes, '/topic/42/question')).toBeNull();
 	});
 });
 
