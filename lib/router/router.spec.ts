@@ -1,10 +1,19 @@
 import { beforeAll, describe, expect, test } from 'bun:test';
 import { config } from '../config/config';
+import { colorMethod } from '../logger/color';
 import { expectType } from '../test/expect-type';
-import { fuse, pick, router, routes, traverse } from './router';
+import { fuse, pick, register, router, routes, traverse } from './router';
 import { Route } from './router.type';
 
 const app = router();
+
+const mapObject = (map: Map<string, unknown>): Record<string, unknown> => {
+	const object: Record<string, unknown> = {};
+	for (const [key, value] of map.entries()) {
+		object[key] = value instanceof Map ? mapObject(value) : value;
+	}
+	return object;
+};
 
 beforeAll(() => {
 	config.globalPrefix = '';
@@ -68,6 +77,49 @@ describe(fuse.name, () => {
 
 	test('should accept both optional objects and prefer the endpoint', () => {
 		expect(fuse({ path: '/home', prefix: '' }, 'api', 0, { path: '', prefix: 'api' })).toEqual('/home');
+	});
+});
+
+describe(register.name, () => {
+	const route: Route = { method: 'get', endpoint: '/hello', schema: null, handler: () => null };
+	test('should register a new route', () => {
+		register(route);
+		expect(mapObject(routes)).toEqual({ hello: { get: route } });
+	});
+
+	test('should call debug on console about the mapped route', () => {
+		expect(console.debug).toHaveBeenCalledWith(
+			expect.stringContaining(`mapped route ${colorMethod(route.method)} ${route.endpoint}`),
+		);
+	});
+
+	test('should not override an existing route', () => {
+		const conflicting: Route = { method: 'get', endpoint: '/hello', schema: null, handler: () => null };
+		register(conflicting);
+		expect(mapObject(routes)).toEqual({ hello: { get: route } });
+	});
+
+	test('should call warn on console about the ambiguous route', () => {
+		expect(console.warn).toHaveBeenCalledWith(
+			expect.stringContaining(`ambiguous route ${colorMethod(route.method)} ${route.endpoint}`),
+		);
+	});
+
+	test('should register all routes with all methods', () => {
+		routes.clear();
+		const getRoute: Route = { method: 'get', endpoint: '/api/hello-world', schema: null, handler: () => null };
+		register(getRoute);
+		const postRoute: Route = { method: 'post', endpoint: '/api/hello-world', schema: null, handler: () => null };
+		register(postRoute);
+		const putRoute: Route = { method: 'put', endpoint: '/api/hello-world', schema: null, handler: () => null };
+		register(putRoute);
+		const patchRoute: Route = { method: 'patch', endpoint: '/api/hello-world', schema: null, handler: () => null };
+		register(patchRoute);
+		const deleteRoute: Route = { method: 'delete', endpoint: '/api/hello-world', schema: null, handler: () => null };
+		register(deleteRoute);
+		expect(mapObject(routes)).toEqual({
+			api: { 'hello-world': { get: getRoute, post: postRoute, put: putRoute, patch: patchRoute, delete: deleteRoute } },
+		});
 	});
 });
 
