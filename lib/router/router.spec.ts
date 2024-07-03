@@ -126,6 +126,67 @@ describe(register.name, () => {
 	});
 });
 
+describe(traverse.name, () => {
+	const exactRoute: Route = { method: 'get', endpoint: '/api/73', schema: null, handler: () => null };
+	const getRoute: Route = { method: 'get', endpoint: '/api/hello', schema: null, handler: () => null };
+	const postRoute: Route = { method: 'post', endpoint: '/api/hello', schema: null, handler: () => null };
+	const getDynamicRoute: Route = { method: 'get', endpoint: '/api/:id', schema: null, handler: () => null };
+	const nestedRoute: Route = { method: 'get', endpoint: '/api/nested/route', schema: null, handler: () => null };
+
+	test('should register some different routes', () => {
+		register(exactRoute);
+		register(getRoute);
+		register(postRoute);
+		register(getDynamicRoute);
+		register(nestedRoute);
+	});
+
+	test('should return a route for an exact match', () => {
+		const result = traverse(routes, '/api/hello')!;
+		expect(mapObject(result)).toEqual({ get: getRoute, post: postRoute });
+	});
+
+	test('should return null for a non existent route', () => {
+		const result = traverse(routes, '/non-existent');
+		expect(result).toBeNull();
+	});
+
+	test('should return a route with dynamic parameter', () => {
+		const result = traverse(routes, '/api/42')!;
+		expect(mapObject(result)).toEqual({ get: getDynamicRoute });
+	});
+
+	test('should return null for partial matches', () => {
+		const result = traverse(routes, '/api');
+		expect(result).toBeNull();
+	});
+
+	test('should return null for unmatched dynamic segments', () => {
+		const result = traverse(routes, '/non-existent/42');
+		expect(result).toBeNull();
+	});
+
+	test('should prioritize exact matches over dynamic matches', () => {
+		const result = traverse(routes, '/api/73')!;
+		expect(mapObject(result)).toHaveProperty('get', exactRoute);
+	});
+
+	test('should handle deeply nested routes', () => {
+		const result = traverse(routes, '/api/nested/route')!;
+		expect(mapObject(result)).toHaveProperty('get', nestedRoute);
+	});
+
+	test('should return null if route has only parameterized parts', () => {
+		const result = traverse(routes, '/:id/:uuid');
+		expect(result).toBeNull();
+	});
+
+	test('should return null for the root path', () => {
+		const result = traverse(routes, '/');
+		expect(result).toBeNull();
+	});
+});
+
 describe(pick.name, () => {
 	test('should return undefined given an empty map', () => {
 		expect(pick(new Map(), 'all')).toBeUndefined();
