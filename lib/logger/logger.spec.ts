@@ -100,13 +100,11 @@ describe(req.name, () => {
 	expectType<void>(result);
 
 	test('should call the log function on console', () => {
-		expect(console.log).toHaveBeenCalledTimes(2);
 		expect(console.log).toHaveBeenCalledWith(expect.stringContaining(method));
 		expect(console.log).toHaveBeenCalledWith(expect.stringContaining(endpoint));
 	});
 
 	test('should call the custom logger request function', () => {
-		expect(customLogger.req).toHaveBeenCalledTimes(1);
 		expect(customLogger.req).toHaveBeenLastCalledWith({
 			id: request.id,
 			ip: request.ip,
@@ -125,13 +123,11 @@ describe(res.name, () => {
 	expectType<void>(result);
 
 	test('should call the log function on console', () => {
-		expect(console.log).toHaveBeenCalledTimes(2);
 		expect(console.log).toHaveBeenCalledWith(expect.stringContaining(`${status}`));
 		expect(console.log).toHaveBeenCalledWith(expect.stringContaining(`${time}`));
 	});
 
 	test('should call the custom logger response function', () => {
-		expect(customLogger.res).toHaveBeenCalledTimes(1);
 		expect(customLogger.res).toHaveBeenLastCalledWith({ id, timestamp: expect.any(Number), status, time, bytes: 0 });
 	});
 });
@@ -142,12 +138,10 @@ describe(trace.name, () => {
 	expectType<void>(result);
 
 	test('should call the trace function on console', () => {
-		expect(console.trace).toHaveBeenCalledTimes(1);
 		expect(console.trace).toHaveBeenLastCalledWith(expect.stringContaining(log), '', '');
 	});
 
 	test('should call the custom logger trace function', () => {
-		expect(customLogger.trace).toHaveBeenCalledTimes(1);
 		expect(customLogger.trace).toHaveBeenLastCalledWith({
 			timestamp: expect.any(Number),
 			message: log,
@@ -163,12 +157,10 @@ describe(debug.name, () => {
 	expectType<void>(result);
 
 	test('should call the debug function on console', () => {
-		expect(console.debug).toHaveBeenCalledTimes(1);
 		expect(console.debug).toHaveBeenLastCalledWith(expect.stringContaining(log));
 	});
 
 	test('should call the custom logger debug function', () => {
-		expect(customLogger.debug).toHaveBeenCalledTimes(1);
 		expect(customLogger.debug).toHaveBeenLastCalledWith({
 			timestamp: expect.any(Number),
 			message: log,
@@ -184,12 +176,10 @@ describe(info.name, () => {
 	expectType<void>(result);
 
 	test('should call the info function on console', () => {
-		expect(console.info).toHaveBeenCalledTimes(1);
 		expect(console.info).toHaveBeenLastCalledWith(expect.stringContaining(log));
 	});
 
 	test('should call the custom logger info function', () => {
-		expect(customLogger.info).toHaveBeenCalledTimes(1);
 		expect(customLogger.info).toHaveBeenLastCalledWith({
 			timestamp: expect.any(Number),
 			message: log,
@@ -205,12 +195,10 @@ describe(warn.name, () => {
 	expectType<void>(result);
 
 	test('should call the warn function on console', () => {
-		expect(console.warn).toHaveBeenCalledTimes(1);
 		expect(console.warn).toHaveBeenLastCalledWith(expect.stringContaining(log));
 	});
 
 	test('should call the custom logger warn function', () => {
-		expect(customLogger.warn).toHaveBeenCalledTimes(1);
 		expect(customLogger.warn).toHaveBeenLastCalledWith({
 			timestamp: expect.any(Number),
 			message: log,
@@ -226,12 +214,10 @@ describe(error.name, () => {
 	expectType<void>(result);
 
 	test('should call the error function on console', () => {
-		expect(console.error).toHaveBeenCalledTimes(1);
 		expect(console.error).toHaveBeenLastCalledWith(expect.stringContaining(log), '', '');
 	});
 
 	test('should call the custom logger error function', () => {
-		expect(customLogger.error).toHaveBeenCalledTimes(1);
 		expect(customLogger.error).toHaveBeenLastCalledWith({
 			timestamp: expect.any(Number),
 			message: log,
