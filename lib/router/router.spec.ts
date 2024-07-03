@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, test } from 'bun:test';
+import { beforeAll, describe, expect, mock, test } from 'bun:test';
 import { config } from '../config/config';
 import { colorMethod } from '../logger/color';
 import { expectType } from '../test/expect-type';
@@ -18,6 +18,8 @@ const mapObject = (map: Map<string, unknown>): Record<string, unknown> => {
 beforeAll(() => {
 	config.globalPrefix = '';
 	config.defaultVersion = 0;
+	console.debug = mock(() => void 0);
+	console.warn = mock(() => void 0);
 });
 
 describe(fuse.name, () => {
