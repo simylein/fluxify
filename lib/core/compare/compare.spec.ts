@@ -1,41 +1,11 @@
 // TODO: legacy file remove when all test cases are covered in new traverse functions
 import { describe, expect, test } from 'bun:test';
 import { Route } from '../../router/router.type';
-import { compareEndpoint, compareMethod } from './compare';
-
-const makeMethod = (method: Route['method']): Route => {
-	return { method, endpoint: '/auth', schema: null, handler: () => null };
-};
+import { compareEndpoint } from './compare';
 
 const makeEndpoint = (endpoint: Route['endpoint']): Route => {
 	return { method: 'get', endpoint, schema: null, handler: () => null };
 };
-
-describe(compareMethod.name, () => {
-	test('should match methods given the same method', () => {
-		expect(compareMethod(makeMethod('get'), 'get')).toEqual(true);
-		expect(compareMethod(makeMethod('post'), 'post')).toEqual(true);
-		expect(compareMethod(makeMethod('put'), 'put')).toEqual(true);
-		expect(compareMethod(makeMethod('patch'), 'patch')).toEqual(true);
-		expect(compareMethod(makeMethod('delete'), 'delete')).toEqual(true);
-	});
-
-	test('should not match methods given another method', () => {
-		expect(compareMethod(makeMethod('get'), 'post')).toEqual(false);
-		expect(compareMethod(makeMethod('post'), 'put')).toEqual(false);
-		expect(compareMethod(makeMethod('put'), 'patch')).toEqual(false);
-		expect(compareMethod(makeMethod('patch'), 'delete')).toEqual(false);
-		expect(compareMethod(makeMethod('delete'), 'get')).toEqual(false);
-	});
-
-	test('should not match methods given yet another method', () => {
-		expect(compareMethod(makeMethod('get'), 'delete')).toEqual(false);
-		expect(compareMethod(makeMethod('post'), 'get')).toEqual(false);
-		expect(compareMethod(makeMethod('put'), 'post')).toEqual(false);
-		expect(compareMethod(makeMethod('patch'), 'put')).toEqual(false);
-		expect(compareMethod(makeMethod('delete'), 'patch')).toEqual(false);
-	});
-});
 
 describe(compareEndpoint.name, () => {
 	test('should match simple endpoints', () => {

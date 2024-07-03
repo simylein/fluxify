@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, test } from 'bun:test';
 import { config } from '../config/config';
 import { expectType } from '../test/expect-type';
-import { fuse, router, routes, traverse } from './router';
+import { fuse, pick, router, routes, traverse } from './router';
 import { Route } from './router.type';
 
 const app = router();
@@ -68,6 +68,46 @@ describe(fuse.name, () => {
 
 	test('should accept both optional objects and prefer the endpoint', () => {
 		expect(fuse({ path: '/home', prefix: '' }, 'api', 0, { path: '', prefix: 'api' })).toEqual('/home');
+	});
+});
+
+describe(pick.name, () => {
+	test('should return undefined given an empty map', () => {
+		expect(pick(new Map(), 'all')).toBeUndefined();
+		expect(pick(new Map(), 'get')).toBeUndefined();
+		expect(pick(new Map(), 'post')).toBeUndefined();
+		expect(pick(new Map(), 'put')).toBeUndefined();
+		expect(pick(new Map(), 'patch')).toBeUndefined();
+		expect(pick(new Map(), 'delete')).toBeUndefined();
+		expect(pick(new Map(), 'options')).toBeUndefined();
+		expect(pick(new Map(), 'head')).toBeUndefined();
+	});
+
+	test('should return the route which matches the get method', () => {
+		const getRoute: Route = { method: 'get', endpoint: '/', schema: null, handler: () => null };
+		expect(pick(new Map().set(getRoute.method, getRoute), getRoute.method)).toEqual(getRoute);
+		const postRoute: Route = { method: 'post', endpoint: '/', schema: null, handler: () => null };
+		expect(pick(new Map().set(postRoute.method, postRoute), postRoute.method)).toEqual(postRoute);
+		const putRoute: Route = { method: 'put', endpoint: '/', schema: null, handler: () => null };
+		expect(pick(new Map().set(putRoute.method, putRoute), putRoute.method)).toEqual(putRoute);
+		const patchRoute: Route = { method: 'patch', endpoint: '/', schema: null, handler: () => null };
+		expect(pick(new Map().set(patchRoute.method, patchRoute), patchRoute.method)).toEqual(patchRoute);
+		const deleteRoute: Route = { method: 'delete', endpoint: '/', schema: null, handler: () => null };
+		expect(pick(new Map().set(deleteRoute.method, deleteRoute), deleteRoute.method)).toEqual(deleteRoute);
+	});
+
+	test('should return the get route given the head method', () => {
+		const route: Route = { method: 'get', endpoint: '/', schema: null, handler: () => null };
+		expect(pick(new Map().set(route.method, route), 'head')).toEqual(route);
+	});
+
+	test('should return the all route given any method', () => {
+		const route: Route = { method: 'all', endpoint: '/', schema: null, handler: () => null };
+		expect(pick(new Map().set(route.method, route), 'get')).toEqual(route);
+		expect(pick(new Map().set(route.method, route), 'post')).toEqual(route);
+		expect(pick(new Map().set(route.method, route), 'put')).toEqual(route);
+		expect(pick(new Map().set(route.method, route), 'patch')).toEqual(route);
+		expect(pick(new Map().set(route.method, route), 'delete')).toEqual(route);
 	});
 });
 

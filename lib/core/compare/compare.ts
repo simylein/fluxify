@@ -1,5 +1,5 @@
 // TODO: legacy file remove when functionality is fully ported
-import { Method, Route } from '../../router/router.type';
+import { Route } from '../../router/router.type';
 
 export const compareEndpoint = (route: Route, endpoint: string): boolean => {
 	const routeFragments = route.endpoint.split('/');
@@ -19,11 +19,4 @@ export const compareEndpoint = (route: Route, endpoint: string): boolean => {
 		}
 	}
 	return true;
-};
-
-export const compareMethod = (route: Route, method: Method | null): boolean => {
-	if (route.method === 'all') {
-		return true;
-	}
-	return route.method === method;
 };
