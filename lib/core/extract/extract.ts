@@ -1,9 +1,8 @@
 import { MethodNotAllowed } from '../../exception/exception';
 import { Method, Param, Route } from '../../router/router.type';
-import { compareEndpoint } from '../compare/compare';
 
 export const extractMethod = (method: string): Method => {
-	const methods: Method[] = ['get', 'post', 'put', 'patch', 'delete', 'options'];
+	const methods: Method[] = ['get', 'post', 'put', 'patch', 'delete', 'options', 'head'];
 	if (methods.includes(method.toLowerCase() as Method)) {
 		return method.toLowerCase() as Method;
 	}
@@ -12,7 +11,7 @@ export const extractMethod = (method: string): Method => {
 
 export const extractParam = (route: Route, endpoint: string): Param => {
 	const param: Param = {};
-	if (compareEndpoint(route, endpoint) && route.endpoint.includes(':')) {
+	if (route.endpoint.includes(':')) {
 		route.endpoint
 			.split('/')
 			.forEach(

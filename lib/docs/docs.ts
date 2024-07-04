@@ -1,14 +1,15 @@
 import pack from '../../package.json';
 import { config } from '../config/config';
-import { routes } from '../router/router';
+import { collect, routes } from '../router/router';
 import { Docs, Operation, Parameter, Paths, RequestBody, Responses, Security, Tag } from './docs.type';
 
 export const generateDocs = (): Docs => {
+	const stash = collect(routes);
 	const paths: Paths = {};
-	const endpoints = [...new Set(routes.map((route) => route.endpoint))];
+	const endpoints = [...new Set(stash.map((route) => route.endpoint))];
 	endpoints.forEach((endpoint) => {
 		const methods: Paths[''] = {};
-		routes
+		stash
 			.filter((route) => route.endpoint === endpoint)
 			.forEach((route) => {
 				const parameters: Parameter[] = [];

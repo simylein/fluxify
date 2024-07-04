@@ -25,10 +25,8 @@ describe(extractMethod.name, () => {
 describe(extractParam.name, () => {
 	test('should extract params from endpoints', () => {
 		expect(extractParam(makeEndpoint('/auth/:uuid'), '/auth')).toEqual({});
-		expect(extractParam(makeEndpoint('/auth/:uuid'), '/auth/')).toEqual({});
-		expect(extractParam(makeEndpoint('/auth/:uuid'), '/auth/uuid-string')).toEqual({
-			uuid: 'uuid-string',
-		});
+		expect(extractParam(makeEndpoint('/auth/:uuid'), '/auth/')).toEqual({ uuid: '' });
+		expect(extractParam(makeEndpoint('/auth/:uuid'), '/auth/uuid-string')).toEqual({ uuid: 'uuid-string' });
 	});
 
 	test('should extract params from nested endpoints', () => {

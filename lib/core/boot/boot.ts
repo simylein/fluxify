@@ -6,14 +6,12 @@ import { cacheExpiry, cacheInsert, cacheLfu, cacheLookup, cacheOptions } from '.
 import { config } from '../../config/config';
 import { plan, run, tabs } from '../../cron/cron';
 import { HttpException, Locked, Unauthorized } from '../../exception/exception';
-import { colorMethod } from '../../logger/color';
-import { debug, error, info, logger, req, res, warn } from '../../logger/logger';
-import { routes } from '../../router/router';
-import { FluxifyRequest, Param, Query } from '../../router/router.type';
+import { debug, error, info, logger, req, res } from '../../logger/logger';
+import { collect, pick, routes, traverse } from '../../router/router';
+import { FluxifyRequest, Param, Query, Route } from '../../router/router.type';
 import { throttleLookup, throttleOptions } from '../../throttle/throttle';
 import { start, stop } from '../../timing/timing';
 import { ValidationError } from '../../validation/error';
-import { compareEndpoint, compareMethod } from '../compare/compare';
 import { extractMethod, extractParam } from '../extract/extract';
 import { parseBody, parseIp } from '../request/request';
 import { createResponse, header } from '../response/response';
@@ -45,17 +43,18 @@ export const bootstrap = (): FluxifyServer => {
 				req(request, method, endpoint);
 
 				start(request, 'routing');
-				const matchingRoutes = global.server.routes.filter((route) => compareEndpoint(route, endpoint));
-				const targetRoute = matchingRoutes.find((route) => compareMethod(route, method));
+				const matchingRoutes = traverse(global.server.routes, endpoint);
+				const targetRoute = pick(matchingRoutes, method);
 				stop(request, 'routing');
 
 				const cache = cacheOptions(request, targetRoute);
 				const throttle = throttleOptions(targetRoute);
 
 				if (method === 'options') {
-					const authRoutes = matchingRoutes.filter((route) => route.schema?.jwt);
-					if (authRoutes.length > 0) {
-						const methods = authRoutes.filter((route) => compareEndpoint(route, endpoint)).map((route) => route.method);
+					const matching = Array.from(matchingRoutes?.values() ?? []).flat() as Route[];
+					const auth = matching.filter((route) => route.schema?.jwt);
+					if (auth.length > 0) {
+						const methods = auth.map((route) => route.method);
 						return createResponse(null, 200, request, {
 							'access-control-allow-origin': config.allowOrigin,
 							'access-control-allow-headers': 'authorization,content-type',
@@ -63,7 +62,7 @@ export const bootstrap = (): FluxifyServer => {
 							'access-control-allow-credentials': 'true',
 						});
 					} else {
-						const methods = matchingRoutes.map((route) => route.method);
+						const methods = matching.map((route) => route.method);
 						return createResponse(null, 200, request, { allow: methods.join(', ').toUpperCase() });
 					}
 				}
@@ -144,6 +143,10 @@ export const bootstrap = (): FluxifyServer => {
 						stop(request, 'cache');
 					}
 
+					if (method === 'head') {
+						return createResponse(null, 200, request);
+					}
+
 					start(request, 'handler');
 					const data = await targetRoute.handler({ param, query, body, jwt, req: request });
 					if (data instanceof Response) {
@@ -164,7 +167,7 @@ export const bootstrap = (): FluxifyServer => {
 						}
 					}
 					return createResponse(data, status, request);
-				} else if (matchingRoutes.length > 0) {
+				} else if (matchingRoutes && matchingRoutes.size > 0) {
 					const status = 405;
 					return createResponse({ status, message: 'method not allowed' }, status, request);
 				} else {
@@ -251,12 +254,9 @@ export const bootstrap = (): FluxifyServer => {
 		init();
 	});
 
-	routes.map((route, _index, array) =>
-		array.filter((rout) => rout.endpoint === route.endpoint && rout.method === route.method).length > 1
-			? warn(`ambiguous route ${colorMethod(route.method)} ${route.endpoint}`)
-			: debug(`mapped route ${colorMethod(route.method)} ${route.endpoint}`),
-	);
-	info(`mapped ${routes.length} routes of which ${routes.filter((route) => route.schema?.jwt).length} have auth`);
+	const stash = collect(global.server.routes);
+	const auth = stash.filter((route) => route.schema?.jwt);
+	info(`mapped ${stash.length} routes of which ${auth.length} have auth`);
 	info(`listening for requests on localhost:${config.port}`);
 	debug(`request logging is ${config.logRequests ? 'active' : 'inactive'}`);
 	debug(`response logging is ${config.logResponses ? 'active' : 'inactive'}`);

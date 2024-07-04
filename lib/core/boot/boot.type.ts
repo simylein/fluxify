@@ -2,12 +2,12 @@ import { Server } from 'bun';
 import { Cache } from '../../cache/cache.type';
 import { Tab } from '../../cron/cron.type';
 import { Logger } from '../../logger/logger.type';
-import { Route } from '../../router/router.type';
+import { Routes } from '../../router/router.type';
 import { Throttle } from '../../throttle/throttle.type';
 import { Serializer } from '../serialize/serialize.type';
 
 export type FluxifyServer = Server & {
-	routes: Route[];
+	routes: Routes;
 	tabs: Tab[];
 	cache: Cache;
 	throttle: Throttle;

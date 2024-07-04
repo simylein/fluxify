@@ -4,7 +4,7 @@ import { Parser } from '../validation/parser.type';
 
 export type Path = string | { path: string; version?: number; prefix?: string };
 
-export type Method = 'all' | 'get' | 'post' | 'put' | 'patch' | 'delete' | 'options';
+export type Method = 'all' | 'get' | 'post' | 'put' | 'patch' | 'delete' | 'options' | 'head';
 
 export type Param = Record<string, unknown>;
 
@@ -20,6 +20,8 @@ export type FluxifyRequest = Request & {
 export type Responses = object | unknown[] | IdEntity | IdEntity[] | Response | null;
 
 export type FluxifyResponse = Responses | Promise<Responses>;
+
+export type Routes = Map<string, Routes | Route>;
 
 export type Route = {
 	method: Method;
