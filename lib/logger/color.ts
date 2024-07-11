@@ -25,6 +25,8 @@ export const reset = colorTerminal(process.env) ? '\x1b[0m' : '';
 
 export const colorMethod = (method: Method): string => {
 	switch (true) {
+		case method === 'head':
+			return `${bold}${cyan}${method}${reset}`;
 		case method === 'options':
 			return `${bold}${cyan}${method}${reset}`;
 		case method === 'get':

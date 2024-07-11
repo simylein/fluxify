@@ -27,6 +27,7 @@ describe(colorTerminal.name, () => {
 
 describe(colorMethod.name, () => {
 	test('should return the method with the corresponding color', () => {
+		expect(colorMethod('head')).toEqual(`${bold}${cyan}${'head'}${reset}`);
 		expect(colorMethod('options')).toEqual(`${bold}${cyan}${'options'}${reset}`);
 		expect(colorMethod('get')).toEqual(`${bold}${blue}${'get'}${reset}`);
 		expect(colorMethod('post')).toEqual(`${bold}${green}${'post'}${reset}`);
