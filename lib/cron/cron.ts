@@ -1,4 +1,4 @@
-import { debug, error } from '../logger/logger';
+import { error, trace } from '../logger/logger';
 import { Tab } from './cron.type';
 
 export const tabs: Tab[] = [];
@@ -11,7 +11,7 @@ export const cron = (schedule: Tab['schedule'], handler: Tab['handler']): void =
 };
 
 export const run = async (tab: Tab): Promise<void> => {
-	debug(`running cron schedule ${tab.schedule}`);
+	trace(`running cron schedule ${tab.schedule}`);
 	try {
 		await tab.handler();
 	} catch (err) {
