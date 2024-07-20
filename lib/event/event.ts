@@ -16,10 +16,10 @@ export const subscribe = (req: Request, channel: string, event?: string, data?: 
 					await controller.flush();
 					id++;
 				};
-				debug(`subscribing to channel '${channel}'`);
+				debug(`subscribing to ${channel}`);
 				emitter.on(channel, handler);
 				req.signal.onabort = () => {
-					debug(`unsubscribing from channel '${channel}'`);
+					debug(`unsubscribing from ${channel}`);
 					emitter.off(channel, handler);
 				};
 				void handler(event ?? 'connect', data);
@@ -34,6 +34,6 @@ export const subscribe = (req: Request, channel: string, event?: string, data?: 
 };
 
 export const emit = (channel: string, event: string, data?: unknown): void => {
-	trace(`emitting to channel '${channel}'`);
+	trace(`emitting to ${channel}`);
 	emitter.emit(channel, event, data);
 };
