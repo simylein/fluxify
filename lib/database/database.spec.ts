@@ -3,6 +3,7 @@ import { randomUUID } from 'crypto';
 import { IdEntity } from '../repository/repository.type';
 import { expectType } from '../test/expect-type';
 import { runQuery, selectMany, selectOne } from './database';
+import { Changes } from './database.type';
 
 const user = {
 	id: randomUUID(),
@@ -37,7 +38,7 @@ describe(runQuery.name, () => {
 		).not.toThrow();
 	});
 
-	expectType<Promise<void>>(runQuery('pragma testing_purpose'));
+	expectType<Promise<Changes>>(runQuery('pragma testing_purpose'));
 });
 
 describe(selectOne.name, () => {

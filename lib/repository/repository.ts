@@ -3,6 +3,7 @@ import { randomUUID } from 'crypto';
 import { config } from '../config/config';
 import { ColumnOptions } from '../database/column/column.type';
 import { insertMany, insertOne, runQuery, selectMany, selectOne } from '../database/database';
+import { Changes } from '../database/database.type';
 import { Entity } from '../database/entity/entity.type';
 import { debug } from '../logger/logger';
 import { orderBy, paginate, whereMany, whereOne } from './helpers/helpers';
@@ -20,17 +21,17 @@ import {
 import { transformData, transformEntity } from './transform/transform';
 
 type Repository<T extends IdEntity> = {
-	init: () => Promise<void>;
+	init: () => Promise<Changes>;
 	find: <S extends keyof T>(options?: FindOptions<T, S>) => Promise<Pick<T, S>[]>;
 	findOne: <S extends keyof T>(options: T['id'] | FindOneOptions<T, S>) => Promise<Pick<T, S> | null>;
 	insert: <S extends keyof T>(data: InsertData<T>, returning?: SelectOptions<T, S>) => Promise<Pick<T, S>>;
 	insertMany: <S extends keyof T>(data: InsertData<T>[], returning?: SelectOptions<T, S>) => Promise<Pick<T, S>[]>;
-	update: (criteria: T['id'] | WhereOptions<T>, data: UpdateData<T>) => Promise<void>;
-	delete: (criteria: T['id'] | WhereOptions<T>) => Promise<void>;
-	softDelete: (criteria: T['id'] | WhereOptions<T>) => Promise<void>;
-	restore: (criteria: T['id'] | WhereOptions<T>) => Promise<void>;
-	wipe: () => Promise<void>;
-	drop: () => Promise<void>;
+	update: (criteria: T['id'] | WhereOptions<T>, data: UpdateData<T>) => Promise<Changes>;
+	delete: (criteria: T['id'] | WhereOptions<T>) => Promise<Changes>;
+	softDelete: (criteria: T['id'] | WhereOptions<T>) => Promise<Changes>;
+	restore: (criteria: T['id'] | WhereOptions<T>) => Promise<Changes>;
+	wipe: () => Promise<Changes>;
+	drop: () => Promise<Changes>;
 };
 
 export const repository = <T extends IdEntity>(table: Entity<T>): Repository<T> => {
@@ -99,7 +100,7 @@ export const repository = <T extends IdEntity>(table: Entity<T>): Repository<T> 
 	};
 
 	return {
-		init(): Promise<void> {
+		init(): Promise<Changes> {
 			return runQuery(table.schema);
 		},
 
@@ -241,7 +242,7 @@ export const repository = <T extends IdEntity>(table: Entity<T>): Repository<T> 
 			return entities.map((entity) => transformEntity(table, entity as T));
 		},
 
-		update(criteria: T['id'] | WhereOptions<T>, data: UpdateData<T>): Promise<void> {
+		update(criteria: T['id'] | WhereOptions<T>, data: UpdateData<T>): Promise<Changes> {
 			const keys = Object.keys(data)
 				.filter((key) => data[key as keyof UpdateData<T>] !== undefined)
 				.map((key) => table.columns[key].name ?? key)
@@ -266,14 +267,14 @@ export const repository = <T extends IdEntity>(table: Entity<T>): Repository<T> 
 			]);
 		},
 
-		delete(criteria: T['id'] | WhereOptions<T>): Promise<void> {
+		delete(criteria: T['id'] | WhereOptions<T>): Promise<Changes> {
 			let where: WhereOptions<T> = {};
 			typeof criteria !== 'object' ? (where.id = criteria) : (where = criteria);
 
 			return runQuery(`delete from ${table.name} ${whereKeys(where)}`, whereOne<T, keyof T>(where));
 		},
 
-		softDelete(criteria: T['id'] | WhereOptions<T>): Promise<void> {
+		softDelete(criteria: T['id'] | WhereOptions<T>): Promise<Changes> {
 			const columns = Object.keys(table.columns).filter((key) => !('references' in table.columns[key]));
 			const deletedColumn = columns.find(
 				(column) => (table.columns as Record<string, ColumnOptions>)[column].onDelete === `(datetime('now'))`,
@@ -293,7 +294,7 @@ export const repository = <T extends IdEntity>(table: Entity<T>): Repository<T> 
 			}
 		},
 
-		restore(criteria: T['id'] | WhereOptions<T>): Promise<void> {
+		restore(criteria: T['id'] | WhereOptions<T>): Promise<Changes> {
 			const columns = Object.keys(table.columns).filter((key) => !('references' in table.columns[key]));
 			const deletedColumn = columns.find(
 				(column) => (table.columns as Record<string, ColumnOptions>)[column].onDelete === `(datetime('now'))`,
@@ -313,11 +314,11 @@ export const repository = <T extends IdEntity>(table: Entity<T>): Repository<T> 
 			}
 		},
 
-		wipe(): Promise<void> {
+		wipe(): Promise<Changes> {
 			return runQuery(`delete from ${table.name}`);
 		},
 
-		drop(): Promise<void> {
+		drop(): Promise<Changes> {
 			return runQuery(`drop table ${table.name}`);
 		},
 	};

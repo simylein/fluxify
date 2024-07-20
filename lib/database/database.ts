@@ -1,5 +1,6 @@
 import { Database, SQLQueryBindings } from 'bun:sqlite';
 import { config } from '../config/config';
+import { Changes } from '../database/database.type';
 import { trace } from '../logger/logger';
 
 const database = new Database(config.stage === 'test' ? ':memory:' : config.databasePath, {
@@ -8,7 +9,7 @@ const database = new Database(config.stage === 'test' ? ':memory:' : config.data
 });
 database.run('pragma foreign_keys = on;');
 
-export const runQuery = (query: string, params: SQLQueryBindings[] = []): Promise<void> => {
+export const runQuery = (query: string, params: SQLQueryBindings[] = []): Promise<Changes> => {
 	return new Promise((resolve) => {
 		const statement = database.prepare(`${query};`, params);
 		trace(statement.toString());

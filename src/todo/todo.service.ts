@@ -71,5 +71,5 @@ export const deleteTodo = async (user: AuthUser, id: Todo['id']): Promise<void> 
 
 	await findExisting(user, id);
 	emit(`/todo/${user.id}`, 'delete');
-	return todoRepository.softDelete(id);
+	await todoRepository.softDelete(id);
 };
