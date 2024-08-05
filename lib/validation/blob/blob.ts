@@ -1,7 +1,7 @@
 import { isBlob } from '../assert/assert';
 import { BlobParser } from './blob.type';
 
-export const blob = (type: string): BlobParser => {
+export const blob = (...types: string[]): BlobParser => {
 	const options: BlobParser = {
 		type: ['blob'],
 		constraints: { min: undefined, max: undefined },
@@ -29,7 +29,7 @@ export const blob = (type: string): BlobParser => {
 			if (options.type.includes('null') && argument === null) {
 				return argument;
 			}
-			isBlob(argument, type, options.constraints);
+			isBlob(argument, types, options.constraints);
 			return argument;
 		},
 	};

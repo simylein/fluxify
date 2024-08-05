@@ -12,6 +12,19 @@ describe(blob.name, () => {
 		expectType<Type[]>(blob('image').type);
 	});
 
+	test('should return a blob if passed any blob and else throw', () => {
+		expect(() => blob().parse('hello-world')).toThrow();
+		expect(() => blob().parse(42)).toThrow();
+		expect(() => blob().parse(true)).toThrow();
+		expect(() => blob().parse({})).toThrow();
+		expect(() => blob().parse([])).toThrow();
+		expect(() => blob().parse(undefined)).toThrow();
+		expect(() => blob().parse(null)).toThrow();
+		expect(() => blob().parse(new Blob([]))).not.toThrow();
+		expect(blob().parse(new Blob([]))).toEqual(new Blob([]) as Blob);
+		expectType<Blob>(blob().parse(new Blob([])));
+	});
+
 	test('should return a blob if passed a blob and else throw', () => {
 		expect(() => blob('image').parse('hello-world')).toThrow();
 		expect(() => blob('image').parse(42)).toThrow();
@@ -31,6 +44,15 @@ describe(blob.name, () => {
 		expect(() => blob('image').parse(new Blob([], { type: 'non-image' }))).toThrow();
 		expect(() => blob('image').parse(new Blob([], { type: 'image' }))).not.toThrow();
 		expectType<Blob>(blob('image').parse(new Blob([], { type: 'image' })));
+	});
+
+	test('should return a blob when one of the types match and else throw', () => {
+		expect(() => blob('image', 'video').parse(new Blob([]))).toThrow();
+		expect(() => blob('image', 'video').parse(new Blob([], { type: '' }))).toThrow();
+		expect(() => blob('image', 'video').parse(new Blob([], { type: 'non-video' }))).toThrow();
+		expect(() => blob('image', 'video').parse(new Blob([], { type: 'video' }))).not.toThrow();
+		expect(() => blob('image', 'video').parse(new Blob([], { type: 'image' }))).not.toThrow();
+		expectType<Blob>(blob('image', 'video').parse(new Blob([], { type: 'video' })));
 	});
 
 	test('should respect the minimum value and else throw', () => {

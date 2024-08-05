@@ -173,16 +173,16 @@ describe(isUnion.name, () => {
 
 describe(isBlob.name, () => {
 	test('should not throw given a blob', () => {
-		expect(() => isBlob(new Blob([]), '', {})).not.toThrow();
+		expect(() => isBlob(new Blob([]), [], {})).not.toThrow();
 	});
 
 	test('should throw given anything but a blob', () => {
-		expect(() => isBlob('hello-world', '', {})).toThrow(Error('"hello-world" is not of type blob'));
-		expect(() => isBlob(42, '', {})).toThrow(Error('42 is not of type blob'));
-		expect(() => isBlob(true, '', {})).toThrow(Error('true is not of type blob'));
-		expect(() => isBlob({}, '', {})).toThrow(Error('{} is not of type blob'));
-		expect(() => isBlob([], '', {})).toThrow(Error('[] is not of type blob'));
-		expect(() => isBlob(undefined, '', {})).toThrow(Error('undefined is not of type blob'));
-		expect(() => isBlob(null, '', {})).toThrow(Error('null is not of type blob'));
+		expect(() => isBlob('hello-world', [], {})).toThrow(Error('"hello-world" is not of type blob'));
+		expect(() => isBlob(42, [], {})).toThrow(Error('42 is not of type blob'));
+		expect(() => isBlob(true, [], {})).toThrow(Error('true is not of type blob'));
+		expect(() => isBlob({}, [], {})).toThrow(Error('{} is not of type blob'));
+		expect(() => isBlob([], [], {})).toThrow(Error('[] is not of type blob'));
+		expect(() => isBlob(undefined, [], {})).toThrow(Error('undefined is not of type blob'));
+		expect(() => isBlob(null, [], {})).toThrow(Error('null is not of type blob'));
 	});
 });
