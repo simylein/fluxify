@@ -74,7 +74,8 @@ default values are given below and will be used if none are provided.
 `CACHE_LIMIT=0` the maximum amount of items in the cache, 0 means disabled
 
 `THROTTLE_TTL=0` your throttle's time to live in seconds, 0 means disabled <br>
-`THROTTLE_LIMIT=0` how many requests a single ip may do in the given ttl, 0 means disabled
+`THROTTLE_LIMIT=0` how many requests a single ip may do in the given ttl, 0 means disabled <br>
+`THROTTLE_REGROW=0` amount of requests which regrow in the given ttl, 0 means disabled
 
 `DATABASE_PATH=:memory:` provide a file path to a database on your system <br>
 `DATABASE_MODE=readwrite` can either be readwrite or readonly
