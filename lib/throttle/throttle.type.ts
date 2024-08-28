@@ -9,4 +9,5 @@ export type ThrottleOptions = {
 	use: boolean;
 	ttl: number;
 	limit: number;
+	regrow: number;
 };

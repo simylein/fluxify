@@ -30,6 +30,7 @@ export const validateConfig = (env: Env): Config => {
 
 			throttleTtl: number().transform().min(0).max(3600).optional().default(0),
 			throttleLimit: number().transform().min(0).max(2048).optional().default(0),
+			throttleRegrow: number().transform().min(0).max(512).optional().default(0),
 
 			databasePath: string().optional().default(':memory:'),
 			databaseMode: union(['readwrite', 'readonly']).optional().default('readwrite'),
@@ -51,6 +52,7 @@ export const validateConfig = (env: Env): Config => {
 			cacheLimit: env.CACHE_LIMIT,
 			throttleTtl: env.THROTTLE_TTL,
 			throttleLimit: env.THROTTLE_LIMIT,
+			throttleRegrow: env.THROTTLE_REGROW,
 			databasePath: env.DATABASE_PATH,
 			databaseMode: env.DATABASE_MODE,
 			logLevel: env.LOG_LEVEL,
