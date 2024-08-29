@@ -37,10 +37,10 @@ export const throttleLookup = (
 	const methodEntry = endpointEntry.get(method)!;
 	if (options.regrow) {
 		const delta = Date.now() - (methodEntry.exp - options.ttl * 1000);
-		const seeds = (options.ttl / options.regrow) * 1000;
-		if (delta >= seeds) {
-			const regrow = Math.floor(delta / seeds);
-			methodEntry.exp += regrow * seeds;
+		const grow = (options.ttl / options.regrow) * 1000;
+		if (delta >= grow) {
+			const regrow = Math.floor(delta / grow);
+			methodEntry.exp += regrow * grow;
 			methodEntry.hits -= regrow;
 			if (methodEntry.hits < 0) methodEntry.hits = 0;
 		}
