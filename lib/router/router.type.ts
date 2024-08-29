@@ -37,7 +37,7 @@ export type Schema<P, Q, B, J> = {
 	body?: Parser<B>;
 	jwt?: Parser<J>;
 	cache?: { ttl?: number };
-	throttle?: { ttl?: number; limit?: number };
+	throttle?: { ttl?: number; limit?: number; regrow?: number };
 };
 
 export type HandlerSchema<P, Q, B, J> = {
