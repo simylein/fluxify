@@ -21,7 +21,7 @@ export const throttleLookup = (
 	criteria: string,
 	endpoint: string,
 	method: Method,
-	options: ThrottleOptions,
+	options: Pick<ThrottleOptions, 'ttl' | 'regrow'>,
 ): ThrottleEntry => {
 	if (!throttle.has(criteria)) {
 		throttle.set(criteria, new Map());

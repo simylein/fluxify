@@ -84,9 +84,12 @@ export const bootstrap = (): FluxifyServer => {
 						start(request, 'throttle');
 						const criteria = (jwt as { id?: string })?.id ?? request.ip;
 						if (config.throttleTtl === throttle.ttl && config.throttleLimit === throttle.limit) {
-							const globally = throttleLookup(global.server.throttle, criteria, 'globally', 'all', throttle);
+							const globally = throttleLookup(global.server.throttle, criteria, 'globally', 'all', {
+								ttl: config.throttleTtl,
+								regrow: config.throttleRegrow,
+							});
 							if (globally.hits > config.throttleLimit) {
-								globally.hits = throttle.limit;
+								globally.hits = config.throttleLimit;
 								debug(`throttle limit on route ${targetRoute.endpoint}`);
 								const status = 429;
 								stop(request, 'throttle');
@@ -95,7 +98,10 @@ export const bootstrap = (): FluxifyServer => {
 								});
 							}
 						} else {
-							const locally = throttleLookup(global.server.throttle, criteria, endpoint, method, throttle);
+							const locally = throttleLookup(global.server.throttle, criteria, endpoint, method, {
+								ttl: throttle.ttl,
+								regrow: throttle.regrow,
+							});
 							if (locally.hits > throttle.limit) {
 								locally.hits = throttle.limit;
 								debug(`throttle limit on route ${targetRoute.endpoint}`);

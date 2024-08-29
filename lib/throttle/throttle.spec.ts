@@ -12,7 +12,7 @@ const criteria = '127.0.0.1';
 const endpoint = '/auth/me';
 const method = 'get';
 const entry = { exp: config.throttleTtl * 1000 + Date.now(), hits: 1 };
-const options = { use: true, ttl: config.throttleTtl, limit: config.throttleLimit, regrow: config.throttleRegrow };
+const options = { ttl: config.throttleTtl, regrow: config.throttleRegrow };
 
 describe(throttleOptions.name, () => {
 	test('should enable global throttle options by default', () => {
