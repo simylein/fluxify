@@ -9,7 +9,7 @@ import { HttpException, Locked, Unauthorized } from '../../exception/exception';
 import { debug, error, info, logger, req, res } from '../../logger/logger';
 import { collect, pick, routes, traverse } from '../../router/router';
 import { FluxifyRequest, Param, Query, Route } from '../../router/router.type';
-import { throttleLookup, throttleOptions } from '../../throttle/throttle';
+import { retryAfter, throttleLookup, throttleOptions } from '../../throttle/throttle';
 import { start, stop } from '../../timing/timing';
 import { ValidationError } from '../../validation/error';
 import { extractMethod, extractParam } from '../extract/extract';
@@ -84,31 +84,27 @@ export const bootstrap = (): FluxifyServer => {
 						start(request, 'throttle');
 						const criteria = (jwt as { id?: string })?.id ?? request.ip;
 						if (config.throttleTtl === throttle.ttl && config.throttleLimit === throttle.limit) {
-							const globally = throttleLookup(global.server.throttle, criteria, 'globally', 'all', {
-								ttl: config.throttleTtl,
-								regrow: config.throttleRegrow,
-							});
+							const opts = { ttl: config.throttleTtl, regrow: config.throttleRegrow };
+							const globally = throttleLookup(global.server.throttle, criteria, 'globally', 'all', opts);
 							if (globally.hits > config.throttleLimit) {
 								globally.hits = config.throttleLimit;
 								debug(`throttle limit on route ${targetRoute.endpoint}`);
 								const status = 429;
 								stop(request, 'throttle');
 								return createResponse({ status, message: 'too many requests' }, status, request, {
-									'retry-after': `${Math.ceil((globally.exp - Date.now()) / 1000)}`,
+									'retry-after': `${retryAfter(globally, opts)}`,
 								});
 							}
 						} else {
-							const locally = throttleLookup(global.server.throttle, criteria, endpoint, method, {
-								ttl: throttle.ttl,
-								regrow: throttle.regrow,
-							});
+							const opts = { ttl: throttle.ttl, regrow: throttle.regrow };
+							const locally = throttleLookup(global.server.throttle, criteria, endpoint, method, opts);
 							if (locally.hits > throttle.limit) {
 								locally.hits = throttle.limit;
 								debug(`throttle limit on route ${targetRoute.endpoint}`);
 								const status = 429;
 								stop(request, 'throttle');
 								return createResponse({ status, message: 'too many requests' }, status, request, {
-									'retry-after': `${Math.ceil((locally.exp - Date.now()) / 1000)}`,
+									'retry-after': `${retryAfter(locally, opts)}`,
 								});
 							}
 						}

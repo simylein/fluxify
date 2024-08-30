@@ -52,3 +52,12 @@ export const throttleLookup = (
 	methodEntry.hits += 1;
 	return methodEntry;
 };
+
+export const retryAfter = (entry: ThrottleEntry, options: Pick<ThrottleOptions, 'ttl' | 'regrow'>): number => {
+	if (options.regrow) {
+		const delta = Date.now() - (entry.exp - options.ttl * 1000);
+		const grow = (options.ttl / options.regrow) * 1000;
+		return Math.ceil((grow - delta) / 1000);
+	}
+	return Math.ceil((entry.exp - Date.now()) / 1000);
+};
