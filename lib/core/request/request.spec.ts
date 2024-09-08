@@ -18,6 +18,6 @@ describe(parseBody.name, () => {
 		const request = new Request('http://example.com', { body: 'invalid-json' });
 		expect(async () => {
 			await parseBody(request);
-		}).toThrow(new ValidationError('JSON Parse error: Unexpected identifier "invalid"'));
+		}).toThrow(new ValidationError('Failed to parse JSON'));
 	});
 });

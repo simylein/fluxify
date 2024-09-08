@@ -81,6 +81,7 @@ export const hotReloadEnv = (env: string): void => {
 
 // TODO: remove function call
 try {
+	await import('../../.env' as string);
 	hotReloadEnv(readFileSync('.env', 'utf8'));
 } catch {
 	null;
