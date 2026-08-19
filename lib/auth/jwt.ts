@@ -50,7 +50,7 @@ export const verifyJwt = (token: string): JwtDto | null => {
 	}
 
 	const data = jwtDto.parse(decodeFragment(payload));
-	if (data.iat + config.jwtExpiry < data.exp) {
+	if (data.iat + config.jwtExpiry < data.exp || data.exp < Date.now() / 1000) {
 		return null;
 	}
 
